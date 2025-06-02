@@ -35,14 +35,14 @@
   (ring-bell-function 'ignore)
   (mode-line-format '("%e"
                       " "
-                      (:eval (propertize default-directory 'face 'shadow))
                       "%b"
                       (:eval (propertize (when buffer-read-only " read-only") 'face 'shadow))
                       (:eval (propertize (when (buffer-modified-p) " unsaved") 'face 'warning))
                       " "
+                      (:eval (propertize default-directory 'face 'shadow))
                       mode-line-format-right-align
                       (:eval (when flymake-mode flymake-mode-line-format))
-                      " "))
+                      "  "))
   :config
   (tool-bar-mode 0)
   (menu-bar-mode 0))
@@ -64,7 +64,6 @@
 (use-package custom :config (load-theme 'modus-vivendi))
 (use-package dired :custom (dired-auto-revert-buffer #'dired-buffer-stale-p) (dired-dwim-target t))
 (use-package which-key :config (which-key-mode))
-(use-package fringe :config (fringe-mode 0))
 (use-package hl-line :config (global-hl-line-mode 1))
 (use-package frame :config (blink-cursor-mode -1))
 
@@ -96,7 +95,7 @@
 
 (use-package compile
   :custom
-  (compilation-scroll-output 'first-error)
+  (compilation-scroll-output 1)
   (compile-command "")
   :config
   (add-to-list 'compilation-error-regexp-alist 'zig-c-assert)
