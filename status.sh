@@ -1,6 +1,6 @@
-cpu=$(uptime | awk -F ',' '{print $3}' | awk '{print $3}')
+cpu=$(top -bn2 -d0.01 | rg Cpu | tail -n1 | awk '{print 100-$8 "%"}')
 
-ram=$(free --mebi | awk '/Mem/ {print $3 "/" $2}')
+ram=$(free --mebi | awk '/Mem/ {print $3 "Mi / " $2 "Mi"}')
 
 if [[ $(pactl get-sink-mute \@DEFAULT_SINK@ | awk '/yes/ {print}') ]]; then
     volume="Muted"
@@ -10,4 +10,4 @@ fi
 
 date=$(date +'%A %d/%m/%Y %X')
 
-echo "CPU: $cpu/$(nproc) | RAM: $ram | Volume: $volume | $date |"
+echo "CPU: $cpu | RAM: $ram | Volume: $volume | $date |"

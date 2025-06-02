@@ -67,6 +67,10 @@
 (use-package hl-line :config (global-hl-line-mode 1))
 (use-package frame :config (blink-cursor-mode -1))
 
+(use-package display-line-numbers
+  :custom (display-line-numbers-type 'relative)
+  :config (global-display-line-numbers-mode))
+
 (use-package whitespace
   :custom (whitespace-style '(face tabs spaces trailing space-before-tab indentation empty space-after-tab space-mark tab-mark missing-newline-at-eof))
   :hook (prog-mode-hook . whitespace-mode))
@@ -206,33 +210,6 @@
                   ("C" (clang-format))
                   ("Rust" (rustfmt)))))
 
-(use-package avy
-  :ensure
-  :custom
-  (avy-keys (number-sequence ?a ?z))
-  (avy-dispatch-alist '((?. . swb/avy-action-embark)))
-  :config
-  (defun swb/avy-action-mark-symbol (pt)
-    (goto-char pt)
-    (meow-mark-symbol 1))
-
-  (defun swb/avy-action-embark (pt)
-    (unwind-protect
-        (save-excursion
-          (goto-char pt)
-          (embark-act))
-      (select-window
-       (cdr (ring-ref avy-ring 0))))
-    t)
-
-  (defun swb/avy-mark-symbol ()
-    (interactive)
-    (avy-jump "\\_<\\(\\sw\\|\\s_\\)" :action 'swb/avy-action-mark-symbol))
-
-  (defun swb/avy-mark-line ()
-    (interactive)
-    (when (call-interactively 'avy-goto-line) (meow-line 1))))
-
 (use-package embark
   :ensure
   :custom (embark-confirm-act-all nil)
@@ -285,16 +262,16 @@
    '("/" . meow-keypad-describe-key)
    '("?" . meow-cheatsheet))
   (meow-normal-define-key
-   '("0" . meow-expand-0)
-   '("1" . meow-expand-1)
-   '("2" . meow-expand-2)
-   '("3" . meow-expand-3)
-   '("4" . meow-expand-4)
-   '("5" . meow-expand-5)
-   '("6" . meow-expand-6)
-   '("7" . meow-expand-7)
-   '("8" . meow-expand-8)
-   '("9" . meow-expand-9)
+   '("0" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-0) (meow-digit-argument))))
+   '("1" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-1) (meow-digit-argument))))
+   '("2" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-2) (meow-digit-argument))))
+   '("3" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-3) (meow-digit-argument))))
+   '("4" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-4) (meow-digit-argument))))
+   '("5" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-5) (meow-digit-argument))))
+   '("6" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-6) (meow-digit-argument))))
+   '("7" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-7) (meow-digit-argument))))
+   '("8" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-8) (meow-digit-argument))))
+   '("9" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-9) (meow-digit-argument))))
    '("-" . negative-argument)
    '(";" . meow-reverse)
    '("," . meow-inner-of-thing)
@@ -312,9 +289,6 @@
    '("E" . meow-next-word)
    '("f" . meow-find)
    '("g v" . meow-visit)
-   '("g l" . swb/avy-mark-line)
-   '("g w" . swb/avy-mark-symbol)
-   '("g t" . avy-goto-char-timer)
    '("g n" . swb/go-to-next-hydra/body)
    '("g p" . swb/go-to-prev-hydra/body)
    '("g d" . xref-find-definitions)
@@ -364,6 +338,11 @@
                                                 (meow-motion-mode -1)
                                                 (meow-normal-mode 1))))
   (meow-global-mode 1)
+
+  (defun swb/meow-currently-expanding ()
+    (and meow--expand-nav-function
+         (region-active-p)
+         (meow--selection-type)))
 
   (defvar swb/anchor nil)
 

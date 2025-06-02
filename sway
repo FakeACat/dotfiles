@@ -88,10 +88,10 @@ client.unfocused $background $background $text
 client.urgent $alert $alert $text
 
 bar {
+    position top
     mode hide
-    status_command while ~/.dotfiles/status.sh; do sleep 1; done
+    status_command while ~/.dotfiles/status.sh; do sleep 0.5; done
     gaps 8
-    font monospace 12
     colors {
         statusline $text
         background $background
@@ -104,6 +104,11 @@ bar {
 include /etc/sway/config.d/*
 
 output DP-2 mode 1920x1080@144hz
+
 input type:keyboard xkb_layout gb
+input type:keyboard repeat_delay 200
+input type:keyboard repeat_rate 40
+
 input type:pointer accel_profile "flat"
+
 exec keyd-application-mapper -d
