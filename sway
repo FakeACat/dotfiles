@@ -1,6 +1,3 @@
-default_border pixel 1
-smart_borders on
-
 floating_modifier Mod4 normal
 
 bindsym Mod4+Return exec foot
@@ -76,11 +73,17 @@ bindsym --locked XF86AudioMicMute exec pactl set-source-mute \@DEFAULT_SOURCE@ t
 bindsym --locked XF86MonBrightnessDown exec brightnessctl set 5%-
 bindsym --locked XF86MonBrightnessUp exec brightnessctl set 5%+
 
-bindsym Print exec grim
+bindsym Print exec grim -g "$(slurp)"
+bindsym Shift+Print exec grim
 
-set $text #FFBFFF
-set $background #161620E0
-set $selected #505090
+default_border pixel 1
+smart_borders on
+
+output * bg ~/.dotfiles/wallpaper.png fill
+
+set $text #FFFFFF
+set $background #000000D0
+set $selected #6060A0
 set $alert #A00000
 
 client.focused $selected $selected $text
@@ -88,9 +91,8 @@ client.unfocused $background $background $text
 client.urgent $alert $alert $text
 
 bar {
-    position top
     mode hide
-    status_command while ~/.dotfiles/status.sh; do sleep 0.5; done
+    status_command while ~/.dotfiles/status.sh; do sleep 1; done
     gaps 8
     colors {
         statusline $text
