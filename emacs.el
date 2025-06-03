@@ -46,7 +46,7 @@
   :config
   (tool-bar-mode 0)
   (menu-bar-mode 0)
-  (set-frame-parameter (selected-frame) 'alpha-background 90))
+  (set-frame-parameter (selected-frame) 'alpha-background 80))
 
 (use-package novice :custom (disabled-command-function nil))
 (use-package ibuffer :bind ("C-x C-b" . ibuffer))

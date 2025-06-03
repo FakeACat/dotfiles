@@ -79,7 +79,7 @@ bindsym Shift+Print exec grim
 default_border pixel 1
 smart_borders on
 
-output * bg ~/.dotfiles/wallpaper.png fill
+output * bg ~/.dotfiles/wallpaper.jpg fill
 
 set $text #FFFFFF
 set $background #000000D0

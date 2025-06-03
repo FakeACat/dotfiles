@@ -10,3 +10,6 @@ ln -s $SCRIPT_DIR/emacs.el ~/.emacs
 mkdir ~/.config/keyd
 ln -s $SCRIPT_DIR/keyd/app.conf ~/.config/keyd/app.conf
 sudo ln -s $SCRIPT_DIR/keyd/default.conf /etc/keyd/default.conf
+
+mkdir ~/.config/foot
+ln -s $SCRIPT_DIR/foot.ini ~/.config/foot/foot.ini
