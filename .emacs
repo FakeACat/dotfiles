@@ -4,7 +4,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
- '(package-selected-packages nil)
+ '(package-selected-packages
+   '(ace-window cape cmake-mode corfu embark-consult format-all glsl-mode
+                hydra magit markdown-mode meow odin-mode orderless
+                rust-mode yasnippet zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

@@ -1,15 +1,49 @@
 #!/bin/bash
 
-SCRIPT_DIR="$( cd "$( dirname "$BASH_SOURCE[0]" )" && pwd )"
+set -e
 
-mkdir ~/.config/sway
-ln -s $SCRIPT_DIR/sway ~/.config/sway/config
+install() {
+    origin=~/.dotfiles/$1
+    dest=$2
+    if [[ ! $3 = "sudo" && ! $3 = "" ]]
+    then
+        echo "[ERROR] install expects sudo or nothing as third argument, got \"$3\""
+        exit 1
+    fi
+    maybe_sudo=$3
 
-ln -s $SCRIPT_DIR/emacs.el ~/.emacs
+    mkdir -p $(dirname $dest)
 
-mkdir ~/.config/keyd
-ln -s $SCRIPT_DIR/keyd/app.conf ~/.config/keyd/app.conf
-sudo ln -s $SCRIPT_DIR/keyd/default.conf /etc/keyd/default.conf
+    if [ -L $dest ]
+    then
+        current_symlink_target=$(readlink -f $dest)
+        if [ $current_symlink_target = "$origin" ]
+        then
+            echo "[OK] $dest is already installed"
+            return
+        fi
+        echo "[WARN] $dest is already a symlink but points to $current_symlink_target instead of $origin"
+        echo "removing $dest..."
+        $maybe_sudo rm $dest
+    fi
 
-mkdir ~/.config/foot
-ln -s $SCRIPT_DIR/foot.ini ~/.config/foot/foot.ini
+    if [ -e $dest ]
+    then
+        echo "[ERROR] $dest already exists and is not a symlink"
+        exit 1
+    fi
+
+    $maybe_sudo ln -s $origin $dest
+    echo "[SUCCESS] installed $dest"
+}
+
+install .bashrc ~/.bashrc
+
+install sway/config ~/.config/sway/config
+
+install .emacs ~/.emacs
+
+install keyd/app.conf ~/.config/keyd/app.conf
+install keyd/default.conf /etc/keyd/default.conf sudo
+
+install foot.ini ~/.config/foot/foot.ini
