@@ -41,9 +41,11 @@ install .bashrc ~/.bashrc
 
 install sway/config ~/.config/sway/config
 
-install .emacs ~/.emacs
-
 install keyd/app.conf ~/.config/keyd/app.conf
 install keyd/default.conf /etc/keyd/default.conf sudo
 
 install foot.ini ~/.config/foot/foot.ini
+
+install kakrc ~/.config/kak/kakrc
+
+install .tmux.conf ~/.tmux.conf
