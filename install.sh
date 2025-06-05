@@ -38,6 +38,7 @@ install() {
 }
 
 install .bashrc ~/.bashrc
+install .bash_profile ~/.bash_profile
 
 install sway/config ~/.config/sway/config
 
