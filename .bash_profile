@@ -6,7 +6,7 @@
 
 export _JAVA_AWT_WM_NONREPARENTING=1 # fixes intellij
 export __GL_THREADED_OPTIMIZATIONS=0 # fixes minecraft
-export EDITOR=kak
+export EDITOR=emacs # the only good text editor
 
 export PATH=$PATH\
 :~/.dotfiles/scripts

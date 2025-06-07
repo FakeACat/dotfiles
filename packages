@@ -6,5 +6,4 @@ grim
 slurp
 keyd
 fzf
-kakoune
-kakoune-lsp
+emacs

@@ -47,6 +47,6 @@ install keyd/default.conf /etc/keyd/default.conf sudo
 
 install foot.ini ~/.config/foot/foot.ini
 
-install kakrc ~/.config/kak/kakrc
+install .emacs ~/.emacs
 
 install .tmux.conf ~/.tmux.conf
