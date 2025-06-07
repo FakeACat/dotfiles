@@ -73,6 +73,8 @@ bindsym --locked XF86AudioMicMute exec pactl set-source-mute \@DEFAULT_SOURCE@ t
 bindsym Print exec grim -g "$(slurp)"
 bindsym Shift+Print exec grim
 
+bindsym Mod4+z exec ~/.dotfiles/sway/toggle_swaybar.sh
+
 default_border pixel 1
 smart_borders on
 
@@ -88,7 +90,7 @@ client.unfocused $background $background $text
 client.urgent $alert $alert $text
 
 bar {
-    mode hide
+    mode overlay
     status_command while ~/.dotfiles/status.sh; do sleep 1; done
     gaps 8
     colors {
