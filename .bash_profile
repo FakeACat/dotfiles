@@ -9,6 +9,6 @@ export __GL_THREADED_OPTIMIZATIONS=0 # fixes minecraft
 export EDITOR=kak
 
 export PATH=$PATH\
-:~/.dotfiles/tools
+:~/.dotfiles/scripts
 
 [ "$(tty)" = "/dev/tty1" ] && exec sway --unsupported-gpu

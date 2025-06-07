@@ -6,9 +6,6 @@ addhl global/ show-whitespaces
 set global tabstop 4
 
 eval %sh{kak-lsp}
-hook global WinSetOption filetype=(java) %{
-    lsp-enable-window
-}
 
 map global user l ':enter-user-mode lsp<ret>' -docstring 'LSP mode'
 
