@@ -48,5 +48,6 @@ install keyd/default.conf /etc/keyd/default.conf sudo
 install foot.ini ~/.config/foot/foot.ini
 
 install .emacs ~/.emacs
+install .mc-lists.el ~/.emacs.d/.mc-lists.el
 
 install .tmux.conf ~/.tmux.conf
