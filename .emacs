@@ -16,6 +16,7 @@
  ;; If there is more than one, they won't work right.
  '(eglot-inlay-hint-face ((t (:inherit shadow))))
  '(flymake-end-of-line-diagnostics-face ((t (:inherit nil :box nil :height 1.0))))
+ '(mc/cursor-bar-face ((t (:background "#ffffff" :foreground "#000000" :height 1))))
  '(mode-line ((t (:box nil))))
  '(mode-line-inactive ((t (:box nil)))))
 
@@ -227,7 +228,7 @@
    '("D" . meow-backward-delete)
    '("e" . meow-next-symbol)
    '("E" . meow-next-word)
-   '("f" . meow-find)
+   '("f" . swb/meow-find-mc)
    '("g v" . meow-visit)
    '("g n" . swb/go-to-next-hydra/body)
    '("g p" . swb/go-to-prev-hydra/body)
@@ -249,7 +250,7 @@
    '("q" . meow-quit)
    '("r" . meow-replace)
    '("s" . (lambda () (interactive) (when mark-active (meow-kill))))
-   '("t" . meow-till)
+   '("t" . swb/meow-till-mc)
    '("u" . meow-undo)
    '("U" . meow-undo-in-selection)
    '("v" . (lambda () (interactive) (setq swb/anchor (if (or swb/anchor (not mark-active)) (point) (mark)))))
@@ -264,11 +265,15 @@
                     (setq swb/anchor nil)
                     (meow-cancel-selection))))
 
-  (setq meow-cursor-type-insert 'box)
+  (setq meow-cursor-type-default       '(bar . 1))
+  (setq meow-cursor-type-normal        '(bar . 1))
+  (setq meow-cursor-type-motion        '(bar . 1))
+  (setq meow-cursor-type-beacon        '(bar . 1))
+  (setq meow-cursor-type-region-cursor '(bar . 1))
+  (setq meow-cursor-type-insert        '(bar . 1))
+  (setq meow-cursor-type-keypad        '(bar . 1))
 
-  (add-hook 'meow-motion-mode-hook (lambda () (when meow-motion-mode
-                                                (meow-motion-mode -1)
-                                                (meow-normal-mode 1))))
+  (add-hook 'meow-motion-mode-hook (lambda () (when meow-motion-mode (meow-motion-mode -1) (meow-normal-mode 1))))
   (meow-global-mode 1)
 
   (defun swb/meow-currently-expanding () (and meow--expand-nav-function (region-active-p) (meow--selection-type)))
@@ -335,4 +340,11 @@
   :config
   (defun swb/fix-mc-anchors () (when swb/anchor (mc/execute-command-for-all-cursors (lambda () (interactive) (setq swb/anchor (mark))))))
   (advice-add 'mc/create-fake-cursor-at-point :after 'swb/fix-mc-anchors)
-  (push 'swb/anchor mc/cursor-specific-vars))
+  (push 'swb/anchor mc/cursor-specific-vars)
+
+  (defun swb/meow-find-mc (n ch &optional expand)
+    (interactive "p\ncFind:")
+    (mc/execute-command-for-all-cursors (lambda () (interactive) (meow-find n ch expand))))
+  (defun swb/meow-till-mc (n ch &optional expand)
+    (interactive "p\ncTill:")
+    (mc/execute-command-for-all-cursors (lambda () (interactive) (meow-till n ch expand)))))
