@@ -6,7 +6,8 @@
  '(epg-gpg-program "gpg")
  '(package-selected-packages
    '(cape cmake-mode corfu format-all glsl-mode hydra magit markdown-mode
-          meow odin-mode orderless rust-mode yasnippet zig-mode))
+          meow multiple-cursors odin-mode orderless rust-mode
+          yasnippet zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -34,8 +35,8 @@
   (mode-line-format '("%e"
                       " "
                       "%b"
-                      (:eval (propertize (when buffer-read-only " read-only") 'face 'shadow))
-                      (:eval (propertize (when (buffer-modified-p) " unsaved") 'face 'warning))
+                      (:eval (propertize (if buffer-read-only " read-only" "") 'face 'shadow))
+                      (:eval (propertize (if (buffer-modified-p) " unsaved" "") 'face 'warning))
                       " "
                       (:eval (propertize default-directory 'face 'shadow))
                       mode-line-format-right-align
@@ -258,13 +259,7 @@
                     (setq swb/anchor nil)
                     (meow-cancel-selection))))
 
-  (setq meow-cursor-type-default       '(bar . 2))
-  (setq meow-cursor-type-normal        '(bar . 2))
-  (setq meow-cursor-type-motion        '(bar . 2))
-  (setq meow-cursor-type-beacon        '(bar . 2))
-  (setq meow-cursor-type-region-cursor '(bar . 2))
-  (setq meow-cursor-type-insert        '(bar . 2))
-  (setq meow-cursor-type-keypad        '(bar . 2))
+  (setq meow-cursor-type-insert 'box)
 
   (add-hook 'meow-motion-mode-hook (lambda () (when meow-motion-mode
                                                 (meow-motion-mode -1)
@@ -297,19 +292,12 @@
             (lambda ()
               (cond
                (meow-insert-mode
-                (setq swb/anchor nil)
-                (set-cursor-color "green1"))
+                (setq swb/anchor nil))
                (swb/anchor
                 (set-mark swb/anchor)
-                (activate-mark)
-                (set-cursor-color "red"))
-               (t
-                (set-cursor-color "white")))))
+                (activate-mark)))))
 
-  (advice-add 'exchange-point-and-mark
-              :after
-              (lambda (&rest r)
-                (when swb/anchor (setq swb/anchor (mark)))))
+  (advice-add 'exchange-point-and-mark :after (lambda (&rest r) (when swb/anchor (setq swb/anchor (mark)))))
 
   (defhydra swb/go-to-next-hydra nil
     "Go to next"
@@ -326,3 +314,18 @@
     ("p" backward-paragraph "Paragraph")
     ("s" scroll-down "Screen")
     ("-" swb/go-to-next-hydra/body "Reverse" :exit t)))
+
+(use-package multiple-cursors
+  :ensure
+  :bind
+  (:map meow-normal-state-keymap
+        (">" . mc/mark-next-like-this)
+        ("<" . mc/mark-previous-like-this)
+        ("C->" . mc/skip-to-next-like-this)
+        ("C-<" . mc/skip-to-previous-like-this)
+        ("M" . mc/mark-all-in-region)
+        ("X" . mc/edit-lines))
+  :config
+  (defun swb/fix-mc-anchors () (mc/execute-command-for-all-cursors (lambda () (interactive) (setq swb/anchor (mark)))))
+  (advice-add 'mc/create-fake-cursor-at-point :after 'swb/fix-mc-anchors)
+  (push 'swb/anchor mc/cursor-specific-vars))
