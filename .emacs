@@ -34,15 +34,20 @@
   (ring-bell-function 'ignore)
   (mode-line-format '("%e"
                       " "
+                      (:eval (swb/editor-mode))
+                      " "
                       "%b"
                       (:eval (propertize (if buffer-read-only " read-only" "") 'face 'shadow))
                       (:eval (propertize (if (buffer-modified-p) " unsaved" "") 'face 'warning))
                       " "
                       (:eval (propertize default-directory 'face 'shadow))
                       mode-line-format-right-align
-                      (:eval (when flymake-mode flymake-mode-line-format))
+                      (:eval (if flymake-mode flymake-mode-line-format ""))
                       "  "))
   :config
+  (defun swb/editor-mode () (cond (swb/anchor           (propertize "ANCHOR" 'face 'error))
+                                  ((meow-normal-mode-p) (propertize "NORMAL" 'face 'bold))
+                                  (t                    (propertize "INSERT" 'face 'warning))))
   (tool-bar-mode 0)
   (menu-bar-mode 0)
   (set-frame-parameter (selected-frame) 'alpha-background 80))
@@ -279,13 +284,15 @@
                 (goto-char swb/anchor)
                 (move-end-of-line nil)
                 (setq swb/anchor (point)))
-              (move-beginning-of-line nil))
+              (move-beginning-of-line nil)
+              (meow-line -1))
           (progn
             (save-excursion
               (goto-char swb/anchor)
               (move-beginning-of-line nil)
               (setq swb/anchor (point)))
-            (move-end-of-line nil)))
+            (move-end-of-line nil)
+            (meow-line 1)))
       (meow-line count)))
 
   (add-hook 'post-command-hook
@@ -326,6 +333,6 @@
         ("M" . mc/mark-all-in-region)
         ("X" . mc/edit-lines))
   :config
-  (defun swb/fix-mc-anchors () (mc/execute-command-for-all-cursors (lambda () (interactive) (setq swb/anchor (mark)))))
+  (defun swb/fix-mc-anchors () (when swb/anchor (mc/execute-command-for-all-cursors (lambda () (interactive) (setq swb/anchor (mark))))))
   (advice-add 'mc/create-fake-cursor-at-point :after 'swb/fix-mc-anchors)
   (push 'swb/anchor mc/cursor-specific-vars))
