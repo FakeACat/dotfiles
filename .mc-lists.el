@@ -4,6 +4,7 @@
 (setq mc/cmds-to-run-for-all
       '(
         backward-sexp
+        c-electric-paren
         forward-sexp
         indent-for-tab-command
         mark-sexp
@@ -12,11 +13,13 @@
         meow-back-word
         meow-block
         meow-bounds-of-thing
+        meow-change
         meow-delete
         meow-find
         meow-inner-of-thing
         meow-insert
         meow-insert-exit
+        meow-kill
         meow-left
         meow-mark-symbol
         meow-mark-word
@@ -27,6 +30,7 @@
         meow-reverse
         meow-right
         meow-till
+        upcase-dwim
         ))
 
 (setq mc/cmds-to-run-once
