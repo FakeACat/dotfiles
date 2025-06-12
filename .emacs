@@ -5,9 +5,9 @@
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
  '(package-selected-packages
-   '(cape cmake-mode corfu format-all glsl-mode hydra magit markdown-mode
-          meow multiple-cursors odin-mode orderless rust-mode
-          yasnippet zig-mode))
+   '(avy cape cmake-mode corfu format-all glsl-mode hydra magit
+         markdown-mode meow multiple-cursors odin-mode orderless
+         rust-mode yasnippet zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -16,7 +16,7 @@
  ;; If there is more than one, they won't work right.
  '(eglot-inlay-hint-face ((t (:inherit shadow))))
  '(flymake-end-of-line-diagnostics-face ((t (:inherit nil :box nil :height 1.0))))
- '(mc/cursor-bar-face ((t (:background "#ffffff" :foreground "#000000" :height 1))))
+ '(mc/cursor-face ((t (:inherit cursor :inverse-video nil))))
  '(mode-line ((t (:box nil))))
  '(mode-line-inactive ((t (:box nil)))))
 
@@ -69,7 +69,6 @@
 (use-package custom :config (load-theme 'modus-vivendi))
 (use-package dired :custom (dired-auto-revert-buffer #'dired-buffer-stale-p) (dired-dwim-target t))
 (use-package which-key :config (which-key-mode))
-(use-package hl-line :config (global-hl-line-mode 1))
 (use-package frame :config (blink-cursor-mode -1))
 (use-package window :bind ("M-o" . other-window))
 
@@ -127,30 +126,18 @@
   :config (add-to-list 'eglot-server-programs '(odin-mode . ("ols" "--stdio" :initializationOptions (:enable_fake_methods t :enable_references t :enable_inlay_hints t)))))
 
 (use-package isearch
-  :bind
-  (:map isearch-mode-map ("C-<return>" . swb/isearch-done-opposite))
-  :init
-  ;; https://emacs.stackexchange.com/questions/52549
-  (defun swb/isearch-done-opposite (&optional nopush edit)
-    "End current search in the opposite side of the match."
-    (interactive)
-    (funcall #'isearch-done nopush edit)
-    (when isearch-other-end (goto-char isearch-other-end))))
+  :bind (:map isearch-mode-map ("<return>" . swb/isearch-done-select))
+  :init (defun swb/isearch-done-select () (interactive) (isearch-exit) (set-mark isearch-other-end)))
 
 (use-package hydra :ensure)
 (use-package cape :ensure :init (add-hook 'completion-at-point-functions (cape-capf-super #'cape-dabbrev #'cape-keyword)))
 (use-package corfu :ensure :custom (corfu-auto t) :init (global-corfu-mode 1))
-
-(use-package magit
-  :ensure
-  :custom (magit-save-repository-buffers nil)
-  :config (add-hook 'git-commit-mode-hook 'meow-insert))
+(use-package magit :ensure :custom (magit-save-repository-buffers nil) :config (add-hook 'git-commit-mode-hook 'meow-insert))
 
 (use-package orderless
   :ensure
   :custom
   (completion-styles '(orderless))
-  (icomplete-compute-delay 0)
   :bind (:map icomplete-minibuffer-map ("SPC" . self-insert-command))
   :init
   (add-hook 'icomplete-minibuffer-setup-hook (lambda () (setq-local completion-styles '(orderless))))
@@ -161,7 +148,8 @@
   :bind*
   (:map yas-keymap
         ("C-," . yas-prev-field)
-        ("C-." . yas-next-field))
+        ("C-." . yas-next-field)
+        ("TAB" . nil))
   :config
   (yas-global-mode 1))
 
@@ -235,6 +223,7 @@
    '("g d" . xref-find-definitions)
    '("g r" . xref-find-references)
    '("g l" . goto-line)
+   '("g w" . swb/avy-mark-symbol)
    '("G" . meow-grab)
    '("h" . meow-left)
    '("i" . meow-insert)
@@ -254,8 +243,7 @@
    '("u" . meow-undo)
    '("U" . meow-undo-in-selection)
    '("v" . (lambda () (interactive) (setq swb/anchor (if (or swb/anchor (not mark-active)) (point) (mark)))))
-   '("w" . meow-mark-symbol)
-   '("W" . meow-mark-word)
+   '("w" . swb/meow-mark-symbol)
    '("x" . swb/meow-line)
    '("y" . meow-save)
    '("z" . meow-pop-selection)
@@ -263,15 +251,10 @@
    '("<escape>" . (lambda ()
                     (interactive)
                     (setq swb/anchor nil)
-                    (meow-cancel-selection))))
+                    (meow-cancel-selection)))
+   '("/" . swb/multiple-cursors-hydra/body))
 
-  (setq meow-cursor-type-default       '(bar . 1))
-  (setq meow-cursor-type-normal        '(bar . 1))
-  (setq meow-cursor-type-motion        '(bar . 1))
-  (setq meow-cursor-type-beacon        '(bar . 1))
-  (setq meow-cursor-type-region-cursor '(bar . 1))
-  (setq meow-cursor-type-insert        '(bar . 1))
-  (setq meow-cursor-type-keypad        '(bar . 1))
+  (setq meow-cursor-type-insert 'box)
 
   (add-hook 'meow-motion-mode-hook (lambda () (when meow-motion-mode (meow-motion-mode -1) (meow-normal-mode 1))))
   (meow-global-mode 1)
@@ -279,6 +262,8 @@
   (defun swb/meow-currently-expanding () (and meow--expand-nav-function (region-active-p) (meow--selection-type)))
 
   (defvar swb/anchor nil)
+
+  (defun swb/meow-mark-symbol () (interactive) (meow-inner-of-thing ?e) (meow-reverse))
 
   (defun swb/meow-line (count)
     (interactive "p")
@@ -330,14 +315,20 @@
 (use-package multiple-cursors
   :ensure
   :bind
-  (:map meow-normal-state-keymap
-        (">" . mc/mark-next-like-this)
-        ("<" . mc/mark-previous-like-this)
-        ("C->" . mc/skip-to-next-like-this)
-        ("C-<" . mc/skip-to-previous-like-this)
-        ("M" . mc/mark-all-in-region)
-        ("X" . mc/edit-lines))
+  (:map mc/keymap ("<return>" . nil))
   :config
+  (defhydra swb/multiple-cursors-hydra nil
+    "Create/remove multiple cursors"
+    ("n"   mc/mark-next-like-this "Mark next like this")
+    ("p"   mc/mark-previous-like-this "Mark previous like this")
+    ("N"   mc/skip-to-next-like-this "Skip to next like this")
+    ("P"   mc/skip-to-previous-like-this "Skip to previous like this")
+    ("M-n" mc/unmark-next-like-this "Mark next like this")
+    ("M-p" mc/unmark-previous-like-this "Mark previous like this")
+    ("s"   mc/mark-all-in-region "Mark all in region" :exit t)
+    ("x"   mc/edit-lines "Edit lines" :exit t)
+    ("<escape>" nil "Exit"))
+
   (defun swb/fix-all-anchors (&rest r) (when swb/anchor (mc/execute-command-for-all-cursors 'swb/fix-anchor)))
   (defun swb/fix-anchor () (interactive) (setq swb/anchor (mark)))
   (advice-add 'mc/maybe-multiple-cursors-mode :after 'swb/fix-all-anchors)
@@ -349,3 +340,12 @@
   (defun swb/meow-till-mc (n ch &optional expand)
     (interactive "p\ncTill:")
     (mc/execute-command-for-all-cursors (lambda () (interactive) (meow-till n ch expand)))))
+
+(use-package avy
+  :ensure
+  :custom
+  (avy-keys (number-sequence ?a ?z))
+  (avy-dispatch-alist '((?. . swb/avy-action-embark)))
+  :config
+  (defun swb/avy-action-mark-symbol (pt) (goto-char pt) (swb/meow-mark-symbol))
+  (defun swb/avy-mark-symbol () (interactive) (avy-jump "\\_<\\(\\sw\\|\\s_\\)" :action 'swb/avy-action-mark-symbol)))

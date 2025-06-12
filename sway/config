@@ -81,7 +81,7 @@ smart_borders on
 output * bg ~/.dotfiles/wallpaper.jpg fill
 
 set $text #FFFFFF
-set $background #000000D0
+set $background #000000
 set $selected #6060A0
 set $alert #A00000
 

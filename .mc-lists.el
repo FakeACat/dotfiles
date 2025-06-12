@@ -4,7 +4,15 @@
 (setq mc/cmds-to-run-for-all
       '(
         backward-sexp
+        c-electric-brace
         c-electric-paren
+        c-electric-semi&comma
+        c-electric-star
+        c-indent-line-or-region
+        capitalize-dwim
+        downcase-dwim
+        electric-newline-and-maybe-indent
+        electric-pair-delete-pair
         forward-sexp
         indent-for-tab-command
         mark-sexp
@@ -15,10 +23,12 @@
         meow-bounds-of-thing
         meow-change
         meow-delete
+        meow-end-of-thing
         meow-find
         meow-inner-of-thing
         meow-insert
         meow-insert-exit
+        meow-join
         meow-kill
         meow-left
         meow-mark-symbol
@@ -29,7 +39,11 @@
         meow-prev
         meow-reverse
         meow-right
+        meow-save
         meow-till
+        meow-yank
+        replace-regexp
+        swb/meow-line
         upcase-dwim
         ))
 
@@ -38,6 +52,14 @@
         meow-undo
         swb/meow-find-mc
         swb/meow-till-mc
+        swb/multiple-cursors-hydra/mc/edit-lines
+        swb/multiple-cursors-hydra/mc/mark-next-like-this
+        swb/multiple-cursors-hydra/mc/mark-previous-like-this
+        swb/multiple-cursors-hydra/mc/skip-to-next-like-this
+        swb/multiple-cursors-hydra/mc/skip-to-previous-like-this
+        swb/multiple-cursors-hydra/mc/unmark-next-like-this
+        swb/multiple-cursors-hydra/mc/unmark-previous-like-this
+        swb/multiple-cursors-hydra/nil
         switch-to-buffer
         text-scale-adjust
         ))
