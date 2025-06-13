@@ -5,8 +5,10 @@
       '(
         backward-sexp
         c-electric-brace
+        c-electric-delete-forward
         c-electric-paren
         c-electric-semi&comma
+        c-electric-slash
         c-electric-star
         c-indent-line-or-region
         capitalize-dwim
@@ -36,14 +38,18 @@
         meow-next
         meow-next-symbol
         meow-next-word
+        meow-open-above
         meow-prev
+        meow-replace
         meow-reverse
         meow-right
         meow-save
         meow-till
+        meow-to-block
         meow-yank
         replace-regexp
         swb/meow-line
+        swb/meow-mark-symbol
         upcase-dwim
         ))
 
@@ -53,6 +59,7 @@
         swb/meow-find-mc
         swb/meow-till-mc
         swb/multiple-cursors-hydra/mc/edit-lines
+        swb/multiple-cursors-hydra/mc/edit-lines-and-exit
         swb/multiple-cursors-hydra/mc/mark-next-like-this
         swb/multiple-cursors-hydra/mc/mark-previous-like-this
         swb/multiple-cursors-hydra/mc/skip-to-next-like-this

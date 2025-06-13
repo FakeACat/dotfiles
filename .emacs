@@ -263,7 +263,7 @@
 
   (defvar swb/anchor nil)
 
-  (defun swb/meow-mark-symbol () (interactive) (meow-inner-of-thing ?e) (meow-reverse))
+  (defun swb/meow-mark-symbol () (interactive) (meow-inner-of-thing ?e))
 
   (defun swb/meow-line (count)
     (interactive "p")
@@ -285,14 +285,16 @@
             (meow-line 1)))
       (meow-line count)))
 
-  (add-hook 'post-command-hook
-            (lambda ()
-              (cond
-               (meow-insert-mode
-                (setq swb/anchor nil))
-               (swb/anchor
-                (set-mark swb/anchor)
-                (activate-mark)))))
+  (defun swb/update-anchor-mark ()
+    (cond
+     (meow-insert-mode
+      (setq swb/anchor nil))
+     (swb/anchor
+      (set-mark swb/anchor)
+      (activate-mark))))
+
+  (add-hook 'post-command-hook 'swb/update-anchor-mark)
+  (add-hook 'deactivate-mark-hook 'swb/update-anchor-mark)
 
   (advice-add 'exchange-point-and-mark :after (lambda (&rest r) (when swb/anchor (setq swb/anchor (mark)))))
 
@@ -327,7 +329,7 @@
     ("M-p" mc/unmark-previous-like-this "Mark previous like this")
     ("s"   mc/mark-all-in-region "Mark all in region" :exit t)
     ("x"   mc/edit-lines "Edit lines" :exit t)
-    ("<escape>" nil "Exit"))
+    ("<return>" nil "Exit"))
 
   (defun swb/fix-all-anchors (&rest r) (when swb/anchor (mc/execute-command-for-all-cursors 'swb/fix-anchor)))
   (defun swb/fix-anchor () (interactive) (setq swb/anchor (mark)))

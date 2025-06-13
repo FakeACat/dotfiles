@@ -82,12 +82,13 @@ output * bg ~/.dotfiles/wallpaper.jpg fill
 
 set $text #FFFFFF
 set $background #000000
+set $outline #505050
 set $selected #6060A0
 set $alert #A00000
 
-client.focused $selected $selected $text
-client.unfocused $background $background $text
-client.urgent $alert $alert $text
+client.focused $outline $selected $text
+client.unfocused $outline $background $text
+client.urgent $outline $alert $text
 
 bar {
     mode overlay
