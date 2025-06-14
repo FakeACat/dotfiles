@@ -21,6 +21,7 @@
         meow-append
         meow-back-symbol
         meow-back-word
+        meow-beginning-of-thing
         meow-block
         meow-bounds-of-thing
         meow-change
@@ -48,8 +49,11 @@
         meow-to-block
         meow-yank
         replace-regexp
+        swb/expand-or-arg-1
         swb/meow-line
         swb/meow-mark-symbol
+        swb/place-anchor
+        swb/remove-anchor-and-selection
         upcase-dwim
         ))
 
@@ -58,6 +62,9 @@
         meow-undo
         swb/meow-find-mc
         swb/meow-till-mc
+        swb/multiple-cursors-hydra/lambda-<escape>-and-exit
+        swb/multiple-cursors-hydra/mc/disable-multiple-cursors-mode-and-exit
+        swb/multiple-cursors-hydra/mc/edit-beginnings-of-lines-and-exit
         swb/multiple-cursors-hydra/mc/edit-lines
         swb/multiple-cursors-hydra/mc/edit-lines-and-exit
         swb/multiple-cursors-hydra/mc/mark-next-like-this

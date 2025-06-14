@@ -16,7 +16,6 @@
  ;; If there is more than one, they won't work right.
  '(eglot-inlay-hint-face ((t (:inherit shadow))))
  '(flymake-end-of-line-diagnostics-face ((t (:inherit nil :box nil :height 1.0))))
- '(mc/cursor-face ((t (:inherit cursor :inverse-video nil))))
  '(mode-line ((t (:box nil))))
  '(mode-line-inactive ((t (:box nil)))))
 
@@ -51,7 +50,8 @@
                                   (t                    (propertize "INSERT" 'face 'warning))))
   (tool-bar-mode 0)
   (menu-bar-mode 0)
-  (set-frame-parameter (selected-frame) 'alpha-background 80))
+  (set-frame-parameter (selected-frame) 'alpha-background 80)
+  (add-to-list 'default-frame-alist '(alpha-background . 80)))
 
 (use-package novice :custom (disabled-command-function nil))
 (use-package ibuffer :bind ("C-x C-b" . ibuffer))
@@ -90,6 +90,7 @@
   (read-extended-command-predicate #'command-completion-default-include-p)
   (indent-tabs-mode nil)
   (save-interprogram-paste-before-kill 1)
+  (line-move-visual nil)
   :bind
   ("M-u" . upcase-dwim)
   ("M-l" . downcase-dwim)
@@ -191,16 +192,16 @@
    '("/" . meow-keypad-describe-key)
    '("?" . meow-cheatsheet))
   (meow-normal-define-key
-   '("0" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-0) (meow-digit-argument))))
-   '("1" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-1) (meow-digit-argument))))
-   '("2" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-2) (meow-digit-argument))))
-   '("3" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-3) (meow-digit-argument))))
-   '("4" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-4) (meow-digit-argument))))
-   '("5" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-5) (meow-digit-argument))))
-   '("6" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-6) (meow-digit-argument))))
-   '("7" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-7) (meow-digit-argument))))
-   '("8" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-8) (meow-digit-argument))))
-   '("9" . (lambda () (interactive) (if (swb/meow-currently-expanding) (meow-expand-9) (meow-digit-argument))))
+   '("0" . swb/expand-or-arg-0)
+   '("1" . swb/expand-or-arg-1)
+   '("2" . swb/expand-or-arg-2)
+   '("3" . swb/expand-or-arg-3)
+   '("4" . swb/expand-or-arg-4)
+   '("5" . swb/expand-or-arg-5)
+   '("6" . swb/expand-or-arg-6)
+   '("7" . swb/expand-or-arg-7)
+   '("8" . swb/expand-or-arg-8)
+   '("9" . swb/expand-or-arg-9)
    '("-" . negative-argument)
    '(";" . meow-reverse)
    '("," . meow-inner-of-thing)
@@ -212,6 +213,7 @@
    '("b" . meow-back-symbol)
    '("B" . meow-back-word)
    '("c" . meow-change)
+   '("C" . meow-insert-mode)
    '("d" . meow-delete)
    '("D" . meow-backward-delete)
    '("e" . meow-next-symbol)
@@ -242,28 +244,54 @@
    '("t" . swb/meow-till-mc)
    '("u" . meow-undo)
    '("U" . meow-undo-in-selection)
-   '("v" . (lambda () (interactive) (setq swb/anchor (if (or swb/anchor (not mark-active)) (point) (mark)))))
+   '("v" . swb/place-anchor)
    '("w" . swb/meow-mark-symbol)
    '("x" . swb/meow-line)
    '("y" . meow-save)
    '("z" . meow-pop-selection)
    '("'" . repeat)
-   '("<escape>" . (lambda ()
-                    (interactive)
-                    (setq swb/anchor nil)
-                    (meow-cancel-selection)))
+   '("<escape>" . swb/remove-anchor-and-selection)
    '("/" . swb/multiple-cursors-hydra/body))
 
   (setq meow-cursor-type-insert 'box)
 
   (add-hook 'meow-motion-mode-hook (lambda () (when meow-motion-mode (meow-motion-mode -1) (meow-normal-mode 1))))
+  (add-hook 'server-after-make-frame-hook 'meow--prepare-face) ;; not called for every frame by default
   (meow-global-mode 1)
 
-  (defun swb/meow-currently-expanding () (and meow--expand-nav-function (region-active-p) (meow--selection-type)))
+  (defun swb/expand-or-arg-0 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-0) (meow-digit-argument)))
+  (defun swb/expand-or-arg-1 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-1) (meow-digit-argument)))
+  (defun swb/expand-or-arg-2 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-2) (meow-digit-argument)))
+  (defun swb/expand-or-arg-3 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-3) (meow-digit-argument)))
+  (defun swb/expand-or-arg-4 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-4) (meow-digit-argument)))
+  (defun swb/expand-or-arg-5 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-5) (meow-digit-argument)))
+  (defun swb/expand-or-arg-6 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-6) (meow-digit-argument)))
+  (defun swb/expand-or-arg-7 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-7) (meow-digit-argument)))
+  (defun swb/expand-or-arg-8 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-8) (meow-digit-argument)))
+  (defun swb/expand-or-arg-9 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-9) (meow-digit-argument)))
 
   (defvar swb/anchor nil)
 
-  (defun swb/meow-mark-symbol () (interactive) (meow-inner-of-thing ?e))
+  (defun swb/place-anchor ()
+    (interactive)
+    (setq swb/anchor
+          (if (or swb/anchor (not mark-active))
+              (point)
+            (mark))))
+
+  (defun swb/remove-anchor-and-selection ()
+    (interactive)
+    (setq swb/anchor nil)
+    (meow-cancel-selection))
+
+  (defun swb/meow-currently-expanding ()
+    (and meow--expand-nav-function
+         (region-active-p)
+         (meow--selection-type)))
+
+  (defun swb/meow-mark-symbol ()
+    (interactive)
+    (meow-inner-of-thing ?e))
 
   (defun swb/meow-line (count)
     (interactive "p")
@@ -290,6 +318,8 @@
      (meow-insert-mode
       (setq swb/anchor nil))
      (swb/anchor
+      (if (or (> (mark) swb/anchor (point)) (< (mark) swb/anchor (point)))
+          (setq swb/anchor (mark)))
       (set-mark swb/anchor)
       (activate-mark))))
 
@@ -329,7 +359,8 @@
     ("M-p" mc/unmark-previous-like-this "Mark previous like this")
     ("s"   mc/mark-all-in-region "Mark all in region" :exit t)
     ("x"   mc/edit-lines "Edit lines" :exit t)
-    ("<return>" nil "Exit"))
+    ("<return>" nil "Done")
+    ("<escape>" (lambda () (interactive) (mc/disable-multiple-cursors-mode)) "Cancel" :exit t))
 
   (defun swb/fix-all-anchors (&rest r) (when swb/anchor (mc/execute-command-for-all-cursors 'swb/fix-anchor)))
   (defun swb/fix-anchor () (interactive) (setq swb/anchor (mark)))
