@@ -1,0 +1,113 @@
+input {
+    keyboard {
+        xkb { layout "gb"; }
+        repeat-delay 200
+        repeat-rate 40
+    }
+
+    mouse { accel-profile "flat"; }
+
+    focus-follows-mouse max-scroll-amount="95%"
+    warp-mouse-to-focus
+}
+
+output "DP-2" {
+    mode "1920x1080"
+    background-color "#00000000"
+}
+
+layout {
+    gaps 0
+    center-focused-column "never"
+    focus-ring { off; }
+}
+
+spawn-at-startup "keyd-application-mapper" "-d"
+spawn-at-startup "sh" "-c" "swaybg -i ~/.dotfiles/wallpaper.jpg -m fill"
+spawn-at-startup "xwayland-satellite"
+
+environment { DISPLAY ":0"; }
+
+prefer-no-csd
+
+screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+
+binds {
+    Mod+Shift+Slash { show-hotkey-overlay; }
+
+    Mod+Return hotkey-overlay-title="Open a Terminal: foot" { spawn "foot"; }
+    Mod+D hotkey-overlay-title="Run an Application: wmenu" { spawn "wmenu-run"; }
+
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-"; }
+    XF86AudioMute        allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
+    XF86AudioMicMute     allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
+
+    Mod+O repeat=false { toggle-overview; }
+
+    Mod+Q { close-window; }
+
+    Mod+H { focus-column-left; }
+    Mod+J { focus-window-or-workspace-down; }
+    Mod+K { focus-window-or-workspace-up; }
+    Mod+L { focus-column-right; }
+
+    Mod+Shift+H { move-column-left; }
+    Mod+Shift+J { move-window-down-or-to-workspace-down; }
+    Mod+Shift+K { move-window-up-or-to-workspace-up; }
+    Mod+Shift+L { move-column-right; }
+
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
+    Mod+Shift+5 { move-column-to-workspace 5; }
+    Mod+Shift+6 { move-column-to-workspace 6; }
+    Mod+Shift+7 { move-column-to-workspace 7; }
+    Mod+Shift+8 { move-column-to-workspace 8; }
+    Mod+Shift+9 { move-column-to-workspace 9; }
+
+    Mod+BracketLeft  { consume-or-expel-window-left; }
+    Mod+BracketRight { consume-or-expel-window-right; }
+
+    Mod+Minus  { set-column-width "-10%"; }
+    Mod+Equal  { set-column-width "+10%"; }
+
+    Mod+Ctrl+Minus { set-window-height "-10%"; }
+    Mod+Ctrl+Equal { set-window-height "+10%"; }
+
+    Mod+M { maximize-column; }
+    Mod+E { expand-column-to-available-width; }
+    Mod+C { center-column; }
+    Mod+F { fullscreen-window; }
+    Mod+R { reset-window-height; }
+
+    Mod+Space       { toggle-window-floating; }
+    Mod+Shift+Space { switch-focus-between-floating-and-tiling; }
+
+    Print      { screenshot; }
+    Ctrl+Print { screenshot-screen; }
+    Alt+Print  { screenshot-window; }
+
+    Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+
+    Mod+Shift+E { quit; }
+}
+
+layer-rule {
+    match namespace="^wallpaper$"
+    place-within-backdrop true
+}
+
+animations { off; }
+gestures   { hot-corners { off; }; }
+overview   { workspace-shadow { off; }; }

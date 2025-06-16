@@ -40,8 +40,6 @@ install() {
 install .bashrc ~/.bashrc
 install .bash_profile ~/.bash_profile
 
-install sway/config ~/.config/sway/config
-
 install keyd/app.conf ~/.config/keyd/app.conf
 install keyd/default.conf /etc/keyd/default.conf sudo
 
@@ -51,3 +49,5 @@ install .emacs ~/.emacs
 install .mc-lists.el ~/.emacs.d/.mc-lists.el
 
 install .tmux.conf ~/.tmux.conf
+
+install /niri/config.kdl ~/.config/niri/config.kdl

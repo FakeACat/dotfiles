@@ -1,9 +1,10 @@
-sway
 swaybg
 foot
 wmenu
-grim
-slurp
 keyd
 fzf
-emacs
+emacs-wayland
+niri
+xdg-desktop-portal-gtk
+xdg-desktop-portal-gnome
+gnome-keyring

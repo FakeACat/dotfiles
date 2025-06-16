@@ -40,6 +40,7 @@
         meow-next-symbol
         meow-next-word
         meow-open-above
+        meow-pop-selection
         meow-prev
         meow-replace
         meow-reverse
@@ -64,6 +65,7 @@
         multiple-cursors-mode
         swb/meow-find-mc
         swb/meow-till-mc
+        swb/multiple-cursors-hydra/body
         swb/multiple-cursors-hydra/lambda-<escape>-and-exit
         swb/multiple-cursors-hydra/mc/disable-multiple-cursors-mode-and-exit
         swb/multiple-cursors-hydra/mc/edit-beginnings-of-lines-and-exit

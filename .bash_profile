@@ -11,4 +11,4 @@ export EDITOR=emacs # the only good text editor
 export PATH=$PATH\
 :~/.dotfiles/scripts
 
-[ "$(tty)" = "/dev/tty1" ] && exec sway --unsupported-gpu
+[ "$(tty)" = "/dev/tty1" ] && exec niri-session -l
