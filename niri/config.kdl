@@ -20,6 +20,7 @@ layout {
     gaps 0
     center-focused-column "never"
     focus-ring { off; }
+    default-column-width { proportion 1.0; }
 }
 
 spawn-at-startup "keyd-application-mapper" "-d"
@@ -38,8 +39,8 @@ binds {
     Mod+Return hotkey-overlay-title="Open a Terminal: foot" { spawn "foot"; }
     Mod+D hotkey-overlay-title="Run an Application: wmenu" { spawn "wmenu-run"; }
 
-    XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+"; }
-    XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-"; }
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.05+"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.05-"; }
     XF86AudioMute        allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
     XF86AudioMicMute     allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
 
@@ -108,6 +109,7 @@ layer-rule {
     place-within-backdrop true
 }
 
-animations { off; }
-gestures   { hot-corners { off; }; }
-overview   { workspace-shadow { off; }; }
+animations     { off; }
+gestures       { hot-corners { off; }; }
+overview       { workspace-shadow { off; }; }
+hotkey-overlay { skip-at-startup; }
