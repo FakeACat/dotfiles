@@ -59,7 +59,9 @@
 
 (setq mc/cmds-to-run-once
       '(
+        Custom-save
         meow-undo
+        multiple-cursors-mode
         swb/meow-find-mc
         swb/meow-till-mc
         swb/multiple-cursors-hydra/lambda-<escape>-and-exit
@@ -67,6 +69,7 @@
         swb/multiple-cursors-hydra/mc/edit-beginnings-of-lines-and-exit
         swb/multiple-cursors-hydra/mc/edit-lines
         swb/multiple-cursors-hydra/mc/edit-lines-and-exit
+        swb/multiple-cursors-hydra/mc/mark-all-in-region-and-exit
         swb/multiple-cursors-hydra/mc/mark-next-like-this
         swb/multiple-cursors-hydra/mc/mark-previous-like-this
         swb/multiple-cursors-hydra/mc/skip-to-next-like-this

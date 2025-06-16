@@ -71,6 +71,7 @@
 (use-package which-key :config (which-key-mode))
 (use-package frame :config (blink-cursor-mode -1))
 (use-package window :bind ("M-o" . other-window))
+(use-package flymake :custom (flymake-show-diagnostics-at-end-of-line 1))
 
 (use-package display-line-numbers
   :custom (display-line-numbers-type 'relative)
@@ -277,7 +278,8 @@
     (setq swb/anchor
           (if (or swb/anchor (not mark-active))
               (point)
-            (mark))))
+            (mark)))
+    (force-mode-line-update))
 
   (defun swb/remove-anchor-and-selection ()
     (interactive)
@@ -318,7 +320,7 @@
      (meow-insert-mode
       (setq swb/anchor nil))
      (swb/anchor
-      (if (or (> (mark) swb/anchor (point)) (< (mark) swb/anchor (point)))
+      (if (and mark-active (or (> (mark) swb/anchor (point)) (< (mark) swb/anchor (point))))
           (setq swb/anchor (mark)))
       (set-mark swb/anchor)
       (activate-mark))))
