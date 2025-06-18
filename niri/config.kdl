@@ -34,16 +34,14 @@ prefer-no-csd
 
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
-workspace "project"
+workspace "programming"
 workspace "info"
 workspace "browser"
 workspace "communication"
 
 binds {
-    Mod+Shift+Slash { show-hotkey-overlay; }
-
-    Mod+Return hotkey-overlay-title="Open a Terminal: foot" { spawn "foot"; }
-    Mod+D hotkey-overlay-title="Run an Application: fuzzel" { spawn "fuzzel"; }
+    Mod+Return { spawn "foot"; }
+    Mod+D { spawn "fuzzel"; }
 
     XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.05+"; }
     XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.05-"; }
@@ -52,14 +50,14 @@ binds {
 
     Mod+O repeat=false { toggle-overview; }
 
-    Mod+1 { focus-workspace "project"; }
-    Mod+2 { focus-workspace "info"; }
-    Mod+3 { focus-workspace "browser"; }
-    Mod+4 { focus-workspace "communication"; }
-    Mod+Shift+1 { move-column-to-workspace "project"; }
-    Mod+Shift+2 { move-column-to-workspace "info"; }
-    Mod+Shift+3 { move-column-to-workspace "browser"; }
-    Mod+Shift+4 { move-column-to-workspace "communication"; }
+    Mod+P { focus-workspace "programming"; }
+    Mod+I { focus-workspace "info"; }
+    Mod+B { focus-workspace "browser"; }
+    Mod+C { focus-workspace "communication"; }
+    Mod+Shift+P { move-column-to-workspace "programming"; }
+    Mod+Shift+I { move-column-to-workspace "info"; }
+    Mod+Shift+B { move-column-to-workspace "browser"; }
+    Mod+Shift+C { move-column-to-workspace "communication"; }
 
     Mod+Q { close-window; }
 
@@ -76,18 +74,17 @@ binds {
     Mod+Ctrl+J { move-workspace-down; }
     Mod+Ctrl+K { move-workspace-up; }
 
-    Mod+BracketLeft  { consume-or-expel-window-left; }
-    Mod+BracketRight { consume-or-expel-window-right; }
+    Mod+Comma  { consume-or-expel-window-left; }
+    Mod+Period { consume-or-expel-window-right; }
 
-    Mod+Minus  { set-column-width "-10%"; }
-    Mod+Equal  { set-column-width "+10%"; }
+    Mod+Minus { set-column-width "-10%"; }
+    Mod+Equal { set-column-width "+10%"; }
 
     Mod+Shift+Minus { set-window-height "-10%"; }
     Mod+Shift+Equal { set-window-height "+10%"; }
 
     Mod+M { maximize-column; }
     Mod+E { expand-column-to-available-width; }
-    Mod+C { center-column; }
     Mod+F { fullscreen-window; }
     Mod+R { reset-window-height; }
 
@@ -112,6 +109,7 @@ animations     { off; }
 gestures       { hot-corners { off; }; }
 overview       { workspace-shadow { off; }; }
 hotkey-overlay { skip-at-startup; }
+debug          { wait-for-frame-completion-in-pipewire; }
 
 window-rule {
     match app-id="Nautilus"

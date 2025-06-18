@@ -15,6 +15,7 @@
         downcase-dwim
         electric-newline-and-maybe-indent
         electric-pair-delete-pair
+        elisp-eval-region-or-buffer
         forward-sexp
         indent-for-tab-command
         mark-sexp
@@ -40,6 +41,7 @@
         meow-next-symbol
         meow-next-word
         meow-open-above
+        meow-open-below
         meow-pop-selection
         meow-prev
         meow-replace
@@ -61,12 +63,18 @@
 (setq mc/cmds-to-run-once
       '(
         Custom-save
+        hydra--digit-argument
+        hydra--negative-argument
+        meow-describe-key
+        meow-keypad
         meow-undo
         multiple-cursors-mode
         swb/meow-find-mc
         swb/meow-till-mc
         swb/multiple-cursors-hydra/body
         swb/multiple-cursors-hydra/lambda-<escape>-and-exit
+        swb/multiple-cursors-hydra/mc/cycle-backward
+        swb/multiple-cursors-hydra/mc/cycle-forward
         swb/multiple-cursors-hydra/mc/disable-multiple-cursors-mode-and-exit
         swb/multiple-cursors-hydra/mc/edit-beginnings-of-lines-and-exit
         swb/multiple-cursors-hydra/mc/edit-lines
@@ -79,6 +87,8 @@
         swb/multiple-cursors-hydra/mc/unmark-next-like-this
         swb/multiple-cursors-hydra/mc/unmark-previous-like-this
         swb/multiple-cursors-hydra/nil
+        swb/multiple-cursors-hydra/swb/delete-current-cursor
+        swb/multiple-cursors-hydra/swb/delete-current-cursor-backwards
         switch-to-buffer
         text-scale-adjust
         ))

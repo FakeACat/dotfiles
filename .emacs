@@ -17,6 +17,7 @@
  '(eglot-highlight-symbol-face ((t (:underline t))))
  '(eglot-inlay-hint-face ((t (:inherit shadow))))
  '(flymake-end-of-line-diagnostics-face ((t (:inherit nil :box nil :height 1.0))))
+ '(mc/cursor-face ((t (:background "#FFAAAA" :inverse-video nil))))
  '(mode-line ((t (:box nil))))
  '(mode-line-inactive ((t (:box nil)))))
 
@@ -354,21 +355,37 @@
   :config
   (defhydra swb/multiple-cursors-hydra nil
     "Create/remove multiple cursors"
-    ("n"   mc/mark-next-like-this "Mark next like this")
-    ("p"   mc/mark-previous-like-this "Mark previous like this")
-    ("N"   mc/skip-to-next-like-this "Skip to next like this")
-    ("P"   mc/skip-to-previous-like-this "Skip to previous like this")
-    ("M-n" mc/unmark-next-like-this "Mark next like this")
-    ("M-p" mc/unmark-previous-like-this "Mark previous like this")
-    ("s"   mc/mark-all-in-region "Mark all in region" :exit t)
-    ("x"   mc/edit-lines "Edit lines" :exit t)
-    ("<return>" nil "Done")
+    ("j"        mc/mark-next-like-this        "Mark next like this")
+    ("k"        mc/mark-previous-like-this    "Mark previous like this")
+    ("J"        mc/skip-to-next-like-this     "Skip to next like this")
+    ("K"        mc/skip-to-previous-like-this "Skip to previous like this")
+    ("M-j"      mc/unmark-next-like-this      "Unmark next like this")
+    ("M-k"      mc/unmark-previous-like-this  "Unmark previous like this")
+    ("C-j"      mc/cycle-forward              "Unmark next like this")
+    ("C-k"      mc/cycle-backward             "Unmark previous like this")
+    ("C-d"      swb/delete-current-cursor     "Delete current cursor")
+    ("/"        mc/mark-all-in-region         "Mark all in region" :exit t)
     ("<escape>" (lambda () (interactive) (mc/disable-multiple-cursors-mode)) "Cancel" :exit t))
+
+  (defun swb/delete-current-cursor (&optional arg)
+    (interactive "p")
+    (let ((reverse (< arg 0)))
+      (let ((next-cursor (if reverse (mc/prev-fake-cursor-before-point) (mc/next-fake-cursor-after-point)))
+            (prev-cursor (if reverse (mc/next-fake-cursor-after-point) (mc/prev-fake-cursor-before-point))))
+        (cond
+         (next-cursor (mc/pop-state-from-overlay next-cursor))
+         (prev-cursor (mc/pop-state-from-overlay prev-cursor))
+         (t           (user-error "cannot delete cursor when there is only one!"))))))
+
+  (push 'swb/anchor mc/cursor-specific-vars)
 
   (defun swb/fix-all-anchors (&rest r) (when swb/anchor (mc/execute-command-for-all-cursors 'swb/fix-anchor)))
   (defun swb/fix-anchor () (interactive) (setq swb/anchor (mark)))
   (advice-add 'mc/maybe-multiple-cursors-mode :after 'swb/fix-all-anchors)
-  (push 'swb/anchor mc/cursor-specific-vars)
+
+  (defun swb/disable-anchors (&rest args) (setq swb/anchor nil))
+  (advice-add 'mc/edit-lines :before 'swb/disable-anchors)
+  (advice-add 'mc/mark-all-in-region :before 'swb/disable-anchors)
 
   (defun swb/meow-find-mc (n ch &optional expand)
     (interactive "p\ncFind:")
