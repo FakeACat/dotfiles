@@ -12,6 +12,7 @@
         c-electric-star
         c-indent-line-or-region
         capitalize-dwim
+        dired-do-rename
         downcase-dwim
         electric-newline-and-maybe-indent
         electric-pair-delete-pair
@@ -32,6 +33,7 @@
         meow-inner-of-thing
         meow-insert
         meow-insert-exit
+        meow-insert-mode
         meow-join
         meow-kill
         meow-left
@@ -58,6 +60,7 @@
         swb/place-anchor
         swb/remove-anchor-and-selection
         upcase-dwim
+        wdired--self-insert
         ))
 
 (setq mc/cmds-to-run-once
@@ -69,6 +72,8 @@
         meow-keypad
         meow-undo
         multiple-cursors-mode
+        project-compile
+        project-find-file
         swb/meow-find-mc
         swb/meow-till-mc
         swb/multiple-cursors-hydra/body

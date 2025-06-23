@@ -4,10 +4,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
- '(package-selected-packages
-   '(avy cape cmake-mode corfu format-all glsl-mode hydra magit
-         markdown-mode meow multiple-cursors odin-mode orderless
-         rust-mode yasnippet zig-mode))
+ '(package-selected-packages '(corfu-terminal odin-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -17,7 +14,7 @@
  '(eglot-highlight-symbol-face ((t (:underline t))))
  '(eglot-inlay-hint-face ((t (:inherit shadow))))
  '(flymake-end-of-line-diagnostics-face ((t (:inherit nil :box nil :height 1.0))))
- '(mc/cursor-face ((t (:background "#FFAAAA" :inverse-video nil))))
+ '(mc/cursor-face ((t (:background "#FFAAAA" :foreground "#000000" :inverse-video nil))))
  '(mode-line ((t (:box nil))))
  '(mode-line-inactive ((t (:box nil)))))
 
@@ -68,12 +65,18 @@
 (use-package org :custom (org-hide-emphasis-markers t))
 (use-package cc-vars :custom (c-basic-offset 4))
 (use-package cc-styles :hook (java-mode-hook . (lambda () (c-set-offset 'case-label '+)))) ;; fix switch indenting in java
-(use-package custom :config (load-theme 'modus-vivendi))
 (use-package dired :custom (dired-auto-revert-buffer #'dired-buffer-stale-p) (dired-dwim-target t))
 (use-package which-key :config (which-key-mode))
 (use-package frame :config (blink-cursor-mode -1))
 (use-package window :bind ("M-o" . other-window))
 (use-package flymake :custom (flymake-show-diagnostics-at-end-of-line 1))
+
+(use-package custom
+  :config
+  (load-theme 'modus-vivendi)
+
+  (defun swb/on-after-init () (unless (display-graphic-p (selected-frame)) (set-face-background 'default "unspecified-bg" (selected-frame))))
+  (add-hook 'window-setup-hook 'swb/on-after-init))
 
 (use-package display-line-numbers
   :custom (display-line-numbers-type 'relative)
@@ -130,22 +133,32 @@
   :config (add-to-list 'eglot-server-programs '(odin-mode . ("ols" "--stdio" :initializationOptions (:enable_fake_methods t :enable_references t :enable_inlay_hints t)))))
 
 (use-package isearch
-  :bind (:map isearch-mode-map ("<return>" . swb/isearch-done-select))
+  :bind (:map isearch-mode-map ("RET" . swb/isearch-done-select))
   :init (defun swb/isearch-done-select () (interactive) (isearch-exit) (set-mark isearch-other-end)))
 
 (use-package hydra :ensure)
 (use-package cape :ensure :init (add-hook 'completion-at-point-functions (cape-capf-super #'cape-dabbrev #'cape-keyword)))
-(use-package corfu :ensure :custom (corfu-auto t) :init (global-corfu-mode 1))
 (use-package magit :ensure :custom (magit-save-repository-buffers nil) :config (add-hook 'git-commit-mode-hook 'meow-insert))
+(use-package orderless :ensure :custom (completion-styles '(orderless)))
+(use-package vertico :ensure :init (vertico-mode))
 
-(use-package orderless
+(use-package corfu
   :ensure
+  :bind (:map corfu-map ("RET" . nil))
   :custom
-  (completion-styles '(orderless))
-  :bind (:map icomplete-minibuffer-map ("SPC" . self-insert-command))
+  (corfu-auto 1)
+  (corfu-auto-prefix 1)
+  (corfu-auto-delay 0.0)
+  (corfu-cycle 1)
+  (corfu-preview-current nil)
   :init
-  (add-hook 'icomplete-minibuffer-setup-hook (lambda () (setq-local completion-styles '(orderless))))
-  (fido-vertical-mode 1))
+  (global-corfu-mode 1)
+  (corfu-echo-mode 1)
+  (corfu-history-mode 1))
+
+(use-package corfu-terminal
+  :vc (:url "https://codeberg.org/akib/emacs-corfu-terminal")
+  :config (unless (display-graphic-p) (corfu-terminal-mode +1)))
 
 (use-package yasnippet
   :ensure
@@ -256,6 +269,7 @@
    '("<escape>" . swb/remove-anchor-and-selection)
    '("/" . swb/multiple-cursors-hydra/body))
 
+  (setq meow-esc-delay 0.01)
   (setq meow-cursor-type-insert 'box)
 
   (add-hook 'meow-motion-mode-hook (lambda () (when meow-motion-mode (meow-motion-mode -1) (meow-normal-mode 1))))
@@ -286,7 +300,7 @@
   (defun swb/remove-anchor-and-selection ()
     (interactive)
     (setq swb/anchor nil)
-    (meow-cancel-selection))
+    (if mark-active (meow-cancel-selection)))
 
   (defun swb/meow-currently-expanding ()
     (and meow--expand-nav-function
@@ -364,8 +378,8 @@
     ("C-j"      mc/cycle-forward              "Unmark next like this")
     ("C-k"      mc/cycle-backward             "Unmark previous like this")
     ("C-d"      swb/delete-current-cursor     "Delete current cursor")
-    ("/"        mc/mark-all-in-region         "Mark all in region" :exit t)
-    ("<escape>" (lambda () (interactive) (mc/disable-multiple-cursors-mode)) "Cancel" :exit t))
+    ("/"        mc/mark-all-in-region         "Mark all in region" :exit t))
+
 
   (defun swb/delete-current-cursor (&optional arg)
     (interactive "p")
@@ -392,7 +406,10 @@
     (mc/execute-command-for-all-cursors (lambda () (interactive) (meow-find n ch expand))))
   (defun swb/meow-till-mc (n ch &optional expand)
     (interactive "p\ncTill:")
-    (mc/execute-command-for-all-cursors (lambda () (interactive) (meow-till n ch expand)))))
+    (mc/execute-command-for-all-cursors (lambda () (interactive) (meow-till n ch expand))))
+
+  (defun swb/no-meow-hints-during-mc-mode () (if multiple-cursors-mode (setq meow-expand-hint-remove-delay 0) (setq meow-expand-hint-remove-delay nil)))
+  (add-hook 'multiple-cursors-mode-hook 'swb/no-meow-hints-during-mc-mode))
 
 (use-package avy
   :ensure
