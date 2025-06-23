@@ -70,11 +70,11 @@
 (use-package frame :config (blink-cursor-mode -1))
 (use-package window :bind ("M-o" . other-window))
 (use-package flymake :custom (flymake-show-diagnostics-at-end-of-line 1))
+(use-package show-paren :custom (show-paren-delay 0))
 
 (use-package custom
   :config
   (load-theme 'modus-vivendi)
-
   (defun swb/on-after-init () (unless (display-graphic-p (selected-frame)) (set-face-background 'default "unspecified-bg" (selected-frame))))
   (add-hook 'window-setup-hook 'swb/on-after-init))
 
@@ -87,8 +87,7 @@
   :hook (prog-mode-hook . whitespace-mode))
 
 (use-package files
-  :custom
-  (make-backup-files nil)
+  :custom (make-backup-files nil)
   :config (add-hook 'write-file-functions 'delete-trailing-whitespace))
 
 (use-package simple
@@ -261,7 +260,8 @@
    '("u" . meow-undo)
    '("U" . meow-undo-in-selection)
    '("v" . swb/place-anchor)
-   '("w" . swb/meow-mark-symbol)
+   '("w" . meow-mark-symbol)
+   '("W" . meow-mark-word)
    '("x" . swb/meow-line)
    '("y" . meow-save)
    '("z" . meow-pop-selection)
@@ -271,6 +271,16 @@
 
   (setq meow-esc-delay 0.01)
   (setq meow-cursor-type-insert 'box)
+
+  (setq meow-select-on-append t)
+  (setq meow-select-on-insert t)
+
+  (defun swb/disable-meow-expansion (&rest r)
+    (interactive)
+    (let ((sel-type (meow--selection-type)))
+      (when sel-type (setcar sel-type 'select))))
+
+  (advice-add 'meow-mark-thing :after 'swb/disable-meow-expansion)
 
   (add-hook 'meow-motion-mode-hook (lambda () (when meow-motion-mode (meow-motion-mode -1) (meow-normal-mode 1))))
   (add-hook 'server-after-make-frame-hook 'meow--prepare-face) ;; not called for every frame by default
@@ -306,10 +316,6 @@
     (and meow--expand-nav-function
          (region-active-p)
          (meow--selection-type)))
-
-  (defun swb/meow-mark-symbol ()
-    (interactive)
-    (meow-inner-of-thing ?e))
 
   (defun swb/meow-line (count)
     (interactive "p")
