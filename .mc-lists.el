@@ -24,6 +24,7 @@
         meow-append
         meow-back-symbol
         meow-back-word
+        meow-backward-delete
         meow-beginning-of-thing
         meow-block
         meow-bounds-of-thing
@@ -78,6 +79,7 @@
         multiple-cursors-mode
         project-compile
         project-find-file
+        swb/delete-current-cursor
         swb/meow-find-mc
         swb/meow-search-mc-mark
         swb/meow-search-mc-skip
