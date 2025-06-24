@@ -11,7 +11,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(eglot-highlight-symbol-face ((t (:underline t))))
+ '(eglot-highlight-symbol-face ((t (:inherit bold :foreground "yellow"))))
  '(eglot-inlay-hint-face ((t (:inherit shadow))))
  '(flymake-end-of-line-diagnostics-face ((t (:inherit nil :box nil :height 1.0))))
  '(mc/cursor-face ((t (:background "#FFAAAA" :foreground "#000000" :inverse-video nil))))
@@ -69,8 +69,12 @@
 (use-package which-key :config (which-key-mode))
 (use-package frame :config (blink-cursor-mode -1))
 (use-package window :bind ("M-o" . other-window))
-(use-package flymake :custom (flymake-show-diagnostics-at-end-of-line 1))
 (use-package show-paren :custom (show-paren-delay 0))
+
+(use-package flymake
+  :custom
+  (flymake-show-diagnostics-at-end-of-line 1)
+  (flymake-indicator-type 'fringes))
 
 (use-package custom
   :config
@@ -157,7 +161,7 @@
 
 (use-package corfu-terminal
   :vc (:url "https://codeberg.org/akib/emacs-corfu-terminal")
-  :config (unless (display-graphic-p) (corfu-terminal-mode +1)))
+  :config (unless (display-graphic-p) (corfu-terminal-mode 1)))
 
 (use-package yasnippet
   :ensure
@@ -166,8 +170,7 @@
         ("C-," . yas-prev-field)
         ("C-." . yas-next-field)
         ("TAB" . nil))
-  :config
-  (yas-global-mode 1))
+  :config (yas-global-mode 1))
 
 (use-package zig-mode :ensure)
 (use-package glsl-mode :ensure :mode "\\.vs\\'" "\\.fs\\'")
@@ -239,7 +242,7 @@
    '("g p" . swb/go-to-prev-hydra/body)
    '("g d" . xref-find-definitions)
    '("g r" . xref-find-references)
-   '("g l" . goto-line)
+   '("g l" . meow-goto-line)
    '("g w" . swb/avy-mark-symbol)
    '("G" . meow-grab)
    '("h" . meow-left)
@@ -271,9 +274,8 @@
 
   (setq meow-esc-delay 0.01)
   (setq meow-cursor-type-insert 'box)
-
-  (setq meow-select-on-append t)
-  (setq meow-select-on-insert t)
+  (setq meow-select-on-append 1)
+  (setq meow-select-on-insert 1)
 
   (defun swb/disable-meow-expansion (&rest r)
     (interactive)
@@ -423,5 +425,5 @@
   (avy-keys (number-sequence ?a ?z))
   (avy-dispatch-alist '((?. . swb/avy-action-embark)))
   :config
-  (defun swb/avy-action-mark-symbol (pt) (goto-char pt) (swb/meow-mark-symbol))
+  (defun swb/avy-action-mark-symbol (pt) (goto-char pt) (meow-mark-symbol 1))
   (defun swb/avy-mark-symbol () (interactive) (avy-jump "\\_<\\(\\sw\\|\\s_\\)" :action 'swb/avy-action-mark-symbol)))
