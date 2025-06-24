@@ -19,6 +19,7 @@
         elisp-eval-region-or-buffer
         forward-sexp
         indent-for-tab-command
+        keyboard-quit
         mark-sexp
         meow-append
         meow-back-symbol
@@ -50,6 +51,7 @@
         meow-reverse
         meow-right
         meow-save
+        meow-search
         meow-till
         meow-to-block
         meow-yank
@@ -66,8 +68,10 @@
 (setq mc/cmds-to-run-once
       '(
         Custom-save
+        corfu-quit
         hydra--digit-argument
         hydra--negative-argument
+        mc/mark-next-lines
         meow-describe-key
         meow-keypad
         meow-undo
@@ -75,6 +79,8 @@
         project-compile
         project-find-file
         swb/meow-find-mc
+        swb/meow-search-mc-mark
+        swb/meow-search-mc-skip
         swb/meow-till-mc
         swb/multiple-cursors-hydra/body
         swb/multiple-cursors-hydra/lambda-<escape>-and-exit

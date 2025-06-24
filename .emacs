@@ -4,7 +4,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
- '(package-selected-packages '(corfu-terminal odin-mode))
+ '(package-selected-packages
+   '(corfu-terminal odin-mode visual-regexp visual-regexp-steroids))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -139,7 +140,6 @@
   :bind (:map isearch-mode-map ("RET" . swb/isearch-done-select))
   :init (defun swb/isearch-done-select () (interactive) (isearch-exit) (set-mark isearch-other-end)))
 
-(use-package hydra :ensure)
 (use-package cape :ensure :init (add-hook 'completion-at-point-functions (cape-capf-super #'cape-dabbrev #'cape-keyword)))
 (use-package magit :ensure :custom (magit-save-repository-buffers nil) :config (add-hook 'git-commit-mode-hook 'meow-insert))
 (use-package orderless :ensure :custom (completion-styles '(orderless)))
@@ -187,6 +187,9 @@
                 '(("Java" (astyle "--mode=java"))
                   ("C" (clang-format))
                   ("Rust" (rustfmt)))))
+
+(use-package visual-regexp :ensure)
+(use-package visual-regexp-steroids :ensure)
 
 (use-package meow
   :ensure
@@ -238,12 +241,18 @@
    '("E" . meow-next-word)
    '("f" . swb/meow-find-mc)
    '("g v" . meow-visit)
-   '("g n" . swb/go-to-next-hydra/body)
-   '("g p" . swb/go-to-prev-hydra/body)
    '("g d" . xref-find-definitions)
    '("g r" . xref-find-references)
    '("g l" . meow-goto-line)
    '("g w" . swb/avy-mark-symbol)
+   '("g n f" . flymake-goto-next-error)
+   '("g n c" . next-error)
+   '("g n p" . forward-paragraph)
+   '("g n s" . scroll-up)
+   '("g p f" . flymake-goto-prev-error)
+   '("g p c" . previous-error)
+   '("g p p" . backward-paragraph)
+   '("g p s" . scroll-down)
    '("G" . meow-grab)
    '("h" . meow-left)
    '("i" . meow-insert)
@@ -252,12 +261,14 @@
    '("k" . meow-prev)
    '("l" . meow-right)
    '("m" . meow-join)
-   '("n" . meow-search)
+   '("n" . swb/meow-search-mc-skip)
+   '("N" . swb/meow-search-mc-mark)
    '("o" . meow-block)
    '("O" . meow-to-block)
    '("p" . meow-yank)
    '("q" . meow-quit)
    '("r" . meow-replace)
+   '("R" . vr/query-replace)
    '("s" . meow-kill)
    '("t" . swb/meow-till-mc)
    '("u" . meow-undo)
@@ -270,7 +281,8 @@
    '("z" . meow-pop-selection)
    '("'" . repeat)
    '("<escape>" . swb/remove-anchor-and-selection)
-   '("/" . swb/multiple-cursors-hydra/body))
+   '("/" . vr/mc-mark)
+   '("?" . swb/quit-mcs))
 
   (setq meow-esc-delay 0.01)
   (setq meow-cursor-type-insert 'box)
@@ -352,54 +364,36 @@
   (add-hook 'post-command-hook 'swb/update-anchor-mark)
   (add-hook 'deactivate-mark-hook 'swb/update-anchor-mark)
 
-  (advice-add 'exchange-point-and-mark :after (lambda (&rest r) (when swb/anchor (setq swb/anchor (mark)))))
-
-  (defhydra swb/go-to-next-hydra nil
-    "Go to next"
-    ("f" flymake-goto-next-error "Flymake error")
-    ("c" next-error "Compilation error")
-    ("p" forward-paragraph "Paragraph")
-    ("s" scroll-up "Screen")
-    ("-" swb/go-to-prev-hydra/body "Reverse" :exit t))
-
-  (defhydra swb/go-to-prev-hydra nil
-    "Go to previous"
-    ("f" flymake-goto-prev-error "Flymake error")
-    ("c" previous-error "Compilation error")
-    ("p" backward-paragraph "Paragraph")
-    ("s" scroll-down "Screen")
-    ("-" swb/go-to-next-hydra/body "Reverse" :exit t)))
+  (advice-add 'exchange-point-and-mark :after (lambda (&rest r) (when swb/anchor (setq swb/anchor (mark))))))
 
 (use-package multiple-cursors
   :ensure
-  :bind
-  (:map mc/keymap ("<return>" . nil))
+  :bind (:map mc/keymap ("<return>" . nil))
   :config
-  (defhydra swb/multiple-cursors-hydra nil
-    "Create/remove multiple cursors"
-    ("j"        mc/mark-next-like-this        "Mark next like this")
-    ("k"        mc/mark-previous-like-this    "Mark previous like this")
-    ("J"        mc/skip-to-next-like-this     "Skip to next like this")
-    ("K"        mc/skip-to-previous-like-this "Skip to previous like this")
-    ("M-j"      mc/unmark-next-like-this      "Unmark next like this")
-    ("M-k"      mc/unmark-previous-like-this  "Unmark previous like this")
-    ("C-j"      mc/cycle-forward              "Unmark next like this")
-    ("C-k"      mc/cycle-backward             "Unmark previous like this")
-    ("C-d"      swb/delete-current-cursor     "Delete current cursor")
-    ("/"        mc/mark-all-in-region         "Mark all in region" :exit t))
-
-
-  (defun swb/delete-current-cursor (&optional arg)
-    (interactive "p")
-    (let ((reverse (< arg 0)))
-      (let ((next-cursor (if reverse (mc/prev-fake-cursor-before-point) (mc/next-fake-cursor-after-point)))
-            (prev-cursor (if reverse (mc/next-fake-cursor-after-point) (mc/prev-fake-cursor-before-point))))
-        (cond
-         (next-cursor (mc/pop-state-from-overlay next-cursor))
-         (prev-cursor (mc/pop-state-from-overlay prev-cursor))
-         (t           (user-error "cannot delete cursor when there is only one!"))))))
-
   (push 'swb/anchor mc/cursor-specific-vars)
+
+  ;; don't want C-g to quit multiple cursors
+  (defun mc/keyboard-quit () (interactive) (when (use-region-p) (deactivate-mark)))
+
+  (defun swb/quit-mcs () (interactive) (mc/disable-multiple-cursors-mode))
+
+  (defun swb/meow-search-mc-skip ()
+    (interactive)
+    (if multiple-cursors-mode
+        (if (< (mark) (point))
+            (mc/skip-to-next-like-this)
+          (mc/skip-to-previous-like-this))
+      (let ((prev-anchor swb/anchor))
+        (setq swb/anchor nil)
+        (meow-search 1)
+        (when prev-anchor (swb/place-anchor)))))
+
+  (defun swb/meow-search-mc-mark (arg)
+    (interactive "p")
+    (when (not mark-active) (user-error "mark must be active to create more selections"))
+    (if (< (mark) (point))
+        (mc/mark-next-like-this arg)
+      (mc/mark-previous-like-this arg)))
 
   (defun swb/fix-all-anchors (&rest r) (when swb/anchor (mc/execute-command-for-all-cursors 'swb/fix-anchor)))
   (defun swb/fix-anchor () (interactive) (setq swb/anchor (mark)))
