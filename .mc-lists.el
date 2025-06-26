@@ -57,7 +57,10 @@
         meow-to-block
         meow-yank
         replace-regexp
+        swb/change
         swb/expand-or-arg-1
+        swb/insert-after
+        swb/kill
         swb/meow-line
         swb/meow-mark-symbol
         swb/place-anchor
@@ -102,6 +105,7 @@
         swb/multiple-cursors-hydra/nil
         swb/multiple-cursors-hydra/swb/delete-current-cursor
         swb/multiple-cursors-hydra/swb/delete-current-cursor-backwards
+        swb/simple-mode
         switch-to-buffer
         text-scale-adjust
         ))

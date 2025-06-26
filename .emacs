@@ -5,7 +5,8 @@
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
  '(package-selected-packages
-   '(corfu-terminal odin-mode visual-regexp visual-regexp-steroids))
+   '(corfu-terminal expand-region odin-mode visual-regexp
+                    visual-regexp-steroids))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -45,9 +46,7 @@
                       (:eval (if flymake-mode flymake-mode-line-format ""))
                       "  "))
   :config
-  (defun swb/editor-mode () (cond (swb/anchor           (propertize "ANCHOR" 'face 'error))
-                                  ((meow-normal-mode-p) (propertize "NORMAL" 'face 'bold))
-                                  (t                    (propertize "INSERT" 'face 'warning))))
+  (defun swb/editor-mode () (if swb/simple-mode (propertize "NORMAL" 'face 'bold) (propertize "INSERT" 'face 'warning)))
   (tool-bar-mode 0)
   (menu-bar-mode 0)
   (set-frame-parameter (selected-frame) 'alpha-background 80)
@@ -100,7 +99,6 @@
   (read-extended-command-predicate #'command-completion-default-include-p)
   (indent-tabs-mode nil)
   (save-interprogram-paste-before-kill 1)
-  (line-move-visual nil)
   :bind
   ("M-u" . upcase-dwim)
   ("M-l" . downcase-dwim)
@@ -141,7 +139,7 @@
   :init (defun swb/isearch-done-select () (interactive) (isearch-exit) (set-mark isearch-other-end)))
 
 (use-package cape :ensure :init (add-hook 'completion-at-point-functions (cape-capf-super #'cape-dabbrev #'cape-keyword)))
-(use-package magit :ensure :custom (magit-save-repository-buffers nil) :config (add-hook 'git-commit-mode-hook 'meow-insert))
+(use-package magit :ensure :custom (magit-save-repository-buffers nil))
 (use-package orderless :ensure :custom (completion-styles '(orderless)))
 (use-package vertico :ensure :init (vertico-mode))
 
@@ -191,184 +189,6 @@
 (use-package visual-regexp :ensure)
 (use-package visual-regexp-steroids :ensure)
 
-(use-package meow
-  :ensure
-  :demand
-  :custom
-  (meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
-  (meow-expand-hint-remove-delay nil)
-  :config
-  ;; modified from https://github.com/meow-edit/meow/blob/master/KEYBINDING_QWERTY.org
-  (meow-leader-define-key
-   '("1" . meow-digit-argument)
-   '("2" . meow-digit-argument)
-   '("3" . meow-digit-argument)
-   '("4" . meow-digit-argument)
-   '("5" . meow-digit-argument)
-   '("6" . meow-digit-argument)
-   '("7" . meow-digit-argument)
-   '("8" . meow-digit-argument)
-   '("9" . meow-digit-argument)
-   '("0" . meow-digit-argument)
-   '("/" . meow-keypad-describe-key)
-   '("?" . meow-cheatsheet))
-  (meow-normal-define-key
-   '("0" . swb/expand-or-arg-0)
-   '("1" . swb/expand-or-arg-1)
-   '("2" . swb/expand-or-arg-2)
-   '("3" . swb/expand-or-arg-3)
-   '("4" . swb/expand-or-arg-4)
-   '("5" . swb/expand-or-arg-5)
-   '("6" . swb/expand-or-arg-6)
-   '("7" . swb/expand-or-arg-7)
-   '("8" . swb/expand-or-arg-8)
-   '("9" . swb/expand-or-arg-9)
-   '("-" . negative-argument)
-   '(";" . meow-reverse)
-   '("," . meow-inner-of-thing)
-   '("." . meow-bounds-of-thing)
-   '("[" . meow-beginning-of-thing)
-   '("]" . meow-end-of-thing)
-   '("a" . meow-append)
-   '("A" . meow-open-below)
-   '("b" . meow-back-symbol)
-   '("B" . meow-back-word)
-   '("c" . meow-change)
-   '("C" . meow-insert-mode)
-   '("d" . meow-delete)
-   '("D" . meow-backward-delete)
-   '("e" . meow-next-symbol)
-   '("E" . meow-next-word)
-   '("f" . swb/meow-find-mc)
-   '("g v" . meow-visit)
-   '("g d" . xref-find-definitions)
-   '("g r" . xref-find-references)
-   '("g l" . meow-goto-line)
-   '("g w" . swb/avy-mark-symbol)
-   '("g n f" . flymake-goto-next-error)
-   '("g n c" . next-error)
-   '("g n p" . forward-paragraph)
-   '("g n s" . scroll-up)
-   '("g p f" . flymake-goto-prev-error)
-   '("g p c" . previous-error)
-   '("g p p" . backward-paragraph)
-   '("g p s" . scroll-down)
-   '("G" . meow-grab)
-   '("h" . meow-left)
-   '("i" . meow-insert)
-   '("I" . meow-open-above)
-   '("j" . meow-next)
-   '("k" . meow-prev)
-   '("l" . meow-right)
-   '("m" . meow-join)
-   '("o" . meow-block)
-   '("O" . meow-to-block)
-   '("p" . meow-yank)
-   '("q" . meow-quit)
-   '("r" . meow-replace)
-   '("R" . vr/query-replace)
-   '("s" . meow-kill)
-   '("t" . swb/meow-till-mc)
-   '("u" . meow-undo)
-   '("U" . meow-undo-in-selection)
-   '("v" . swb/place-anchor)
-   '("w" . meow-mark-symbol)
-   '("W" . meow-mark-word)
-   '("x" . swb/meow-line)
-   '("y" . meow-save)
-   '("z" . meow-pop-selection)
-   '("'" . repeat)
-   '("<escape>" . swb/remove-anchor-and-selection)
-   '("n" . swb/meow-search-mc-skip)
-   '("N" . swb/meow-search-mc-mark)
-   '("S" . vr/mc-mark)
-   '("/" . swb/quit-mcs)
-   '("?" . swb/delete-current-cursor)
-   '("<" . mc/cycle-backward)
-   '(">" . mc/cycle-forward))
-
-  (setq meow-esc-delay 0.01)
-  (setq meow-cursor-type-insert 'box)
-  (setq meow-select-on-append 1)
-  (setq meow-select-on-insert 1)
-
-  (defun swb/disable-meow-expansion (&rest r)
-    (interactive)
-    (let ((sel-type (meow--selection-type)))
-      (when sel-type (setcar sel-type 'select))))
-
-  (advice-add 'meow-mark-thing :after 'swb/disable-meow-expansion)
-
-  (add-hook 'meow-motion-mode-hook (lambda () (when meow-motion-mode (meow-motion-mode -1) (meow-normal-mode 1))))
-  (add-hook 'server-after-make-frame-hook 'meow--prepare-face) ;; not called for every frame by default
-  (meow-global-mode 1)
-
-  (defun swb/expand-or-arg-0 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-0) (meow-digit-argument)))
-  (defun swb/expand-or-arg-1 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-1) (meow-digit-argument)))
-  (defun swb/expand-or-arg-2 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-2) (meow-digit-argument)))
-  (defun swb/expand-or-arg-3 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-3) (meow-digit-argument)))
-  (defun swb/expand-or-arg-4 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-4) (meow-digit-argument)))
-  (defun swb/expand-or-arg-5 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-5) (meow-digit-argument)))
-  (defun swb/expand-or-arg-6 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-6) (meow-digit-argument)))
-  (defun swb/expand-or-arg-7 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-7) (meow-digit-argument)))
-  (defun swb/expand-or-arg-8 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-8) (meow-digit-argument)))
-  (defun swb/expand-or-arg-9 () (interactive) (if (swb/meow-currently-expanding) (meow-expand-9) (meow-digit-argument)))
-
-  (defvar swb/anchor nil)
-
-  (defun swb/place-anchor ()
-    (interactive)
-    (setq swb/anchor
-          (if (or swb/anchor (not mark-active))
-              (point)
-            (mark)))
-    (force-mode-line-update))
-
-  (defun swb/remove-anchor-and-selection ()
-    (interactive)
-    (setq swb/anchor nil)
-    (if mark-active (meow-cancel-selection)))
-
-  (defun swb/meow-currently-expanding ()
-    (and meow--expand-nav-function
-         (region-active-p)
-         (meow--selection-type)))
-
-  (defun swb/meow-line (count)
-    (interactive "p")
-    (if swb/anchor
-        (if (> swb/anchor (point))
-            (progn
-              (save-excursion
-                (goto-char swb/anchor)
-                (move-end-of-line nil)
-                (setq swb/anchor (point)))
-              (move-beginning-of-line nil)
-              (meow-line -1))
-          (progn
-            (save-excursion
-              (goto-char swb/anchor)
-              (move-beginning-of-line nil)
-              (setq swb/anchor (point)))
-            (move-end-of-line nil)
-            (meow-line 1)))
-      (meow-line count)))
-
-  (defun swb/update-anchor-mark ()
-    (cond
-     (meow-insert-mode
-      (setq swb/anchor nil))
-     (swb/anchor
-      (if (and mark-active (or (> (mark) swb/anchor (point)) (< (mark) swb/anchor (point))))
-          (setq swb/anchor (mark)))
-      (set-mark swb/anchor)
-      (activate-mark))))
-
-  (add-hook 'post-command-hook 'swb/update-anchor-mark)
-  (add-hook 'deactivate-mark-hook 'swb/update-anchor-mark)
-
-  (advice-add 'exchange-point-and-mark :after (lambda (&rest r) (when swb/anchor (setq swb/anchor (mark))))))
-
 (use-package multiple-cursors
   :ensure
   :bind (:map mc/keymap ("<return>" . nil))
@@ -390,11 +210,6 @@
          (prev-cursor (mc/pop-state-from-overlay prev-cursor))
          (t           (user-error "cannot delete cursor when there is only one!"))))))
 
-  (defun swb/meow-reverse-all ()
-    (interactive)
-    (mc/execute-command-for-all-cursors 'meow-reverse)
-    (mc/execute-command-for-all-cursors (lambda () (interactive) (activate-mark))))
-
   (defun swb/get-first-or-last-cursor ()
     (interactive)
     (if (< (mark) (point))
@@ -406,53 +221,133 @@
     (let ((next-cursor (swb/get-first-or-last-cursor)))
       (when next-cursor
         (when replace-current (mc/create-fake-cursor-at-point))
-        (mc/pop-state-from-overlay next-cursor))))
+        (mc/pop-state-from-overlay next-cursor)))))
 
-  (defun swb/meow-search-mc-skip (arg)
-    (interactive "p")
-    (when (< arg 0) (swb/meow-reverse-all))
-    (if multiple-cursors-mode
-        (if (< (mark) (point))
-            (mc/mark-next-like-this 1)
-          (mc/mark-previous-like-this 1))
-      (let ((prev-anchor swb/anchor))
-        (setq swb/anchor nil)
-        (meow-search 1)
-        (when prev-anchor (swb/place-anchor))))
-    (swb/go-to-first-or-last-cursor nil))
+(use-package avy :ensure :custom (avy-keys (number-sequence ?a ?z)))
 
-  (defun swb/meow-search-mc-mark (arg)
-    (interactive "p")
-    (when (not mark-active) (user-error "mark must be active to create more selections"))
-    (when (< arg 0) (swb/meow-reverse-all))
-    (if (< (mark) (point))
-        (mc/mark-next-like-this 1)
-      (mc/mark-previous-like-this 1))
-    (swb/go-to-first-or-last-cursor 1))
+(use-package expand-region :ensure)
 
-  (defun swb/fix-all-anchors (&rest r) (when swb/anchor (mc/execute-command-for-all-cursors 'swb/fix-anchor)))
-  (defun swb/fix-anchor () (interactive) (setq swb/anchor (mark)))
-  (advice-add 'mc/maybe-multiple-cursors-mode :after 'swb/fix-all-anchors)
+;; custom modal editing
 
-  (defun swb/disable-anchors (&rest args) (setq swb/anchor nil))
-  (advice-add 'mc/edit-lines :before 'swb/disable-anchors)
-  (advice-add 'mc/mark-all-in-region :before 'swb/disable-anchors)
+(defun swb/esc (map)
+  (if (and (let ((keys (this-single-command-keys)))
+             (and (> (length keys) 0)
+                  (= (aref keys (1- (length keys))) ?\e)))
+           (sit-for 0.01))
+      (prog1 [escape]
+        (when defining-kbd-macro
+          (end-kbd-macro)
+          (setq last-kbd-macro (vconcat last-kbd-macro [escape]))
+          (start-kbd-macro t t)))
+    map))
 
-  (defun swb/meow-find-mc (n ch &optional expand)
-    (interactive "p\ncFind:")
-    (mc/execute-command-for-all-cursors (lambda () (interactive) (meow-find n ch expand))))
-  (defun swb/meow-till-mc (n ch &optional expand)
-    (interactive "p\ncTill:")
-    (mc/execute-command-for-all-cursors (lambda () (interactive) (meow-till n ch expand))))
+(define-key input-decode-map [?\e] 'swb/esc)
 
-  (defun swb/no-meow-hints-during-mc-mode () (if multiple-cursors-mode (setq meow-expand-hint-remove-delay 0) (setq meow-expand-hint-remove-delay nil)))
-  (add-hook 'multiple-cursors-mode-hook 'swb/no-meow-hints-during-mc-mode))
+(global-set-key (kbd "<escape>") 'swb/simple-mode)
 
-(use-package avy
-  :ensure
-  :custom
-  (avy-keys (number-sequence ?a ?z))
-  (avy-dispatch-alist '((?. . swb/avy-action-embark)))
-  :config
-  (defun swb/avy-action-mark-symbol (pt) (goto-char pt) (meow-mark-symbol 1))
-  (defun swb/avy-mark-symbol () (interactive) (avy-jump "\\_<\\(\\sw\\|\\s_\\)" :action 'swb/avy-action-mark-symbol)))
+(define-minor-mode swb/simple-mode "Simple editing mode"
+  :keymap (make-sparse-keymap)
+  )
+
+(defun swb/start-marking () (interactive) (when (not mark-active) (set-mark (point))))
+(defun swb/stop-marking () (interactive) (when mark-active (deactivate-mark)))
+
+(defmacro swb/with-expand (key fn)
+  (list 'progn
+        (list 'bind-key key                (list 'lambda '(arg) '(interactive "p") '(swb/stop-marking)  (list fn 'arg)) 'swb/simple-mode-map)
+        (list 'bind-key (list 'upcase key) (list 'lambda '(arg) '(interactive "p") '(swb/start-marking) (list fn 'arg)) 'swb/simple-mode-map)))
+
+(defun swb/go-to-beginning-of-region () (interactive) (when (and mark-active (> (point) (mark))) (exchange-point-and-mark)))
+(defun swb/go-to-end-of-region () (interactive) (when (and mark-active (< (point) (mark))) (exchange-point-and-mark)))
+
+(defun swb/insert-before ()
+  (interactive)
+  (swb/go-to-beginning-of-region)
+  (swb/simple-mode -1))
+
+(defun swb/insert-above ()
+  (interactive)
+  (swb/go-to-beginning-of-region)
+  (goto-char (line-beginning-position))
+  (save-mark-and-excursion (newline))
+  (indent-according-to-mode)
+  (swb/simple-mode -1))
+
+(defun swb/insert-after ()
+  (interactive)
+  (swb/go-to-end-of-region)
+  (swb/simple-mode -1))
+
+(defun swb/insert-below ()
+  (interactive)
+  (swb/go-to-end-of-region)
+  (goto-char (line-end-position))
+  (newline)
+  (indent-according-to-mode)
+  (swb/simple-mode -1))
+
+(defun swb/kill ()
+  (interactive)
+  (if mark-active (kill-region nil nil t) (delete-char 1)))
+
+(defun swb/delete ()
+  (interactive)
+  (if mark-active (delete-region (point) (mark)) (delete-char 1)))
+
+(defun swb/change ()
+  (interactive)
+  (swb/kill)
+  (swb/simple-mode -1))
+
+(defun swb/replace ()
+  (interactive)
+  (swb/delete)
+  (yank))
+
+(defun swb/select-next-symbol (arg)
+  (interactive "p")
+  (forward-symbol arg)
+  (when (not mark-active)
+    (er/mark-symbol)
+    (exchange-point-and-mark)))
+
+(defun swb/select-prev-symbol (arg)
+  (interactive "p")
+  (forward-symbol (- arg))
+  (when (not mark-active)
+    (er/mark-symbol)))
+
+(bind-key [remap self-insert-command] 'ignore 'swb/simple-mode-map)
+
+(bind-keys :map swb/simple-mode-map
+           ("<escape>" . ignore)
+           ("1" . digit-argument)
+           ("2" . digit-argument)
+           ("3" . digit-argument)
+           ("4" . digit-argument)
+           ("5" . digit-argument)
+           ("6" . digit-argument)
+           ("7" . digit-argument)
+           ("8" . digit-argument)
+           ("9" . digit-argument)
+           ("-" . negative-argument)
+           (";" . exchange-point-and-mark)
+           ("i" . swb/insert-before)
+           ("I" . swb/insert-above)
+           ("a" . swb/insert-after)
+           ("A" . swb/insert-below)
+           ("d" . swb/kill)
+           ("c" . swb/change)
+           ("y" . kill-ring-save)
+           ("p" . yank)
+           ("r" . swb/replace)
+           ("o" . er/expand-region)
+           )
+
+(swb/with-expand "h" backward-char)
+(swb/with-expand "j" next-line)
+(swb/with-expand "k" previous-line)
+(swb/with-expand "l" forward-char)
+
+(swb/with-expand "e" swb/select-next-symbol)
+(swb/with-expand "b" swb/select-prev-symbol)
