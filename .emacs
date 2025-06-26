@@ -246,16 +246,19 @@
 (global-set-key (kbd "<escape>") 'swb/simple-mode)
 
 (define-minor-mode swb/simple-mode "Simple editing mode"
-  :keymap (make-sparse-keymap)
-  )
+  :keymap (make-sparse-keymap))
+
+(add-hook 'prog-mode-hook 'swb/simple-mode)
+(add-hook 'magit-mode-hook 'swb/simple-mode)
+(add-hook 'git-commit-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
 
 (defun swb/start-marking () (interactive) (when (not mark-active) (set-mark (point))))
 (defun swb/stop-marking () (interactive) (when mark-active (deactivate-mark)))
 
 (defmacro swb/with-expand (key fn)
   (list 'progn
-        (list 'bind-key key                (list 'lambda '(arg) '(interactive "p") '(swb/stop-marking)  (list fn 'arg)) 'swb/simple-mode-map)
-        (list 'bind-key (list 'upcase key) (list 'lambda '(arg) '(interactive "p") '(swb/start-marking) (list fn 'arg)) 'swb/simple-mode-map)))
+        (list 'bind-key key                (list 'lambda '(&rest args) (interactive-form fn) '(swb/stop-marking)  (list 'apply (list 'quote fn) 'args)) 'swb/simple-mode-map)
+        (list 'bind-key (list 'upcase key) (list 'lambda '(&rest args) (interactive-form fn) '(swb/start-marking) (list 'apply (list 'quote fn) 'args)) 'swb/simple-mode-map)))
 
 (defun swb/go-to-beginning-of-region () (interactive) (when (and mark-active (> (point) (mark))) (exchange-point-and-mark)))
 (defun swb/go-to-end-of-region () (interactive) (when (and mark-active (< (point) (mark))) (exchange-point-and-mark)))
@@ -317,6 +320,41 @@
   (when (not mark-active)
     (er/mark-symbol)))
 
+(defun swb/select-line (arg)
+  (interactive "p")
+  (swb/start-marking)
+  (let ((flip (< (point) (mark))))
+    (when flip (exchange-point-and-mark))
+    (beginning-of-line)
+    (forward-line 1)
+    (exchange-point-and-mark)
+    (beginning-of-line)))
+
+(defun swb/select-join (arg)
+  (interactive "p")
+  (if (< arg 0) (back-to-indentation) (end-of-line))
+  (swb/start-marking)
+  (forward-line arg)
+  (if (< arg 0) (end-of-line) (back-to-indentation)))
+
+(defun swb/find (arg char)
+  (interactive "p\ncfind:")
+  (let ((end (save-mark-and-excursion (search-forward (char-to-string char) nil t arg))))
+    (when end
+      (swb/start-marking)
+      (goto-char end))))
+
+(defun swb/till (arg char)
+  (interactive "p\nctill:")
+  (let ((end (save-mark-and-excursion
+               (progn
+                 (forward-char (if (> arg 0) 1 -1))
+                 (search-forward (char-to-string char) nil t arg)))))
+    (when end
+      (setq end (+ end (if (< arg 0) 1 -1)))
+      (swb/start-marking)
+      (goto-char end))))
+
 (bind-key [remap self-insert-command] 'ignore 'swb/simple-mode-map)
 
 (bind-keys :map swb/simple-mode-map
@@ -331,16 +369,21 @@
            ("8" . digit-argument)
            ("9" . digit-argument)
            ("-" . negative-argument)
+
            (";" . exchange-point-and-mark)
+           ("'" . repeat)
+
            ("i" . swb/insert-before)
            ("I" . swb/insert-above)
            ("a" . swb/insert-after)
            ("A" . swb/insert-below)
+
            ("d" . swb/kill)
            ("c" . swb/change)
            ("y" . kill-ring-save)
            ("p" . yank)
            ("r" . swb/replace)
+
            ("o" . er/expand-region)
            )
 
@@ -351,3 +394,9 @@
 
 (swb/with-expand "e" swb/select-next-symbol)
 (swb/with-expand "b" swb/select-prev-symbol)
+
+(swb/with-expand "x" swb/select-line)
+(swb/with-expand "m" swb/select-join)
+
+(swb/with-expand "f" swb/find)
+(swb/with-expand "t" swb/till)
