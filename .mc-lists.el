@@ -12,6 +12,7 @@
         c-electric-star
         c-indent-line-or-region
         capitalize-dwim
+        corfu-complete
         dired-do-rename
         downcase-dwim
         electric-newline-and-maybe-indent
@@ -60,12 +61,22 @@
         swb/change
         swb/expand-or-arg-1
         swb/insert-after
+        swb/insert-before
         swb/kill
         swb/meow-line
         swb/meow-mark-symbol
         swb/place-anchor
         swb/remove-anchor-and-selection
         swb/replace
+        swb/with-expand/backward-char
+        swb/with-expand/forward-char
+        swb/with-expand/next-line
+        swb/with-expand/previous-line
+        swb/without-expand/backward-char
+        swb/without-expand/forward-char
+        swb/without-expand/next-line
+        swb/without-expand/previous-line
+        swb/without-expand/swb/select-join
         swb/without-expand/swb/select-next-symbol
         swb/without-expand/swb/select-prev-symbol
         upcase-dwim
@@ -115,4 +126,5 @@
         swb/without-expand/swb/till
         switch-to-buffer
         text-scale-adjust
+        xref-find-references
         ))
