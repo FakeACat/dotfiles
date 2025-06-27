@@ -65,6 +65,9 @@
         swb/meow-mark-symbol
         swb/place-anchor
         swb/remove-anchor-and-selection
+        swb/replace
+        swb/without-expand/swb/select-next-symbol
+        swb/without-expand/swb/select-prev-symbol
         upcase-dwim
         wdired--self-insert
         ))
@@ -106,6 +109,10 @@
         swb/multiple-cursors-hydra/swb/delete-current-cursor
         swb/multiple-cursors-hydra/swb/delete-current-cursor-backwards
         swb/simple-mode
+        swb/with-expand/swb/find
+        swb/with-expand/swb/till
+        swb/without-expand/swb/find
+        swb/without-expand/swb/till
         switch-to-buffer
         text-scale-adjust
         ))

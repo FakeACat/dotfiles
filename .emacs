@@ -33,6 +33,7 @@
   (use-short-answers 1)
   (dabbrev-case-fold-search nil)
   (ring-bell-function 'ignore)
+  (visible-cursor nil)
   (mode-line-format '("%e"
                       " "
                       (:eval (swb/editor-mode))
@@ -193,35 +194,9 @@
   :ensure
   :bind (:map mc/keymap ("<return>" . nil))
   :config
-  (push 'swb/anchor mc/cursor-specific-vars)
-
   ;; don't want C-g to quit multiple cursors
   (defun mc/keyboard-quit () (interactive) (when (use-region-p) (deactivate-mark)))
-
-  (defun swb/quit-mcs () (interactive) (mc/disable-multiple-cursors-mode))
-
-  (defun swb/delete-current-cursor ()
-    (interactive)
-    (let ((reverse (> (mark) (point))))
-      (let ((next-cursor (if reverse (mc/prev-fake-cursor-before-point) (mc/next-fake-cursor-after-point)))
-            (prev-cursor (if reverse (mc/next-fake-cursor-after-point) (mc/prev-fake-cursor-before-point))))
-        (cond
-         (next-cursor (mc/pop-state-from-overlay next-cursor))
-         (prev-cursor (mc/pop-state-from-overlay prev-cursor))
-         (t           (user-error "cannot delete cursor when there is only one!"))))))
-
-  (defun swb/get-first-or-last-cursor ()
-    (interactive)
-    (if (< (mark) (point))
-        (mc/last-fake-cursor-before (buffer-end 1))
-      (mc/first-fake-cursor-after (buffer-end -1))))
-
-  (defun swb/go-to-first-or-last-cursor (replace-current)
-    (interactive)
-    (let ((next-cursor (swb/get-first-or-last-cursor)))
-      (when next-cursor
-        (when replace-current (mc/create-fake-cursor-at-point))
-        (mc/pop-state-from-overlay next-cursor)))))
+  (defun swb/quit-mcs () (interactive) (mc/disable-multiple-cursors-mode)))
 
 (use-package avy :ensure :custom (avy-keys (number-sequence ?a ?z)))
 
@@ -229,36 +204,64 @@
 
 ;; custom modal editing
 
-(defun swb/esc (map)
-  (if (and (let ((keys (this-single-command-keys)))
-             (and (> (length keys) 0)
-                  (= (aref keys (1- (length keys))) ?\e)))
-           (sit-for 0.01))
-      (prog1 [escape]
-        (when defining-kbd-macro
-          (end-kbd-macro)
-          (setq last-kbd-macro (vconcat last-kbd-macro [escape]))
-          (start-kbd-macro t t)))
-    map))
+;; borrowed from meow mode
+;; i do not understand this
+(unless window-system
+  (defun swb/esc (map)
+    (if (and (let ((keys (this-single-command-keys)))
+               (and (> (length keys) 0)
+                    (= (aref keys (1- (length keys))) ?\e)))
+             (sit-for 0.01))
+        (prog1 [escape]
+          (when defining-kbd-macro
+            (end-kbd-macro)
+            (setq last-kbd-macro (vconcat last-kbd-macro [escape]))
+            (start-kbd-macro t t)))
+      map))
 
-(define-key input-decode-map [?\e] 'swb/esc)
+  (defun swb/fix-term-esc (frame)
+    (with-selected-frame frame
+      (let ((term (frame-terminal frame)))
+        (when (not (terminal-parameter term 'esc-map))
+          (let ((esc-map (lookup-key input-decode-map [?\e])))
+            (set-terminal-parameter term 'esc-map esc-map)
+            (define-key input-decode-map [?\e] `(menu-item "" ,esc-map :filter ,#'swb/esc)))))))
+
+  (add-hook 'after-make-frame-functions 'swb/fix-term-esc)
+  (mapc 'swb/fix-term-esc (frame-list)))
 
 (global-set-key (kbd "<escape>") 'swb/simple-mode)
 
 (define-minor-mode swb/simple-mode "Simple editing mode"
-  :keymap (make-sparse-keymap))
+  :keymap (make-sparse-keymap)
+  :after-hook (deactivate-mark))
 
 (add-hook 'prog-mode-hook 'swb/simple-mode)
 (add-hook 'magit-mode-hook 'swb/simple-mode)
 (add-hook 'git-commit-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
+(add-hook 'help-mode-hook 'swb/simple-mode)
 
 (defun swb/start-marking () (interactive) (when (not mark-active) (set-mark (point))))
 (defun swb/stop-marking () (interactive) (when mark-active (deactivate-mark)))
 
-(defmacro swb/with-expand (key fn)
-  (list 'progn
-        (list 'bind-key key                (list 'lambda '(&rest args) (interactive-form fn) '(swb/stop-marking)  (list 'apply (list 'quote fn) 'args)) 'swb/simple-mode-map)
-        (list 'bind-key (list 'upcase key) (list 'lambda '(&rest args) (interactive-form fn) '(swb/start-marking) (list 'apply (list 'quote fn) 'args)) 'swb/simple-mode-map)))
+(defmacro swb/with-expand (key fn &optional affects-all-cursors)
+  (let ((without-expand-symbol (intern (format "swb/without-expand/%s" fn)))
+        (with-expand-symbol    (intern (format "swb/with-expand/%s" fn))))
+    (list 'progn
+          (list 'defun without-expand-symbol '(&rest args)
+                (interactive-form fn)
+                (if affects-all-cursors
+                    '(mc/execute-command-for-all-cursors 'swb/stop-marking)
+                  '(swb/stop-marking))
+                (list 'apply (list 'quote fn) 'args))
+          (list 'defun with-expand-symbol '(&rest args)
+                (interactive-form fn)
+                (if affects-all-cursors
+                    '(mc/execute-command-for-all-cursors 'swb/start-marking)
+                  '(swb/start-marking))
+                (list 'apply (list 'quote fn) 'args))
+          (list 'bind-key key                (list 'quote without-expand-symbol) 'swb/simple-mode-map)
+          (list 'bind-key (list 'upcase key) (list 'quote with-expand-symbol)    'swb/simple-mode-map))))
 
 (defun swb/go-to-beginning-of-region () (interactive) (when (and mark-active (> (point) (mark))) (exchange-point-and-mark)))
 (defun swb/go-to-end-of-region () (interactive) (when (and mark-active (< (point) (mark))) (exchange-point-and-mark)))
@@ -328,7 +331,8 @@
     (beginning-of-line)
     (forward-line 1)
     (exchange-point-and-mark)
-    (beginning-of-line)))
+    (beginning-of-line)
+    (exchange-point-and-mark)))
 
 (defun swb/select-join (arg)
   (interactive "p")
@@ -339,26 +343,31 @@
 
 (defun swb/find (arg char)
   (interactive "p\ncfind:")
-  (let ((end (save-mark-and-excursion (search-forward (char-to-string char) nil t arg))))
-    (when end
-      (swb/start-marking)
-      (goto-char end))))
+  (mc/execute-command-for-all-cursors
+   (lambda () (interactive)
+     (let ((end (save-mark-and-excursion (search-forward (char-to-string char) nil t arg))))
+       (when end
+         (swb/start-marking)
+         (goto-char end))))))
 
 (defun swb/till (arg char)
   (interactive "p\nctill:")
-  (let ((end (save-mark-and-excursion
-               (progn
-                 (forward-char (if (> arg 0) 1 -1))
-                 (search-forward (char-to-string char) nil t arg)))))
-    (when end
-      (setq end (+ end (if (< arg 0) 1 -1)))
-      (swb/start-marking)
-      (goto-char end))))
+  (mc/execute-command-for-all-cursors
+   (lambda () (interactive)
+     (let ((end (save-mark-and-excursion
+                  (progn
+                    (forward-char (if (> arg 0) 1 -1))
+                    (search-forward (char-to-string char) nil t arg)))))
+       (when end
+         (setq end (+ end (if (< arg 0) 1 -1)))
+         (swb/start-marking)
+         (goto-char end))))))
 
 (bind-key [remap self-insert-command] 'ignore 'swb/simple-mode-map)
 
 (bind-keys :map swb/simple-mode-map
-           ("<escape>" . ignore)
+           ("<escape>" . (lambda () (interactive) (deactivate-mark)))
+
            ("1" . digit-argument)
            ("2" . digit-argument)
            ("3" . digit-argument)
@@ -385,6 +394,13 @@
            ("r" . swb/replace)
 
            ("o" . er/expand-region)
+
+           ("s" . vr/mc-mark)
+           ("," . mc/skip-to-previous-like-this)
+           ("." . mc/skip-to-next-like-this)
+           ("<" . mc/mark-previous-like-this)
+           (">" . mc/mark-next-like-this)
+           ("/" . swb/quit-mcs)
            )
 
 (swb/with-expand "h" backward-char)
@@ -398,5 +414,5 @@
 (swb/with-expand "x" swb/select-line)
 (swb/with-expand "m" swb/select-join)
 
-(swb/with-expand "f" swb/find)
-(swb/with-expand "t" swb/till)
+(swb/with-expand "f" swb/find t)
+(swb/with-expand "t" swb/till t)
