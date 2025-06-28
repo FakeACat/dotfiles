@@ -21,6 +21,7 @@
         forward-sexp
         indent-for-tab-command
         keyboard-quit
+        mark-paragraph
         mark-sexp
         meow-append
         meow-back-symbol
@@ -75,11 +76,12 @@
         swb/with-expand/next-line
         swb/with-expand/previous-line
         swb/with-expand/swb/select-join
+        swb/with-expand/swb/select-next-symbol
+        swb/with-expand/swb/select-prev-symbol
         swb/without-expand/backward-char
         swb/without-expand/forward-char
         swb/without-expand/next-line
         swb/without-expand/previous-line
-        swb/without-expand/swb/go-to-text-object-inner-end
         swb/without-expand/swb/select-join
         swb/without-expand/swb/select-next-symbol
         swb/without-expand/swb/select-prev-symbol
@@ -101,6 +103,8 @@
         project-compile
         project-find-file
         swb/delete-current-cursor
+        swb/mark-around-text-object
+        swb/mark-in-text-object
         swb/meow-find-mc
         swb/meow-search-mc-mark
         swb/meow-search-mc-skip
@@ -123,10 +127,16 @@
         swb/multiple-cursors-hydra/nil
         swb/multiple-cursors-hydra/swb/delete-current-cursor
         swb/multiple-cursors-hydra/swb/delete-current-cursor-backwards
+        swb/prompt-once-run-for-all-cursors/swb/mark-around-text-object
+        swb/prompt-once-run-for-all-cursors/swb/mark-in-text-object
         swb/simple-mode
         swb/with-expand/swb/find
+        swb/with-expand/swb/go-to-text-object-inner-beg
+        swb/with-expand/swb/go-to-text-object-inner-end
         swb/with-expand/swb/till
         swb/without-expand/swb/find
+        swb/without-expand/swb/go-to-text-object-inner-beg
+        swb/without-expand/swb/go-to-text-object-inner-end
         swb/without-expand/swb/till
         switch-to-buffer
         text-scale-adjust
