@@ -60,8 +60,10 @@
         replace-regexp
         swb/change
         swb/expand-or-arg-1
+        swb/insert-above
         swb/insert-after
         swb/insert-before
+        swb/insert-below
         swb/kill
         swb/meow-line
         swb/meow-mark-symbol
@@ -72,10 +74,12 @@
         swb/with-expand/forward-char
         swb/with-expand/next-line
         swb/with-expand/previous-line
+        swb/with-expand/swb/select-join
         swb/without-expand/backward-char
         swb/without-expand/forward-char
         swb/without-expand/next-line
         swb/without-expand/previous-line
+        swb/without-expand/swb/go-to-text-object-inner-end
         swb/without-expand/swb/select-join
         swb/without-expand/swb/select-next-symbol
         swb/without-expand/swb/select-prev-symbol

@@ -199,7 +199,7 @@
   (defun mc/keyboard-quit () (interactive) (when (use-region-p) (deactivate-mark)))
   (defun swb/quit-mcs () (interactive) (mc/disable-multiple-cursors-mode)))
 
-(use-package expand-region :ensure)
+(use-package expand-region :ensure :demand)
 
 ;; custom modal editing
 
@@ -245,6 +245,25 @@
 (defun swb/start-marking () (interactive) (when (not mark-active) (set-mark (point))))
 (defun swb/stop-marking () (interactive) (when mark-active (deactivate-mark)))
 
+(defun swb/backward-line ()
+  (let ((point (point)))
+    (beginning-of-line)
+    (when (= point (point)) (forward-line -1))))
+
+(defun swb/forward-line-text ()
+  (let ((point (point)))
+    (end-of-line)
+    (when (= point (point))
+      (forward-line 1)
+      (end-of-line))))
+
+(defun swb/backward-line-text ()
+  (let ((point (point)))
+    (back-to-indentation)
+    (when (>= (point) point)
+      (forward-line -1)
+      (back-to-indentation))))
+
 (defvar swb/text-objects)
 
 (defun swb/add-text-object (char inner-beg inner-end &optional outer-beg outer-end)
@@ -255,28 +274,51 @@
     (unless object (user-error (format "Invalid object \"%c\"" char)))
     (funcall (nth element (cdr object)))))
 
-(defun swb/go-to-text-object-inner-beg (char) (interactive "cObject:") (swb/start-marking) (swb/execute-text-object-fn char 0))
-(defun swb/go-to-text-object-inner-end (char) (interactive "cObject:") (swb/start-marking) (swb/execute-text-object-fn char 1))
-(defun swb/go-to-text-object-outer-beg (char) (interactive "cObject:") (swb/start-marking) (swb/execute-text-object-fn char 2))
-(defun swb/go-to-text-object-outer-end (char) (interactive "cObject:") (swb/start-marking) (swb/execute-text-object-fn char 3))
+(defun swb/go-to-text-object-inner-beg (n char)
+  (interactive "p\ncObject:")
+  (swb/start-marking)
+  (if (< n 0)
+      (swb/go-to-text-object-inner-end (- n) char)
+    (dotimes (i n) (swb/execute-text-object-fn char 0))))
 
-(defun swb/mark-in-text-object (char)
-  (interactive "cObject:")
-  (swb/go-to-text-object-inner-end char)
+(defun swb/go-to-text-object-inner-end (n char)
+  (interactive "p\ncObject:")
+  (swb/start-marking)
+  (if (< n 0)
+      (swb/go-to-text-object-inner-beg (- n) char)
+    (dotimes (i n) (swb/execute-text-object-fn char 1))))
+
+(defun swb/go-to-text-object-outer-beg (n char)
+  (interactive "p\ncObject:")
+  (swb/start-marking)
+  (if (< n 0)
+      (swb/go-to-text-object-outer-end (- n) char)
+    (dotimes (i n) (swb/execute-text-object-fn char 2))))
+
+(defun swb/go-to-text-object-outer-end (n char)
+  (interactive "p\ncObject:")
+  (swb/start-marking)
+  (if (< n 0)
+      (swb/go-to-text-object-outer-beg (- n) char)
+    (dotimes (i n) (swb/execute-text-object-fn char 3))))
+
+(defun swb/mark-in-text-object (n char)
+  (interactive "p\ncObject:")
+  (swb/go-to-text-object-inner-end n char)
   (swb/stop-marking)
   (swb/start-marking)
-  (swb/go-to-text-object-inner-beg char))
+  (swb/go-to-text-object-inner-beg n char))
 
-(defun swb/mark-around-text-object (char)
-  (interactive "cObject:")
-  (swb/go-to-text-object-outer-end char)
+(defun swb/mark-around-text-object (n char)
+  (interactive "p\ncObject:")
+  (swb/go-to-text-object-outer-end n char)
   (swb/stop-marking)
   (swb/start-marking)
-  (swb/go-to-text-object-outer-beg char))
+  (swb/go-to-text-object-outer-beg n char))
 
 (setq swb/text-objects nil) ;; just makes it easier to re-eval all this
 (swb/add-text-object ?p 'start-of-paragraph-text 'end-of-paragraph-text 'backward-paragraph 'forward-paragraph)
-(swb/add-text-object ?l 'back-to-indentation 'end-of-line 'beginning-of-line 'end-of-line)
+(swb/add-text-object ?l 'swb/backward-line-text 'swb/forward-line-text 'swb/backward-line 'forward-line)
 (swb/add-text-object ?b 'beginning-of-buffer 'end-of-buffer)
 (swb/add-text-object ?g 'backward-sexp 'forward-sexp)
 (swb/add-text-object ?f 'beginning-of-defun 'end-of-defun)
@@ -459,3 +501,6 @@
 
 (swb/with-expand "[" "{" swb/go-to-text-object-inner-beg)
 (swb/with-expand "]" "}" swb/go-to-text-object-inner-end)
+
+(swb/with-expand "M-[" "M-{" swb/go-to-text-object-outer-beg)
+(swb/with-expand "M-]" "M-}" swb/go-to-text-object-outer-end)
