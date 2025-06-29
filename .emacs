@@ -265,10 +265,42 @@
       (forward-line -1)
       (back-to-indentation))))
 
+(defun swb/find-delimiter (opener closer back till)
+  (let ((search-fn (if back 'search-backward 'search-forward))
+        (push (if back closer opener))
+        (pop (if back opener closer))
+        (initial-point (point))
+        (layers 1)
+        (failed nil))
+    (while (and (> layers 0) (not failed))
+      (let* ((next-push (save-excursion (funcall search-fn push nil t)))
+             (next-pop (save-excursion (funcall search-fn pop nil t)))
+             (push-dist (if next-push (abs (- next-push (point))) nil))
+             (pop-dist (if next-pop (abs (- next-pop (point))) nil)))
+        (cond
+         ((not next-pop)
+          (setq failed t))
+         ((or (not next-push) (< pop-dist push-dist))
+          (goto-char next-pop)
+          (setq layers (- layers 1)))
+         (t
+          (goto-char next-push)
+          (setq layers (+ layers 1))))))
+    (if failed
+        (goto-char initial-point)
+      (when till (forward-char (if back 1 -1))))))
+
 (defvar swb/text-objects)
 
 (defun swb/add-text-object (char inner-beg inner-end &optional outer-beg outer-end)
   (push (list char . (inner-beg inner-end (or outer-beg inner-beg) (or outer-end inner-end))) swb/text-objects))
+
+(defun swb/add-delimited-text-object (char opener closer)
+  (swb/add-text-object char
+                       `(lambda () (interactive) (swb/find-delimiter ,opener ,closer t t))
+                       `(lambda () (interactive) (swb/find-delimiter ,opener ,closer nil t))
+                       `(lambda () (interactive) (swb/find-delimiter ,opener ,closer t nil))
+                       `(lambda () (interactive) (swb/find-delimiter ,opener ,closer nil nil))))
 
 (defun swb/execute-text-object-fn (char element)
   (let ((object (assoc char swb/text-objects)))
@@ -321,8 +353,13 @@
 (swb/add-text-object ?p 'start-of-paragraph-text 'end-of-paragraph-text 'backward-paragraph 'forward-paragraph)
 (swb/add-text-object ?l 'swb/backward-line-text 'swb/forward-line-text 'swb/backward-line 'forward-line)
 (swb/add-text-object ?b 'beginning-of-buffer 'end-of-buffer)
-(swb/add-text-object ?g 'backward-sexp 'forward-sexp)
+(swb/add-text-object ?x 'backward-sexp 'forward-sexp)
 (swb/add-text-object ?f 'beginning-of-defun 'end-of-defun)
+
+(swb/add-delimited-text-object ?r "(" ")")
+(swb/add-delimited-text-object ?c "{" "}")
+(swb/add-delimited-text-object ?s "[" "]")
+(swb/add-delimited-text-object ?a "<" ">")
 
 (defun swb/go-to-beginning-of-region () (interactive) (when (and mark-active (> (point) (mark))) (exchange-point-and-mark)))
 (defun swb/go-to-end-of-region () (interactive) (when (and mark-active (< (point) (mark))) (exchange-point-and-mark)))
@@ -330,6 +367,11 @@
 (defun swb/insert-before ()
   (interactive)
   (swb/go-to-beginning-of-region)
+  (swb/simple-mode -1))
+
+(defun swb/insert-before-line-text ()
+  (interactive)
+  (back-to-indentation)
   (swb/simple-mode -1))
 
 (defun swb/insert-above ()
@@ -343,6 +385,11 @@
 (defun swb/insert-after ()
   (interactive)
   (swb/go-to-end-of-region)
+  (swb/simple-mode -1))
+
+(defun swb/insert-after-line-text ()
+  (interactive)
+  (end-of-line)
   (swb/simple-mode -1))
 
 (defun swb/insert-below ()
@@ -478,10 +525,12 @@
            (";" . exchange-point-and-mark)
            ("'" . repeat)
 
-           ("i" . swb/insert-before)
-           ("I" . swb/insert-above)
-           ("a" . swb/insert-after)
-           ("A" . swb/insert-below)
+           ("i"   . swb/insert-before)
+           ("a"   . swb/insert-after)
+           ("I"   . swb/insert-before-line-text)
+           ("A"   . swb/insert-after-line-text)
+           ("M-i" . swb/insert-above)
+           ("M-a" . swb/insert-below)
 
            ("d" . swb/kill)
            ("c" . swb/change)
@@ -497,6 +546,12 @@
            ("<"   . mc/mark-previous-like-this)
            (">"   . mc/mark-next-like-this)
            ("/"   . swb/quit-mcs)
+
+           ("g d"   . xref-find-definitions)
+           ("g r"   . xref-find-references)
+           ("g n f" . flymake-goto-next-error)
+           ("g n c" . next-error)
+           ("g n s" . scroll-up)
            )
 
 (bind-key "," (swb/prompt-once-run-for-all-cursors swb/mark-in-text-object) swb/simple-mode-map)

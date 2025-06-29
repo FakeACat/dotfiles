@@ -60,6 +60,7 @@
         meow-yank
         replace-regexp
         swb/change
+        swb/expand-inside-pairs
         swb/expand-or-arg-1
         swb/insert-above
         swb/insert-after
@@ -83,6 +84,7 @@
         swb/without-expand/next-line
         swb/without-expand/previous-line
         swb/without-expand/swb/select-join
+        swb/without-expand/swb/select-line
         swb/without-expand/swb/select-next-symbol
         swb/without-expand/swb/select-prev-symbol
         upcase-dwim
@@ -95,6 +97,7 @@
         corfu-quit
         hydra--digit-argument
         hydra--negative-argument
+        ignore
         mc/mark-next-lines
         meow-describe-key
         meow-keypad
