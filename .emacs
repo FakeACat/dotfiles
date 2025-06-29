@@ -266,12 +266,21 @@
       (back-to-indentation))))
 
 (defun swb/find-delimiter (opener closer back till)
+  (cl-assert (= (length opener) 1))
+  (cl-assert (= (length closer) 1))
+
   (let ((search-fn (if back 'search-backward 'search-forward))
         (push (if back closer opener))
         (pop (if back opener closer))
         (initial-point (point))
         (layers 1)
         (failed nil))
+
+    (unless till
+      (let ((next-char (if back (char-before) (char-after))))
+        (when (= next-char (string-to-char push))
+          (forward-char (if back -1 1)))))
+
     (while (and (> layers 0) (not failed))
       (let* ((next-push (save-excursion (funcall search-fn push nil t)))
              (next-pop (save-excursion (funcall search-fn pop nil t)))
@@ -286,6 +295,7 @@
          (t
           (goto-char next-push)
           (setq layers (+ layers 1))))))
+
     (if failed
         (goto-char initial-point)
       (when till (forward-char (if back 1 -1))))))
@@ -293,7 +303,11 @@
 (defvar swb/text-objects)
 
 (defun swb/add-text-object (char inner-beg inner-end &optional outer-beg outer-end)
-  (push (list char . (inner-beg inner-end (or outer-beg inner-beg) (or outer-end inner-end))) swb/text-objects))
+  (push (list char . (inner-beg
+                      inner-end
+                      (or outer-beg inner-beg)
+                      (or outer-end inner-end)))
+        swb/text-objects))
 
 (defun swb/add-delimited-text-object (char opener closer)
   (swb/add-text-object char
