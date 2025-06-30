@@ -274,7 +274,8 @@
         (pop (if back opener closer))
         (initial-point (point))
         (layers 1)
-        (failed nil))
+        (failed nil)
+        (first-pop nil))
 
     (unless till
       (let ((next-char (if back (char-before) (char-after))))
@@ -291,13 +292,15 @@
           (setq failed t))
          ((or (not next-push) (< pop-dist push-dist))
           (goto-char next-pop)
-          (setq layers (- layers 1)))
+          (setq layers (- layers 1))
+          (when (= layers 1) (unless first-pop (setq first-pop next-pop))))
          (t
           (goto-char next-push)
           (setq layers (+ layers 1))))))
 
     (if failed
-        (goto-char initial-point)
+        (progn (goto-char (or first-pop initial-point))
+               (when (and till first-pop) (forward-char (if back 1 -1))))
       (when till (forward-char (if back 1 -1))))))
 
 (defvar swb/text-objects)
