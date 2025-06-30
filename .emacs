@@ -277,10 +277,11 @@
         (failed nil)
         (first-pop nil))
 
-    (unless till
-      (let ((next-char (if back (char-before) (char-after))))
-        (when (= next-char (string-to-char push))
-          (forward-char (if back -1 1)))))
+    ;; needs to skip over pop symbols if till, else skip over push symbols
+    ;; this lets regions expand correctly
+    (let ((next-char (if back (char-before) (char-after))))
+      (when (= next-char (string-to-char (if till pop push)))
+        (forward-char (if back -1 1))))
 
     (while (and (> layers 0) (not failed))
       (let* ((next-push (save-excursion (funcall search-fn push nil t)))
@@ -352,19 +353,28 @@
       (swb/go-to-text-object-outer-beg (- n) char)
     (dotimes (i n) (swb/execute-text-object-fn char 3))))
 
+(defun swb/mark-between (n char beg-fn end-fn)
+  (if mark-active
+      (let ((start (if (< (point) (mark)) (point) (mark)))
+            (end (if (> (point) (mark)) (point) (mark))))
+        (goto-char end)
+        (funcall end-fn 1 char)
+        (swb/stop-marking)
+        (swb/start-marking)
+        (goto-char start)
+        (funcall beg-fn 1 char))
+    (funcall end-fn n char)
+    (swb/stop-marking)
+    (swb/start-marking)
+    (funcall beg-fn n char)))
+
 (defun swb/mark-in-text-object (n char)
   (interactive "p\ncObject:")
-  (swb/go-to-text-object-inner-end n char)
-  (swb/stop-marking)
-  (swb/start-marking)
-  (swb/go-to-text-object-inner-beg n char))
+  (swb/mark-between n char 'swb/go-to-text-object-inner-beg 'swb/go-to-text-object-inner-end))
 
 (defun swb/mark-around-text-object (n char)
   (interactive "p\ncObject:")
-  (swb/go-to-text-object-outer-end n char)
-  (swb/stop-marking)
-  (swb/start-marking)
-  (swb/go-to-text-object-outer-beg n char))
+  (swb/mark-between n char 'swb/go-to-text-object-outer-beg 'swb/go-to-text-object-outer-end))
 
 (setq swb/text-objects nil) ;; just makes it easier to re-eval all this
 (swb/add-text-object ?p 'start-of-paragraph-text 'end-of-paragraph-text 'backward-paragraph 'forward-paragraph)
