@@ -327,13 +327,6 @@
                        `(lambda () (interactive) (swb/find-delimiter ,opener ,closer t nil))
                        `(lambda () (interactive) (swb/find-delimiter ,opener ,closer nil nil))))
 
-(defun swb/add-within-char-text-object (char bounds)
-  (swb/add-text-object char
-                       `(lambda () (interactive) (swb/till -1 ,bounds))
-                       `(lambda () (interactive) (swb/till 1 ,bounds))
-                       `(lambda () (interactive) (forward-char -1) (swb/find -1 ,bounds))
-                       `(lambda () (interactive) (forward-char 1) (swb/find 1 ,bounds))))
-
 (defun swb/execute-text-object-fn (char element)
   (let ((object (assoc char swb/text-objects)))
     (unless object (user-error (format "Invalid object \"%c\"" char)))
@@ -401,10 +394,6 @@
 (swb/add-delimited-text-object ?c "{" "}")
 (swb/add-delimited-text-object ?s "[" "]")
 (swb/add-delimited-text-object ?a "<" ">")
-
-(swb/add-within-char-text-object ?\  ?\ )
-(swb/add-within-char-text-object ?\" ?\")
-(swb/add-within-char-text-object ?\' ?\')
 
 (defun swb/go-to-beginning-of-region () (interactive) (when (and mark-active (> (point) (mark))) (exchange-point-and-mark)))
 (defun swb/go-to-end-of-region () (interactive) (when (and mark-active (< (point) (mark))) (exchange-point-and-mark)))
@@ -511,6 +500,16 @@
       (setq end (+ end (if (< arg 0) 1 -1)))
       (swb/start-marking)
       (goto-char end))))
+
+(defun swb/make-repeat-behave-with-multiple-cursors (orig-fn repeat-arg)
+  (when (eq last-repeatable-command 'repeat)
+    (setq last-repeatable-command repeat-previous-repeated-command))
+
+  (if (memq last-repeatable-command mc/cmds-to-run-for-all)
+      (mc/execute-command-for-all-cursors (lambda () (interactive) (funcall orig-fn repeat-arg)))
+    (funcall orig-fn repeat-arg)))
+
+(advice-add 'repeat :around 'swb/make-repeat-behave-with-multiple-cursors)
 
 ;; i love macros
 (defmacro swb/with-expand (normal-key expand-key fn &optional prompt-once-run-for-all-cursors)

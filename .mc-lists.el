@@ -95,6 +95,7 @@
       '(
         Custom-save
         corfu-quit
+        describe-variable
         hydra--digit-argument
         hydra--negative-argument
         ignore
@@ -105,6 +106,7 @@
         multiple-cursors-mode
         project-compile
         project-find-file
+        repeat
         swb/delete-current-cursor
         swb/mark-around-text-object
         swb/mark-in-text-object
@@ -133,6 +135,7 @@
         swb/prompt-once-run-for-all-cursors/swb/mark-around-text-object
         swb/prompt-once-run-for-all-cursors/swb/mark-in-text-object
         swb/simple-mode
+        swb/smart-repeat
         swb/with-expand/swb/find
         swb/with-expand/swb/go-to-text-object-inner-beg
         swb/with-expand/swb/go-to-text-object-inner-end
