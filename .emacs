@@ -265,6 +265,15 @@
       (forward-line -1)
       (back-to-indentation))))
 
+(defun swb/maybe-skip-symbol (skippable-char-till skippable-char-find back till)
+  (let ((next-char (if back (char-before) (char-after)))
+        (prev-char (if back (char-after) (char-before))))
+    (if till
+        (when (and (= next-char (string-to-char skippable-char-till)) (/= prev-char (string-to-char skippable-char-find)))
+          (forward-char (if back -1 1)))
+      (when (= next-char (string-to-char skippable-char-find))
+        (forward-char (if back -1 1))))))
+
 (defun swb/find-delimiter (opener closer back till)
   (cl-assert (= (length opener) 1))
   (cl-assert (= (length closer) 1))
@@ -279,9 +288,7 @@
 
     ;; needs to skip over pop symbols if till, else skip over push symbols
     ;; this lets regions expand correctly
-    (let ((next-char (if back (char-before) (char-after))))
-      (when (= next-char (string-to-char (if till pop push)))
-        (forward-char (if back -1 1))))
+    (swb/maybe-skip-symbol pop push back till)
 
     (while (and (> layers 0) (not failed))
       (let* ((next-push (save-excursion (funcall search-fn push nil t)))
@@ -319,6 +326,13 @@
                        `(lambda () (interactive) (swb/find-delimiter ,opener ,closer nil t))
                        `(lambda () (interactive) (swb/find-delimiter ,opener ,closer t nil))
                        `(lambda () (interactive) (swb/find-delimiter ,opener ,closer nil nil))))
+
+(defun swb/add-within-char-text-object (char bounds)
+  (swb/add-text-object char
+                       `(lambda () (interactive) (swb/till -1 ,bounds))
+                       `(lambda () (interactive) (swb/till 1 ,bounds))
+                       `(lambda () (interactive) (forward-char -1) (swb/find -1 ,bounds))
+                       `(lambda () (interactive) (forward-char 1) (swb/find 1 ,bounds))))
 
 (defun swb/execute-text-object-fn (char element)
   (let ((object (assoc char swb/text-objects)))
@@ -387,6 +401,10 @@
 (swb/add-delimited-text-object ?c "{" "}")
 (swb/add-delimited-text-object ?s "[" "]")
 (swb/add-delimited-text-object ?a "<" ">")
+
+(swb/add-within-char-text-object ?\  ?\ )
+(swb/add-within-char-text-object ?\" ?\")
+(swb/add-within-char-text-object ?\' ?\')
 
 (defun swb/go-to-beginning-of-region () (interactive) (when (and mark-active (> (point) (mark))) (exchange-point-and-mark)))
 (defun swb/go-to-end-of-region () (interactive) (when (and mark-active (< (point) (mark))) (exchange-point-and-mark)))
