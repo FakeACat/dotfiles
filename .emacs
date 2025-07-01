@@ -265,15 +265,6 @@
       (forward-line -1)
       (back-to-indentation))))
 
-(defun swb/maybe-skip-symbol (skippable-char-till skippable-char-find back till)
-  (let ((next-char (if back (char-before) (char-after)))
-        (prev-char (if back (char-after) (char-before))))
-    (if till
-        (when (and (= next-char (string-to-char skippable-char-till)) (/= prev-char (string-to-char skippable-char-find)))
-          (forward-char (if back -1 1)))
-      (when (= next-char (string-to-char skippable-char-find))
-        (forward-char (if back -1 1))))))
-
 (defun swb/find-delimiter (opener closer back till)
   (cl-assert (= (length opener) 1))
   (cl-assert (= (length closer) 1))
@@ -288,7 +279,13 @@
 
     ;; needs to skip over pop symbols if till, else skip over push symbols
     ;; this lets regions expand correctly
-    (swb/maybe-skip-symbol pop push back till)
+    (let ((next-char (if back (char-before) (char-after)))
+          (prev-char (if back (char-after) (char-before))))
+      (if till
+          (when (and (= next-char (string-to-char pop)) (/= prev-char (string-to-char push)))
+            (forward-char (if back -1 1)))
+        (when (= next-char (string-to-char push))
+          (forward-char (if back -1 1)))))
 
     (while (and (> layers 0) (not failed))
       (let* ((next-push (save-excursion (funcall search-fn push nil t)))
@@ -360,22 +357,34 @@
       (swb/go-to-text-object-outer-beg (- n) char)
     (dotimes (i n) (swb/execute-text-object-fn char 3))))
 
+(defun swb/at-edge-of-text-object (char direction beg-fn end-fn &optional pt)
+  (save-mark-and-excursion
+    (when pt (goto-char pt))
+    (let ((initial-pos (point)))
+      (funcall beg-fn direction char)
+      (funcall end-fn direction char)
+      (eq (point) initial-pos))))
+
 (defun swb/mark-between (n char beg-fn end-fn)
   (let ((direction (if (< n 0) -1 1)))
     (dotimes (i (abs n))
       (if mark-active
-          (let ((start (if (< (point) (mark)) (point) (mark)))
-                (end (if (> (point) (mark)) (point) (mark))))
+          (let* ((start (if (< (point) (mark)) (point) (mark)))
+                 (end (if (> (point) (mark)) (point) (mark)))
+                 (start-at-edge (swb/at-edge-of-text-object char -1 beg-fn end-fn start))
+                 (end-at-edge (swb/at-edge-of-text-object char 1 beg-fn end-fn end))
+                 (full-object-marked (and start-at-edge end-at-edge)))
             (goto-char end)
-            (funcall end-fn direction char)
+            (when (or (not end-at-edge) full-object-marked) (funcall end-fn direction char))
             (swb/stop-marking)
             (swb/start-marking)
             (goto-char start)
-            (funcall beg-fn direction char))
-        (funcall end-fn direction char)
-        (swb/stop-marking)
-        (swb/start-marking)
-        (funcall beg-fn direction char)))))
+            (when (or (not start-at-edge) full-object-marked) (funcall beg-fn direction char)))
+        (let ((direction (if (swb/at-edge-of-text-object char direction beg-fn end-fn) (- direction) direction)))
+          (funcall end-fn direction char)
+          (swb/stop-marking)
+          (swb/start-marking)
+          (funcall beg-fn direction char))))))
 
 (defun swb/mark-in-text-object (n char)
   (interactive "p\ncObject:")
