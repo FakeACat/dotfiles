@@ -512,6 +512,16 @@
       (swb/start-marking)
       (goto-char end))))
 
+(defun swb/up (arg)
+  (interactive "p")
+  (forward-line (- (* arg 30)))
+  (recenter))
+
+(defun swb/down (arg)
+  (interactive "p")
+  (forward-line (* arg 30))
+  (recenter))
+
 (defun swb/make-repeat-behave-with-multiple-cursors (orig-fn repeat-arg)
   (when (eq last-repeatable-command 'repeat)
     (setq last-repeatable-command repeat-previous-repeated-command))
@@ -602,11 +612,10 @@
            (">"   . mc/mark-next-like-this)
            ("/"   . swb/quit-mcs)
 
-           ("g d"   . xref-find-definitions)
-           ("g r"   . xref-find-references)
-           ("g n f" . flymake-goto-next-error)
-           ("g n c" . next-error)
-           ("g n s" . scroll-up)
+           ("g d" . xref-find-definitions)
+           ("g r" . xref-find-references)
+           ("g f" . flymake-goto-next-error)
+           ("g c" . next-error)
            )
 
 (bind-key "," (swb/prompt-once-run-for-all-cursors swb/mark-in-text-object) swb/simple-mode-map)
@@ -616,6 +625,9 @@
 (swb/with-expand "j" "J" next-line)
 (swb/with-expand "k" "K" previous-line)
 (swb/with-expand "l" "L" forward-char)
+
+(swb/with-expand "M-j" "M-J" swb/down)
+(swb/with-expand "M-k" "M-K" swb/up)
 
 (swb/with-expand "e" "E" swb/select-next-symbol)
 (swb/with-expand "b" "B" swb/select-prev-symbol)
