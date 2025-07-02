@@ -13,9 +13,12 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(eglot-highlight-symbol-face ((t (:inherit bold :foreground "yellow"))))
+ '(eglot-highlight-symbol-face ((t (:foreground "#FF00FF"))))
  '(eglot-inlay-hint-face ((t (:inherit shadow))))
  '(flymake-end-of-line-diagnostics-face ((t (:inherit nil :box nil :height 1.0))))
+ '(flymake-error ((t (:inherit error :underline t))))
+ '(flymake-note ((t (:inherit success :underline t))))
+ '(flymake-warning ((t (:inherit warning :underline t))))
  '(mc/cursor-face ((t (:background "#FFAAAA" :foreground "#000000" :inverse-video nil))))
  '(mode-line ((t (:box nil))))
  '(mode-line-inactive ((t (:box nil)))))
@@ -71,11 +74,7 @@
 (use-package frame :config (blink-cursor-mode -1))
 (use-package window :bind ("M-o" . other-window))
 (use-package show-paren :custom (show-paren-delay 0))
-
-(use-package flymake
-  :custom
-  (flymake-show-diagnostics-at-end-of-line 1)
-  (flymake-indicator-type 'fringes))
+(use-package flymake :custom (flymake-indicator-type 'fringes))
 
 (use-package custom
   :config
@@ -233,15 +232,15 @@
 (global-set-key (kbd "<escape>") 'swb/simple-mode)
 
 (define-minor-mode swb/simple-mode "Simple editing mode"
+  :init-value t
   :keymap (make-sparse-keymap)
   :after-hook
   (deactivate-mark)
-  (corfu-quit))
+  (corfu-quit)
+  (force-mode-line-update))
 
-(add-hook 'prog-mode-hook 'swb/simple-mode)
-(add-hook 'magit-mode-hook 'swb/simple-mode)
+(add-hook 'minibuffer-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
 (add-hook 'git-commit-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
-(add-hook 'help-mode-hook 'swb/simple-mode)
 
 (defun swb/start-marking () (interactive) (when (not mark-active) (set-mark (point))))
 (defun swb/stop-marking () (interactive) (when mark-active (deactivate-mark)))
