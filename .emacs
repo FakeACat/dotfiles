@@ -196,6 +196,7 @@
   :config
   ;; don't want C-g to quit multiple cursors
   (push 'corfu-mode mc/unsupported-minor-modes)
+  (push 'swb/point-and-mark-ring mc/cursor-specific-vars)
   (defun mc/keyboard-quit () (interactive) (when (use-region-p) (deactivate-mark)))
   (defun swb/quit-mcs () (interactive) (mc/disable-multiple-cursors-mode)))
 
@@ -519,6 +520,49 @@
   (forward-line (* arg 30))
   (recenter))
 
+(defun swb/ring-rotate (ring &optional back)
+  (if back
+      (let ((element (ring-remove ring)))
+        (ring-insert ring element)
+        element)
+    (let ((element (ring-remove ring 0)))
+      (ring-insert-at-beginning ring element)
+      element)))
+
+(defun swb/make-point-and-mark-ring () (make-ring 20))
+
+(defvar-local swb/point-and-mark-ring (swb/make-point-and-mark-ring))
+(defvar-local swb/last-point-push-command nil)
+
+(defun swb/at-point-and-mark (point-and-mark)
+  (and (eq (car point-and-mark) (point))
+       (eq (cadr point-and-mark) (if mark-active (mark) nil))))
+
+(defun swb/maybe-push-point-to-ring ()
+  (unless (or (and (not (ring-empty-p swb/point-and-mark-ring))
+                   (swb/at-point-and-mark (ring-ref swb/point-and-mark-ring 0)))
+              (eq this-command 'swb/pop-point-and-mark-from-ring))
+    (ring-insert swb/point-and-mark-ring (list (point) (if mark-active (mark) nil)))
+    (setq swb/last-point-push-command last-command)))
+
+(add-hook 'pre-command-hook 'swb/maybe-push-point-to-ring)
+
+(defun swb/go-to-point-and-mark (point-and-mark)
+  (goto-char (car point-and-mark))
+  (let ((mark (cadr point-and-mark))) (if mark (set-mark mark) (deactivate-mark))))
+
+(defun swb/pop-point-and-mark-from-ring (arg)
+  (interactive "p")
+  (let* ((back (< arg 0))
+         (point-and-mark (swb/ring-rotate swb/point-and-mark-ring back)))
+    (when (swb/at-point-and-mark point-and-mark) (setq point-and-mark (swb/ring-rotate swb/point-and-mark-ring back)))
+    (swb/go-to-point-and-mark point-and-mark)))
+
+(defun swb/reset-point-and-mark-ring-for-all-cursors ()
+  (mc/execute-command-for-all-cursors (lambda () (interactive) (setq swb/point-and-mark-ring (swb/make-point-and-mark-ring)))))
+
+(advice-add 'mc/maybe-multiple-cursors-mode :after 'swb/reset-point-and-mark-ring-for-all-cursors)
+
 (defun swb/make-repeat-behave-with-multiple-cursors (orig-fn repeat-arg)
   (when (eq last-repeatable-command 'repeat)
     (setq last-repeatable-command repeat-previous-repeated-command))
@@ -611,8 +655,11 @@
 
            ("g d" . xref-find-definitions)
            ("g r" . xref-find-references)
+           ("g b" . xref-go-back)
            ("g f" . flymake-goto-next-error)
            ("g c" . next-error)
+
+           ("z" . swb/pop-point-and-mark-from-ring)
            )
 
 (bind-key "," (swb/prompt-once-run-for-all-cursors swb/mark-in-text-object) swb/simple-mode-map)

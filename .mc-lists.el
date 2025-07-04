@@ -70,6 +70,8 @@
         swb/meow-line
         swb/meow-mark-symbol
         swb/place-anchor
+        swb/pop-point-and-mark-from-ring
+        swb/pop-point-from-ring
         swb/remove-anchor-and-selection
         swb/replace
         swb/with-expand/backward-char
