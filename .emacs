@@ -13,6 +13,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(eglot-diagnostic-tag-unnecessary-face ((t (:inherit shadow :underline t))))
  '(eglot-highlight-symbol-face ((t (:foreground "#FF00FF"))))
  '(eglot-inlay-hint-face ((t (:inherit shadow))))
  '(flymake-end-of-line-diagnostics-face ((t (:inherit nil :box nil :height 1.0))))
@@ -124,6 +125,7 @@
   :bind
   ("C-c e a" . eglot-code-actions)
   ("C-c e r" . eglot-rename)
+  ("C-c e o" . eglot-code-action-organize-imports)
   :custom
   (eglot-autoshutdown 1)
   (eglot-sync-connect 0)
@@ -308,6 +310,17 @@
                (when (and till first-pop) (forward-char (if back 1 -1))))
       (when till (forward-char (if back 1 -1))))))
 
+(defun swb/find-regex (regex &optional back till)
+  (let* ((search-fn          (if back 're-search-backward 're-search-forward))
+         (backward-search-fn (if back 're-search-forward 're-search-backward))
+         (end (save-excursion
+                (forward-char (if back (- 1) 1))
+                (funcall search-fn regex nil t))))
+    (swb/start-marking)
+    (when end
+      (goto-char end)
+      (when till (funcall backward-search-fn regex nil t)))))
+
 (defvar swb/text-objects)
 
 (defun swb/add-text-object (char inner-beg inner-end &optional outer-beg outer-end)
@@ -323,6 +336,14 @@
                        `(lambda () (interactive) (swb/find-delimiter ,opener ,closer nil t))
                        `(lambda () (interactive) (swb/find-delimiter ,opener ,closer t nil))
                        `(lambda () (interactive) (swb/find-delimiter ,opener ,closer nil nil))))
+
+(defun swb/add-regex-contained-text-object (char opener &optional closer)
+  (setq closer (or closer opener))
+  (swb/add-text-object char
+                       `(lambda () (interactive) (swb/find-regex ,opener t t))
+                       `(lambda () (interactive) (swb/find-regex ,closer nil t))
+                       `(lambda () (interactive) (swb/find-regex ,opener t nil))
+                       `(lambda () (interactive) (swb/find-regex ,closer nil nil))))
 
 (defun swb/execute-text-object-fn (char element)
   (let ((object (assoc char swb/text-objects)))
@@ -403,6 +424,10 @@
 (swb/add-delimited-text-object ?c "{" "}")
 (swb/add-delimited-text-object ?s "[" "]")
 (swb/add-delimited-text-object ?a "<" ">")
+
+(swb/add-regex-contained-text-object ?  "[ \n]")
+(swb/add-regex-contained-text-object ?g "\"")
+(swb/add-regex-contained-text-object ?q "'")
 
 (defun swb/go-to-beginning-of-region () (interactive) (when (and mark-active (> (point) (mark))) (exchange-point-and-mark)))
 (defun swb/go-to-end-of-region () (interactive) (when (and mark-active (< (point) (mark))) (exchange-point-and-mark)))
@@ -546,6 +571,7 @@
     (setq swb/last-point-push-command last-command)))
 
 (add-hook 'pre-command-hook 'swb/maybe-push-point-to-ring)
+(add-hook 'post-command-hook 'swb/maybe-push-point-to-ring)
 
 (defun swb/go-to-point-and-mark (point-and-mark)
   (goto-char (car point-and-mark))
