@@ -5,8 +5,7 @@
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
  '(package-selected-packages
-   '(corfu-terminal expand-region odin-mode visual-regexp
-                    visual-regexp-steroids))
+   '(corfu-terminal odin-mode visual-regexp visual-regexp-steroids))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -51,7 +50,8 @@
                       (:eval (if flymake-mode flymake-mode-line-format ""))
                       "  "))
   :config
-  (defun swb/editor-mode () (if swb/simple-mode (propertize "NORMAL" 'face 'bold) (propertize "INSERT" 'face 'warning)))
+  (defun swb/editor-mode () (cond (swb/simple-mode (propertize "NORMAL" 'face 'bold))
+                                  (t               (propertize "INSERT" 'face 'warning))))
   (tool-bar-mode 0)
   (menu-bar-mode 0)
   (set-frame-parameter (selected-frame) 'alpha-background 80)
@@ -202,8 +202,6 @@
   (defun mc/keyboard-quit () (interactive) (when (use-region-p) (deactivate-mark)))
   (defun swb/quit-mcs () (interactive) (mc/disable-multiple-cursors-mode)))
 
-(use-package expand-region :ensure :demand)
-
 ;; custom modal editing
 
 ;; borrowed from meow mode
@@ -224,7 +222,7 @@
   (defun swb/fix-term-esc (frame)
     (with-selected-frame frame
       (let ((term (frame-terminal frame)))
-        (when (not (terminal-parameter term 'esc-map))
+        (unless (terminal-parameter term 'esc-map)
           (let ((esc-map (lookup-key input-decode-map [?\e])))
             (set-terminal-parameter term 'esc-map esc-map)
             (define-key input-decode-map [?\e] `(menu-item "" ,esc-map :filter ,#'swb/esc)))))))
@@ -240,12 +238,15 @@
   :after-hook
   (deactivate-mark)
   (corfu-quit)
-  (force-mode-line-update))
+  (force-mode-line-update)
+  (setq swb/anchored nil))
 
 (add-hook 'minibuffer-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
 (add-hook 'git-commit-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
 
-(defun swb/start-marking () (interactive) (when (not mark-active) (set-mark (point))))
+(defvar-local swb/anchored nil)
+
+(defun swb/start-marking () (interactive) (unless mark-active (set-mark (point))))
 (defun swb/stop-marking () (interactive) (when mark-active (deactivate-mark)))
 
 (defun swb/backward-line ()
@@ -350,68 +351,21 @@
     (unless object (user-error (format "Invalid object \"%c\"" char)))
     (funcall (nth element (cdr object)))))
 
-(defun swb/go-to-text-object-generic (n char forward-index backward-index)
-  (swb/start-marking)
-  (if (> n 0)
-      (dotimes (i n) (swb/execute-text-object-fn char forward-index))
-    (let ((initial-pos (point))
-          (backward-pos (progn (swb/execute-text-object-fn char backward-index) (point))))
-      (when (eq initial-pos backward-pos) (error "Unable to move backwards"))
-      (let ((back (> backward-pos initial-pos)))
-        (swb/execute-text-object-fn char forward-index)
-        (when (or (and back (<= (point) initial-pos))
-                  (and (not back) (>= (point) initial-pos)))
-          (goto-char backward-pos)
-          (swb/execute-text-object-fn char backward-index)
-          (swb/execute-text-object-fn char forward-index))))
-    (let ((extra-jumps (- n)))
-      (when (> extra-jumps 1)
-        (dotimes (i extra-jumps) (swb/execute-text-object-fn char backward-index))
-        (swb/execute-text-object-fn char forward-index)))))
+(defun swb/select-text-object-generic (n char forward-index backward-index)
+  (when (< n 0)
+    (setq n (- n))
+    (cl-rotatef forward-index backward-index))
+  (when swb/anchored (swb/start-marking))
+  (dotimes (i n) (swb/execute-text-object-fn char forward-index))
+  (unless swb/anchored
+    (set-mark (point))
+    (swb/execute-text-object-fn char backward-index)
+    (exchange-point-and-mark)))
 
-(defun swb/go-to-text-object-inner-beg (n char) (interactive "p\ncObject:") (swb/go-to-text-object-generic n char 0 1))
-(defun swb/go-to-text-object-inner-end (n char) (interactive "p\ncObject:") (swb/go-to-text-object-generic n char 1 0))
-(defun swb/go-to-text-object-outer-beg (n char) (interactive "p\ncObject:") (swb/go-to-text-object-generic n char 2 3))
-(defun swb/go-to-text-object-outer-end (n char) (interactive "p\ncObject:") (swb/go-to-text-object-generic n char 3 2))
-
-(defun swb/at-edge-of-text-object (char beg-fn end-fn &optional pt)
-  (save-mark-and-excursion
-    (when pt (goto-char pt))
-    (let ((initial-pos (point)))
-      (funcall beg-fn 1 char)
-      (funcall end-fn 1 char)
-      (eq (point) initial-pos))))
-
-(defun swb/mark-between (n char beg-fn end-fn)
-  (when (< n 0) (cl-rotatef beg-fn end-fn))
-  (dotimes (i (abs n))
-    (if mark-active
-        (let* ((start (if (< (point) (mark)) (point) (mark)))
-               (end (if (> (point) (mark)) (point) (mark)))
-               (start-at-edge (swb/at-edge-of-text-object char end-fn beg-fn start))
-               (end-at-edge (swb/at-edge-of-text-object char beg-fn end-fn end))
-               (full-object-marked (and start-at-edge end-at-edge)))
-          (goto-char end)
-          (when (or (not end-at-edge) full-object-marked) (funcall end-fn 1 char))
-          (swb/stop-marking)
-          (swb/start-marking)
-          (goto-char start)
-          (when (or (not start-at-edge) full-object-marked) (funcall beg-fn 1 char)))
-      (when (and (swb/at-edge-of-text-object char beg-fn end-fn)
-                 (not (swb/at-edge-of-text-object char end-fn beg-fn)))
-        (cl-rotatef beg-fn end-fn))
-      (funcall end-fn 1 char)
-      (swb/stop-marking)
-      (swb/start-marking)
-      (funcall beg-fn 1 char))))
-
-(defun swb/mark-in-text-object (n char)
-  (interactive "p\ncObject:")
-  (swb/mark-between n char 'swb/go-to-text-object-inner-beg 'swb/go-to-text-object-inner-end))
-
-(defun swb/mark-around-text-object (n char)
-  (interactive "p\ncObject:")
-  (swb/mark-between n char 'swb/go-to-text-object-outer-beg 'swb/go-to-text-object-outer-end))
+(defun swb/select-prev-text-object-inner (n char) (interactive "p\ncObject:") (swb/select-text-object-generic n char 0 1))
+(defun swb/select-next-text-object-inner (n char) (interactive "p\ncObject:") (swb/select-text-object-generic n char 1 0))
+(defun swb/select-prev-text-object-outer (n char) (interactive "p\ncObject:") (swb/select-text-object-generic n char 2 3))
+(defun swb/select-next-text-object-outer (n char) (interactive "p\ncObject:") (swb/select-text-object-generic n char 3 2))
 
 (setq swb/text-objects nil) ;; just makes it easier to re-eval all this
 (swb/add-text-object ?p 'start-of-paragraph-text 'end-of-paragraph-text 'backward-paragraph 'forward-paragraph)
@@ -419,6 +373,8 @@
 (swb/add-text-object ?b 'beginning-of-buffer 'end-of-buffer)
 (swb/add-text-object ?x 'backward-sexp 'forward-sexp)
 (swb/add-text-object ?f 'beginning-of-defun 'end-of-defun)
+(swb/add-text-object ?w 'backward-word 'forward-word)
+(swb/add-text-object ?W (lambda () (forward-symbol -1)) (lambda () (forward-symbol 1)))
 
 (swb/add-delimited-text-object ?r "(" ")")
 (swb/add-delimited-text-object ?c "{" "}")
@@ -470,11 +426,13 @@
 
 (defun swb/kill ()
   (interactive)
-  (if mark-active (kill-region nil nil t) (delete-char 1)))
+  (if mark-active (kill-region nil nil t) (delete-char 1))
+  (setq swb/anchored nil))
 
 (defun swb/delete ()
   (interactive)
-  (if mark-active (delete-region (point) (mark)) (delete-char 1)))
+  (if mark-active (delete-region (point) (mark)) (delete-char 1))
+  (setq swb/anchored nil))
 
 (defun swb/change ()
   (interactive)
@@ -488,16 +446,11 @@
 
 (defun swb/select-next-symbol (arg)
   (interactive "p")
-  (forward-symbol arg)
-  (when (not mark-active)
-    (er/mark-symbol)
-    (exchange-point-and-mark)))
+  (swb/select-next-text-object-inner arg ?W))
 
 (defun swb/select-prev-symbol (arg)
   (interactive "p")
-  (forward-symbol (- arg))
-  (when (not mark-active)
-    (er/mark-symbol)))
+  (swb/select-prev-text-object-inner arg ?W))
 
 (defun swb/select-line (arg)
   (interactive "p")
@@ -510,17 +463,11 @@
     (beginning-of-line)
     (exchange-point-and-mark)))
 
-(defun swb/select-join (arg)
-  (interactive "p")
-  (if (< arg 0) (back-to-indentation) (end-of-line))
-  (swb/start-marking)
-  (forward-line arg)
-  (if (< arg 0) (end-of-line) (back-to-indentation)))
-
 (defun swb/find (arg char)
   (interactive "p\ncFind:")
   (let ((end (save-mark-and-excursion (search-forward (char-to-string char) nil t arg))))
     (when end
+      (unless swb/anchored (deactivate-mark))
       (swb/start-marking)
       (goto-char end))))
 
@@ -532,18 +479,9 @@
                  (search-forward (char-to-string char) nil t arg)))))
     (when end
       (setq end (+ end (if (< arg 0) 1 -1)))
+      (unless swb/anchored (deactivate-mark))
       (swb/start-marking)
       (goto-char end))))
-
-(defun swb/up (arg)
-  (interactive "p")
-  (forward-line (- (* arg 30)))
-  (recenter))
-
-(defun swb/down (arg)
-  (interactive "p")
-  (forward-line (* arg 30))
-  (recenter))
 
 (defun swb/ring-rotate (ring &optional back)
   (if back
@@ -599,35 +537,25 @@
 
 (advice-add 'repeat :around 'swb/make-repeat-behave-with-multiple-cursors)
 
-;; i love macros
-(defmacro swb/with-expand (normal-key expand-key fn &optional prompt-once-run-for-all-cursors)
-  (let ((without-expand-symbol (intern (format "swb/without-expand/%s" fn)))
-        (with-expand-symbol    (intern (format "swb/with-expand/%s" fn))))
-    (list 'progn
-          (list 'defun without-expand-symbol '(&rest args)
-                (interactive-form fn)
-                (if prompt-once-run-for-all-cursors
-                    `(mc/execute-command-for-all-cursors
-                      (lambda ()
-                        (interactive)
-                        (swb/stop-marking)
-                        ,(list 'apply (list 'quote fn) 'args)))
-                  `(progn
-                     (swb/stop-marking)
-                     ,(list 'apply (list 'quote fn) 'args))))
-          (list 'defun with-expand-symbol '(&rest args)
-                (interactive-form fn)
-                (if prompt-once-run-for-all-cursors
-                    `(mc/execute-command-for-all-cursors
-                      (lambda ()
-                        (interactive)
-                        (swb/start-marking)
-                        ,(list 'apply (list 'quote fn) 'args)))
-                  `(progn
-                     (swb/start-marking)
-                     ,(list 'apply (list 'quote fn) 'args))))
-          (list 'bind-key normal-key (list 'quote without-expand-symbol) 'swb/simple-mode-map)
-          (list 'bind-key expand-key (list 'quote with-expand-symbol)    'swb/simple-mode-map))))
+(defun swb/forward-char-update-mark (&optional n)
+  (interactive "p")
+  (if swb/anchored (swb/start-marking) (deactivate-mark))
+  (forward-char n))
+
+(defun swb/backward-char-update-mark (&optional n)
+  (interactive "p")
+  (if swb/anchored (swb/start-marking) (deactivate-mark))
+  (backward-char n))
+
+(defun swb/forward-line-update-mark (&optional n)
+  (interactive "p")
+  (if swb/anchored (swb/start-marking) (deactivate-mark))
+  (next-line n))
+
+(defun swb/backward-line-update-mark (&optional n)
+  (interactive "p")
+  (if swb/anchored (swb/start-marking) (deactivate-mark))
+  (previous-line n))
 
 (defmacro swb/prompt-once-run-for-all-cursors (fn)
   (let ((name (intern (format "swb/prompt-once-run-for-all-cursors/%s" fn))))
@@ -641,7 +569,7 @@
 (bind-key [remap self-insert-command] 'ignore 'swb/simple-mode-map)
 
 (bind-keys :map swb/simple-mode-map
-           ("<escape>" . (lambda () (interactive) (deactivate-mark)))
+           ("<escape>" . (lambda () (interactive) (deactivate-mark) (setq swb/anchored nil)))
 
            ("1" . digit-argument)
            ("2" . digit-argument)
@@ -670,7 +598,17 @@
            ("p" . yank)
            ("r" . swb/replace)
 
-           ("o" . er/expand-region)
+           ("h" . swb/backward-char-update-mark)
+           ("j" . swb/forward-line-update-mark)
+           ("k" . swb/backward-line-update-mark)
+           ("l" . swb/forward-char-update-mark)
+
+           ("e" . swb/select-next-symbol)
+           ("b" . swb/select-prev-symbol)
+
+           ("x" . swb/select-line)
+
+           ("v" . (lambda () (interactive) (setq swb/anchored t)))
 
            ("s"   . vr/mc-mark)
            ("M-<" . mc/skip-to-previous-like-this)
@@ -688,28 +626,11 @@
            ("z" . swb/pop-point-and-mark-from-ring)
            )
 
-(bind-key "," (swb/prompt-once-run-for-all-cursors swb/mark-in-text-object) swb/simple-mode-map)
-(bind-key "." (swb/prompt-once-run-for-all-cursors swb/mark-around-text-object) swb/simple-mode-map)
+(bind-key "f" (swb/prompt-once-run-for-all-cursors swb/find) swb/simple-mode-map)
+(bind-key "t" (swb/prompt-once-run-for-all-cursors swb/till) swb/simple-mode-map)
 
-(swb/with-expand "h" "H" backward-char)
-(swb/with-expand "j" "J" next-line)
-(swb/with-expand "k" "K" previous-line)
-(swb/with-expand "l" "L" forward-char)
+(bind-key "[" (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-inner) swb/simple-mode-map)
+(bind-key "]" (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-inner) swb/simple-mode-map)
 
-(swb/with-expand "M-j" "M-J" swb/down)
-(swb/with-expand "M-k" "M-K" swb/up)
-
-(swb/with-expand "e" "E" swb/select-next-symbol)
-(swb/with-expand "b" "B" swb/select-prev-symbol)
-
-(swb/with-expand "x" "X" swb/select-line)
-(swb/with-expand "m" "M" swb/select-join)
-
-(swb/with-expand "f" "F" swb/find t)
-(swb/with-expand "t" "T" swb/till t)
-
-(swb/with-expand "[" "{" swb/go-to-text-object-inner-beg t)
-(swb/with-expand "]" "}" swb/go-to-text-object-inner-end t)
-
-(swb/with-expand "M-[" "M-{" swb/go-to-text-object-outer-beg t)
-(swb/with-expand "M-]" "M-}" swb/go-to-text-object-outer-end t)
+(bind-key "M-[" (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-outer) swb/simple-mode-map)
+(bind-key "M-]" (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-outer) swb/simple-mode-map)

@@ -59,9 +59,14 @@
         meow-to-block
         meow-yank
         replace-regexp
+        swb/backward-char-update-mark
+        swb/backward-line-update-mark
         swb/change
+        swb/enable-or-reset-anchor
         swb/expand-inside-pairs
         swb/expand-or-arg-1
+        swb/forward-char-update-mark
+        swb/forward-line-update-mark
         swb/insert-above
         swb/insert-after
         swb/insert-before
@@ -74,6 +79,8 @@
         swb/pop-point-from-ring
         swb/remove-anchor-and-selection
         swb/replace
+        swb/select-next-symbol
+        swb/select-prev-symbol
         swb/with-expand/backward-char
         swb/with-expand/forward-char
         swb/with-expand/next-line
@@ -134,8 +141,10 @@
         swb/multiple-cursors-hydra/nil
         swb/multiple-cursors-hydra/swb/delete-current-cursor
         swb/multiple-cursors-hydra/swb/delete-current-cursor-backwards
+        swb/prompt-once-run-for-all-cursors/swb/go-to-text-object-inner-end
         swb/prompt-once-run-for-all-cursors/swb/mark-around-text-object
         swb/prompt-once-run-for-all-cursors/swb/mark-in-text-object
+        swb/prompt-once-run-for-all-cursors/swb/select-prev-text-object-inner
         swb/simple-mode
         swb/smart-repeat
         swb/with-expand/swb/find
