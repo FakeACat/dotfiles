@@ -268,6 +268,17 @@
       (forward-line -1)
       (back-to-indentation))))
 
+(defun swb/forward-line-join ()
+  (let ((indentation (save-mark-and-excursion (back-to-indentation) (point))))
+    (if (> indentation (point))
+        (goto-char indentation)
+      (forward-line)
+      (back-to-indentation))))
+
+(defun swb/backward-line-join ()
+  (forward-line -1)
+  (end-of-line))
+
 (defun swb/find-delimiter (opener closer back till)
   (cl-assert (= (length opener) 1))
   (cl-assert (= (length closer) 1))
@@ -375,6 +386,7 @@
 (swb/add-text-object ?f 'beginning-of-defun 'end-of-defun)
 (swb/add-text-object ?w 'backward-word 'forward-word)
 (swb/add-text-object ?W (lambda () (forward-symbol -1)) (lambda () (forward-symbol 1)))
+(swb/add-text-object ?j 'swb/backward-line-join 'swb/forward-line-join)
 
 (swb/add-delimited-text-object ?r "(" ")")
 (swb/add-delimited-text-object ?c "{" "}")
@@ -452,7 +464,7 @@
   (interactive "p")
   (swb/select-prev-text-object-inner arg ?W))
 
-(defun swb/select-line (arg)
+(defun swb/expand-to-lines (arg)
   (interactive "p")
   (swb/start-marking)
   (let ((flip (< (point) (mark))))
@@ -606,7 +618,7 @@
            ("e" . swb/select-next-symbol)
            ("b" . swb/select-prev-symbol)
 
-           ("x" . swb/select-line)
+           ("x" . swb/expand-to-lines)
 
            ("v" . (lambda () (interactive) (setq swb/anchored t)))
 
