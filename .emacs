@@ -226,7 +226,11 @@
   (add-hook 'after-make-frame-functions 'swb/fix-term-esc)
   (mapc 'swb/fix-term-esc (frame-list)))
 
-(global-set-key (kbd "<escape>") 'swb/simple-mode)
+(defun swb/simple-mode-or-exit-minibuffer ()
+  (interactive)
+  (if (minibufferp) (abort-minibuffers) (swb/simple-mode 1)))
+
+(global-set-key (kbd "<escape>") 'swb/simple-mode-or-exit-minibuffer)
 
 (define-minor-mode swb/simple-mode "Simple editing mode"
   :init-value t
@@ -401,16 +405,17 @@
   (swb/go-to-beginning-of-region)
   (swb/simple-mode -1))
 
-(defun swb/insert-before-line-text ()
-  (interactive)
-  (back-to-indentation)
-  (swb/simple-mode -1))
-
-(defun swb/insert-above ()
-  (interactive)
+(defun swb/newline-above (arg)
+  (interactive "p")
   (swb/go-to-beginning-of-region)
-  (goto-char (line-beginning-position))
-  (save-mark-and-excursion (newline))
+  (beginning-of-line)
+  (newline arg))
+
+(defun swb/insert-above (arg)
+  (interactive "p")
+  (swb/go-to-beginning-of-region)
+  (beginning-of-line)
+  (save-mark-and-excursion (newline arg))
   (indent-according-to-mode)
   (swb/simple-mode -1))
 
@@ -419,16 +424,18 @@
   (swb/go-to-end-of-region)
   (swb/simple-mode -1))
 
-(defun swb/insert-after-line-text ()
-  (interactive)
-  (end-of-line)
-  (swb/simple-mode -1))
+(defun swb/newline-below (arg)
+  (interactive "p")
+  (save-excursion
+    (swb/go-to-end-of-region)
+    (end-of-line)
+    (newline arg)))
 
-(defun swb/insert-below ()
-  (interactive)
+(defun swb/insert-below (arg)
+  (interactive "p")
   (swb/go-to-end-of-region)
-  (goto-char (line-end-position))
-  (newline)
+  (end-of-line)
+  (newline arg)
   (indent-according-to-mode)
   (swb/simple-mode -1))
 
@@ -469,7 +476,17 @@
     (forward-line 1)
     (exchange-point-and-mark)
     (beginning-of-line)
-    (exchange-point-and-mark)))
+    (unless flip (exchange-point-and-mark))))
+
+(defun swb/expand-to-line-text (arg)
+  (interactive "p")
+  (swb/start-marking)
+  (let ((flip (< (point) (mark))))
+    (when flip (exchange-point-and-mark))
+    (end-of-line)
+    (exchange-point-and-mark)
+    (back-to-indentation)
+    (unless flip (exchange-point-and-mark))))
 
 (defun swb/find (arg char)
   (interactive "p\ncFind:")
@@ -595,88 +612,79 @@
 (swb/key "9" 'digit-argument)
 (swb/key "-" 'negative-argument)
 
-(swb/key "a" 'execute-extended-command)
-
 ;; movement/selection
 
-(swb/key "i" 'swb/backward-line-update-mark)
-(swb/key "j" 'swb/backward-char-update-mark)
-(swb/key "k" 'swb/forward-line-update-mark)
+(swb/key "h" 'swb/backward-char-update-mark)
+(swb/key "j" 'swb/forward-line-update-mark)
+(swb/key "k" 'swb/backward-line-update-mark)
 (swb/key "l" 'swb/forward-char-update-mark)
 
-(swb/key "u" 'swb/select-prev-symbol)
-(swb/key "o" 'swb/select-next-symbol)
+(swb/key "M-j" (lambda (arg) (interactive "p") (swb/forward-line-update-mark (* arg 30)) (recenter)))
+(swb/key "M-k" (lambda (arg) (interactive "p") (swb/backward-line-update-mark (* arg 30)) (recenter)))
 
-(swb/key "p" (swb/prompt-once-run-for-all-cursors swb/till))
-(swb/key "[" (swb/prompt-once-run-for-all-cursors swb/find))
+(swb/key "b" 'swb/select-prev-symbol)
+(swb/key "e" 'swb/select-next-symbol)
 
-(swb/key "n" (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-outer))
-(swb/key "m" (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-inner))
-(swb/key "," (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-inner))
+(swb/key "t" (swb/prompt-once-run-for-all-cursors swb/till))
+(swb/key "f" (swb/prompt-once-run-for-all-cursors swb/find))
+
+(swb/key "n" (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-inner))
+(swb/key "m" (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-inner))
+(swb/key "," (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-outer))
 (swb/key "." (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-outer))
 
-(swb/key "y" (swb/cmd (setq swb/anchored t)))
+(swb/key "v" (swb/cmd (setq swb/anchored t)))
 
-(swb/key "h" 'swb/expand-to-lines)
+(swb/key "x" 'swb/expand-to-lines)
+(swb/key "o" 'swb/expand-to-line-text)
 
 (swb/key ";" 'exchange-point-and-mark)
-(swb/key "'" 'repeat)
+(swb/key "u" 'repeat)
 
-(swb/key "/ m" 'vr/mc-mark)
-(swb/key "/ n" 'mc/mark-next-like-this)
-(swb/key "/ p" 'mc/mark-previous-like-this)
-(swb/key "/ s n" 'mc/skip-to-next-like-this)
-(swb/key "/ s p" 'mc/skip-to-previous-like-this)
-(swb/key "/ q" 'swb/quit-mcs)
+(swb/key "s" 'vr/mc-mark)
+(swb/key "/" 'swb/quit-mcs)
 
-(swb/key "]" 'swb/pop-point-and-mark-from-ring)
+(swb/key "z" 'swb/pop-point-and-mark-from-ring)
 
 ;; editing
 
-(swb/key "s" 'swb/insert-before)
-(swb/key "d" 'swb/insert-after)
-(swb/key "M-i" 'swb/insert-above)
-(swb/key "M-j" 'swb/insert-before-line-text)
-(swb/key "M-k" 'swb/insert-below)
-(swb/key "M-l" 'swb/insert-after-line-text)
+(swb/key "i" 'swb/insert-before)
+(swb/key "a" 'swb/insert-after)
 
-(swb/key "x" 'swb/kill)
-(swb/key "c" 'kill-ring-save)
-(swb/key "v" 'yank)
-(swb/key "M-v" 'yank-pop)
+(swb/key "d" 'swb/kill)
+(swb/key "y" 'kill-ring-save)
+(swb/key "p" 'yank)
+(swb/key "M-p" 'yank-pop)
 (swb/key "r" 'swb/replace)
-(swb/key "f" 'swb/change)
+(swb/key "c" 'swb/change)
 
-(swb/key "b" 'undo)
+;; pairs
 
-;; window commands
+(swb/key "[ i" 'swb/insert-above)
+(swb/key "] i" 'swb/insert-below)
 
-(swb/key "w s" 'split-window-below)
-(swb/key "w v" 'split-window-right)
-(swb/key "w q" 'delete-window)
-(swb/key "w 0" 'delete-other-windows)
+(swb/key "[ SPC" 'swb/newline-above)
+(swb/key "] SPC" 'swb/newline-below)
+
+(swb/key "[ c" 'mc/mark-previous-like-this)
+(swb/key "] c" 'mc/mark-next-like-this)
+
+(swb/key "[ M-c" 'mc/skip-to-previous-like-this)
+(swb/key "] M-c" 'mc/skip-to-next-like-this)
+
+(swb/key "[ e" 'previous-error)
+(swb/key "] e" 'next-error)
+
+(swb/key "[ f" 'flymake-goto-prev-error)
+(swb/key "] f" 'flymake-goto-next-error)
+
+;; go to commands
+
+(swb/key "g d" 'xref-find-definitions)
+(swb/key "g r" 'xref-find-references)
+(swb/key "g b" 'xref-go-back)
 
 ;; leader commands
-
-(swb/key "SPC b s" 'save-buffer)
-(swb/key "SPC b k" 'kill-buffer)
-(swb/key "SPC b t" 'switch-to-buffer)
-(swb/key "SPC q" 'save-buffers-kill-terminal)
-
-(swb/key "SPC r f" 'find-file)
-(swb/key "SPC r d" 'dired)
-(swb/key "SPC r c" 'compile)
-
-(swb/key "SPC p f" 'project-find-file)
-(swb/key "SPC p d" 'project-find-dir)
-(swb/key "SPC p c" 'project-compile)
-
-(swb/key "SPC x d" 'xref-find-definitions)
-(swb/key "SPC x r" 'xref-find-references)
-(swb/key "SPC x b" 'xref-go-back)
-
-(swb/key "SPC f" 'flymake-goto-next-error)
-(swb/key "SPC c" 'next-error)
 
 (swb/key "SPC e a" 'eglot-code-actions)
 (swb/key "SPC e r" 'eglot-rename)

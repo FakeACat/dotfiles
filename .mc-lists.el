@@ -65,6 +65,7 @@
         swb/enable-or-reset-anchor
         swb/expand-inside-pairs
         swb/expand-or-arg-1
+        swb/expand-to-lines
         swb/forward-char-update-mark
         swb/forward-line-update-mark
         swb/insert-above
@@ -146,9 +147,12 @@
         swb/prompt-once-run-for-all-cursors/swb/mark-around-text-object
         swb/prompt-once-run-for-all-cursors/swb/mark-in-text-object
         swb/prompt-once-run-for-all-cursors/swb/select-next-text-object-inner
+        swb/prompt-once-run-for-all-cursors/swb/select-next-text-object-outer
         swb/prompt-once-run-for-all-cursors/swb/select-prev-text-object-inner
+        swb/prompt-once-run-for-all-cursors/swb/select-prev-text-object-outer
         swb/prompt-once-run-for-all-cursors/swb/till
         swb/simple-mode
+        swb/simple-mode-or-exit-minibuffer
         swb/smart-repeat
         swb/with-expand/swb/find
         swb/with-expand/swb/go-to-text-object-inner-beg
