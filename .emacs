@@ -122,10 +122,6 @@
   (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter))
 
 (use-package eglot
-  :bind
-  ("C-c e a" . eglot-code-actions)
-  ("C-c e r" . eglot-rename)
-  ("C-c e o" . eglot-code-action-organize-imports)
   :custom
   (eglot-autoshutdown 1)
   (eglot-sync-connect 0)
@@ -569,6 +565,8 @@
   (if swb/anchored (swb/start-marking) (deactivate-mark))
   (previous-line n))
 
+(defmacro swb/cmd (&rest body) `(lambda (&rest _) (interactive) ,@body))
+
 (defmacro swb/prompt-once-run-for-all-cursors (fn)
   (let ((name (intern (format "swb/prompt-once-run-for-all-cursors/%s" fn))))
     `(defun ,name (&rest args)
@@ -578,71 +576,108 @@
           (interactive)
           (apply ,(list 'quote fn) args))))))
 
-(bind-key [remap self-insert-command] 'ignore 'swb/simple-mode-map)
+(defmacro swb/key (key-name command) `(bind-key ,key-name ,(macroexpand command) swb/simple-mode-map))
 
-(bind-keys :map swb/simple-mode-map
-           ("<escape>" . (lambda () (interactive) (deactivate-mark) (setq swb/anchored nil)))
+(swb/key [remap self-insert-command] 'ignore)
 
-           ("1" . digit-argument)
-           ("2" . digit-argument)
-           ("3" . digit-argument)
-           ("4" . digit-argument)
-           ("5" . digit-argument)
-           ("6" . digit-argument)
-           ("7" . digit-argument)
-           ("8" . digit-argument)
-           ("9" . digit-argument)
-           ("-" . negative-argument)
+;; misc
 
-           (";" . exchange-point-and-mark)
-           ("'" . repeat)
+(swb/key "<escape>" (swb/cmd (deactivate-mark) (setq swb/anchored nil)))
 
-           ("i"   . swb/insert-before)
-           ("a"   . swb/insert-after)
-           ("I"   . swb/insert-before-line-text)
-           ("A"   . swb/insert-after-line-text)
-           ("M-i" . swb/insert-above)
-           ("M-a" . swb/insert-below)
+(swb/key "1" 'digit-argument)
+(swb/key "2" 'digit-argument)
+(swb/key "3" 'digit-argument)
+(swb/key "4" 'digit-argument)
+(swb/key "5" 'digit-argument)
+(swb/key "6" 'digit-argument)
+(swb/key "7" 'digit-argument)
+(swb/key "8" 'digit-argument)
+(swb/key "9" 'digit-argument)
+(swb/key "-" 'negative-argument)
 
-           ("d" . swb/kill)
-           ("c" . swb/change)
-           ("y" . kill-ring-save)
-           ("p" . yank)
-           ("r" . swb/replace)
+(swb/key "a" 'execute-extended-command)
 
-           ("h" . swb/backward-char-update-mark)
-           ("j" . swb/forward-line-update-mark)
-           ("k" . swb/backward-line-update-mark)
-           ("l" . swb/forward-char-update-mark)
+;; movement/selection
 
-           ("e" . swb/select-next-symbol)
-           ("b" . swb/select-prev-symbol)
+(swb/key "i" 'swb/backward-line-update-mark)
+(swb/key "j" 'swb/backward-char-update-mark)
+(swb/key "k" 'swb/forward-line-update-mark)
+(swb/key "l" 'swb/forward-char-update-mark)
 
-           ("x" . swb/expand-to-lines)
+(swb/key "u" 'swb/select-prev-symbol)
+(swb/key "o" 'swb/select-next-symbol)
 
-           ("v" . (lambda () (interactive) (setq swb/anchored t)))
+(swb/key "p" (swb/prompt-once-run-for-all-cursors swb/till))
+(swb/key "[" (swb/prompt-once-run-for-all-cursors swb/find))
 
-           ("s"   . vr/mc-mark)
-           ("M-<" . mc/skip-to-previous-like-this)
-           ("M->" . mc/skip-to-next-like-this)
-           ("<"   . mc/mark-previous-like-this)
-           (">"   . mc/mark-next-like-this)
-           ("/"   . swb/quit-mcs)
+(swb/key "n" (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-outer))
+(swb/key "m" (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-inner))
+(swb/key "," (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-inner))
+(swb/key "." (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-outer))
 
-           ("g d" . xref-find-definitions)
-           ("g r" . xref-find-references)
-           ("g b" . xref-go-back)
-           ("g f" . flymake-goto-next-error)
-           ("g c" . next-error)
+(swb/key "y" (swb/cmd (setq swb/anchored t)))
 
-           ("z" . swb/pop-point-and-mark-from-ring)
-           )
+(swb/key "h" 'swb/expand-to-lines)
 
-(bind-key "f" (swb/prompt-once-run-for-all-cursors swb/find) swb/simple-mode-map)
-(bind-key "t" (swb/prompt-once-run-for-all-cursors swb/till) swb/simple-mode-map)
+(swb/key ";" 'exchange-point-and-mark)
+(swb/key "'" 'repeat)
 
-(bind-key "[" (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-inner) swb/simple-mode-map)
-(bind-key "]" (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-inner) swb/simple-mode-map)
+(swb/key "/ m" 'vr/mc-mark)
+(swb/key "/ n" 'mc/mark-next-like-this)
+(swb/key "/ p" 'mc/mark-previous-like-this)
+(swb/key "/ s n" 'mc/skip-to-next-like-this)
+(swb/key "/ s p" 'mc/skip-to-previous-like-this)
+(swb/key "/ q" 'swb/quit-mcs)
 
-(bind-key "M-[" (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-outer) swb/simple-mode-map)
-(bind-key "M-]" (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-outer) swb/simple-mode-map)
+(swb/key "]" 'swb/pop-point-and-mark-from-ring)
+
+;; editing
+
+(swb/key "s" 'swb/insert-before)
+(swb/key "d" 'swb/insert-after)
+(swb/key "M-i" 'swb/insert-above)
+(swb/key "M-j" 'swb/insert-before-line-text)
+(swb/key "M-k" 'swb/insert-below)
+(swb/key "M-l" 'swb/insert-after-line-text)
+
+(swb/key "x" 'swb/kill)
+(swb/key "c" 'kill-ring-save)
+(swb/key "v" 'yank)
+(swb/key "M-v" 'yank-pop)
+(swb/key "r" 'swb/replace)
+(swb/key "f" 'swb/change)
+
+(swb/key "b" 'undo)
+
+;; window commands
+
+(swb/key "w s" 'split-window-below)
+(swb/key "w v" 'split-window-right)
+(swb/key "w q" 'delete-window)
+(swb/key "w 0" 'delete-other-windows)
+
+;; leader commands
+
+(swb/key "SPC b s" 'save-buffer)
+(swb/key "SPC b k" 'kill-buffer)
+(swb/key "SPC b t" 'switch-to-buffer)
+(swb/key "SPC q" 'save-buffers-kill-terminal)
+
+(swb/key "SPC r f" 'find-file)
+(swb/key "SPC r d" 'dired)
+(swb/key "SPC r c" 'compile)
+
+(swb/key "SPC p f" 'project-find-file)
+(swb/key "SPC p d" 'project-find-dir)
+(swb/key "SPC p c" 'project-compile)
+
+(swb/key "SPC x d" 'xref-find-definitions)
+(swb/key "SPC x r" 'xref-find-references)
+(swb/key "SPC x b" 'xref-go-back)
+
+(swb/key "SPC f" 'flymake-goto-next-error)
+(swb/key "SPC c" 'next-error)
+
+(swb/key "SPC e a" 'eglot-code-actions)
+(swb/key "SPC e r" 'eglot-rename)
+(swb/key "SPC e o" 'eglot-code-action-organize-imports)

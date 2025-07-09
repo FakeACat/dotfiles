@@ -141,10 +141,13 @@
         swb/multiple-cursors-hydra/nil
         swb/multiple-cursors-hydra/swb/delete-current-cursor
         swb/multiple-cursors-hydra/swb/delete-current-cursor-backwards
+        swb/prompt-once-run-for-all-cursors/swb/find
         swb/prompt-once-run-for-all-cursors/swb/go-to-text-object-inner-end
         swb/prompt-once-run-for-all-cursors/swb/mark-around-text-object
         swb/prompt-once-run-for-all-cursors/swb/mark-in-text-object
+        swb/prompt-once-run-for-all-cursors/swb/select-next-text-object-inner
         swb/prompt-once-run-for-all-cursors/swb/select-prev-text-object-inner
+        swb/prompt-once-run-for-all-cursors/swb/till
         swb/simple-mode
         swb/smart-repeat
         swb/with-expand/swb/find
