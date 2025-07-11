@@ -490,7 +490,8 @@
 
 (defun swb/find (arg char)
   (interactive "p\ncFind:")
-  (let ((end (save-mark-and-excursion (search-forward (char-to-string char) nil t arg))))
+  (let* ((case-fold-search nil)
+         (end (save-mark-and-excursion (search-forward (char-to-string char) nil t arg))))
     (when end
       (unless swb/anchored (deactivate-mark))
       (swb/start-marking)
@@ -498,10 +499,11 @@
 
 (defun swb/till (arg char)
   (interactive "p\ncTill:")
-  (let ((end (save-mark-and-excursion
-               (progn
-                 (forward-char (if (> arg 0) 1 -1))
-                 (search-forward (char-to-string char) nil t arg)))))
+  (let* ((case-fold-search nil)
+         (end (save-mark-and-excursion
+                (progn
+                  (forward-char (if (> arg 0) 1 -1))
+                  (search-forward (char-to-string char) nil t arg)))))
     (when end
       (setq end (+ end (if (< arg 0) 1 -1)))
       (unless swb/anchored (deactivate-mark))
@@ -653,8 +655,8 @@
 
 (swb/key "d" 'swb/kill)
 (swb/key "y" 'kill-ring-save)
-(swb/key "p" 'yank)
-(swb/key "M-p" 'yank-pop)
+(swb/key "p" (swb/cmd (setq swb/anchored nil) (yank) (setq deactivate-mark nil) (activate-mark)))
+(swb/key "M-p" (swb/cmd (setq swb/anchored nil) (yank-pop) (setq deactivate-mark nil) (activate-mark)))
 (swb/key "r" 'swb/replace)
 (swb/key "c" 'swb/change)
 
@@ -683,6 +685,8 @@
 (swb/key "g d" 'xref-find-definitions)
 (swb/key "g r" 'xref-find-references)
 (swb/key "g b" 'xref-go-back)
+
+(swb/key "g f" 'ffap)
 
 ;; leader commands
 

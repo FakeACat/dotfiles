@@ -65,6 +65,7 @@
         swb/enable-or-reset-anchor
         swb/expand-inside-pairs
         swb/expand-or-arg-1
+        swb/expand-to-line-text
         swb/expand-to-lines
         swb/forward-char-update-mark
         swb/forward-line-update-mark
@@ -75,6 +76,8 @@
         swb/kill
         swb/meow-line
         swb/meow-mark-symbol
+        swb/newline-above
+        swb/newline-below
         swb/place-anchor
         swb/pop-point-and-mark-from-ring
         swb/pop-point-from-ring
