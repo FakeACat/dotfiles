@@ -23,6 +23,8 @@
  '(mode-line ((t (:box nil))))
  '(mode-line-inactive ((t (:box nil)))))
 
+(defmacro swb/cmd (&rest body) `(lambda (&rest _) (interactive) ,@body))
+
 (use-package package :config (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t))
 (use-package use-package-core :custom (use-package-always-defer 1))
 
@@ -246,6 +248,8 @@
 
 (defvar-local swb/anchored nil)
 
+(advice-add 'deactivate-mark :after (swb/cmd (setq swb/anchored nil)))
+
 (defun swb/start-marking () (interactive) (unless mark-active (set-mark (point))))
 (defun swb/stop-marking () (interactive) (when mark-active (deactivate-mark)))
 
@@ -367,11 +371,12 @@
     (setq n (- n))
     (cl-rotatef forward-index backward-index))
   (when swb/anchored (swb/start-marking))
-  (dotimes (i n) (swb/execute-text-object-fn char forward-index))
+  (swb/execute-text-object-fn char forward-index)
   (unless swb/anchored
     (set-mark (point))
     (swb/execute-text-object-fn char backward-index)
-    (exchange-point-and-mark)))
+    (exchange-point-and-mark))
+  (dotimes (i (- n 1)) (swb/execute-text-object-fn char forward-index)))
 
 (defun swb/select-prev-text-object-inner (n char) (interactive "p\ncObject:") (swb/select-text-object-generic n char 0 1))
 (defun swb/select-next-text-object-inner (n char) (interactive "p\ncObject:") (swb/select-text-object-generic n char 1 0))
@@ -441,13 +446,11 @@
 
 (defun swb/kill ()
   (interactive)
-  (if mark-active (kill-region nil nil t) (delete-char 1))
-  (setq swb/anchored nil))
+  (if mark-active (kill-region nil nil t) (delete-char 1)))
 
 (defun swb/delete ()
   (interactive)
-  (if mark-active (delete-region (point) (mark)) (delete-char 1))
-  (setq swb/anchored nil))
+  (if mark-active (delete-region (point) (mark)) (delete-char 1)))
 
 (defun swb/change ()
   (interactive)
@@ -584,8 +587,6 @@
   (if swb/anchored (swb/start-marking) (deactivate-mark))
   (previous-line n))
 
-(defmacro swb/cmd (&rest body) `(lambda (&rest _) (interactive) ,@body))
-
 (defmacro swb/prompt-once-run-for-all-cursors (fn)
   (let ((name (intern (format "swb/prompt-once-run-for-all-cursors/%s" fn))))
     `(defun ,name (&rest args)
@@ -601,7 +602,7 @@
 
 ;; misc
 
-(swb/key "<escape>" (swb/cmd (deactivate-mark) (setq swb/anchored nil)))
+(swb/key "<escape>" 'deactivate-mark)
 
 (swb/key "1" 'digit-argument)
 (swb/key "2" 'digit-argument)
