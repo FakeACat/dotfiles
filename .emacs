@@ -238,10 +238,12 @@
   :init-value t
   :keymap (make-sparse-keymap)
   :after-hook
-  (deactivate-mark)
   (corfu-quit)
   (force-mode-line-update)
-  (setq swb/anchored nil))
+  (setq swb/anchored nil)
+  (if (and swb/simple-mode (mark))
+      (activate-mark)
+    (deactivate-mark)))
 
 (add-hook 'minibuffer-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
 (add-hook 'git-commit-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
@@ -383,6 +385,26 @@
 (defun swb/select-prev-text-object-outer (n char) (interactive "p\ncObject:") (swb/select-text-object-generic n char 2 3))
 (defun swb/select-next-text-object-outer (n char) (interactive "p\ncObject:") (swb/select-text-object-generic n char 3 2))
 
+(defun swb/mark-text-objects-in-region (char &optional outer)
+  (interactive "cObject:")
+  (when (not mark-active) (user-error "mark must be active"))
+  (let ((point (point))
+        (mark (mark)))
+    (deactivate-mark)
+    (when (> point mark) (cl-rotatef mark point))
+    (goto-char point)
+    (while (< (point) mark)
+      (if outer
+          (swb/select-next-text-object-outer 1 char)
+        (swb/select-next-text-object-inner 1 char))
+      (when (< (mark) mark) (mc/create-fake-cursor-at-point)))
+    (mc/maybe-multiple-cursors-mode)
+    (mc/pop-state-from-overlay (car (mc/all-fake-cursors)))))
+
+(defun swb/mark-outer-text-objects-in-region (char)
+  (interactive "cObject:")
+  (swb/mark-text-objects-in-region char t))
+
 (setq swb/text-objects nil) ;; just makes it easier to re-eval all this
 (swb/add-text-object ?p 'start-of-paragraph-text 'end-of-paragraph-text 'backward-paragraph 'forward-paragraph)
 (swb/add-text-object ?l 'swb/backward-line-text 'swb/forward-line-text 'swb/backward-line 'forward-line)
@@ -398,7 +420,6 @@
 (swb/add-delimited-text-object ?s "[" "]")
 (swb/add-delimited-text-object ?a "<" ">")
 
-(swb/add-regex-contained-text-object ?  "[ \n]")
 (swb/add-regex-contained-text-object ?g "\"")
 (swb/add-regex-contained-text-object ?q "'")
 
@@ -645,6 +666,8 @@
 (swb/key "u" 'repeat)
 
 (swb/key "s" 'vr/mc-mark)
+(swb/key "M-i" 'swb/mark-text-objects-in-region)
+(swb/key "M-a" 'swb/mark-outer-text-objects-in-region)
 (swb/key "/" 'swb/quit-mcs)
 
 (swb/key "z" 'swb/pop-point-and-mark-from-ring)

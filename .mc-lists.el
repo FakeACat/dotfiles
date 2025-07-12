@@ -13,6 +13,7 @@
         c-indent-line-or-region
         capitalize-dwim
         corfu-complete
+        deactivate-mark
         dired-do-rename
         downcase-dwim
         electric-newline-and-maybe-indent
@@ -123,6 +124,8 @@
         swb/delete-current-cursor
         swb/mark-around-text-object
         swb/mark-in-text-object
+        swb/mark-outer-text-objects-in-region
+        swb/mark-text-objects-in-region
         swb/meow-find-mc
         swb/meow-search-mc-mark
         swb/meow-search-mc-skip
@@ -149,6 +152,7 @@
         swb/prompt-once-run-for-all-cursors/swb/go-to-text-object-inner-end
         swb/prompt-once-run-for-all-cursors/swb/mark-around-text-object
         swb/prompt-once-run-for-all-cursors/swb/mark-in-text-object
+        swb/prompt-once-run-for-all-cursors/swb/mark-text-objects-in-region
         swb/prompt-once-run-for-all-cursors/swb/select-next-text-object-inner
         swb/prompt-once-run-for-all-cursors/swb/select-next-text-object-outer
         swb/prompt-once-run-for-all-cursors/swb/select-prev-text-object-inner
