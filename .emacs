@@ -238,12 +238,10 @@
   :init-value t
   :keymap (make-sparse-keymap)
   :after-hook
+  (deactivate-mark)
   (corfu-quit)
   (force-mode-line-update)
-  (setq swb/anchored nil)
-  (if (and swb/simple-mode (mark))
-      (activate-mark)
-    (deactivate-mark)))
+  (setq swb/anchored nil))
 
 (add-hook 'minibuffer-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
 (add-hook 'git-commit-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
@@ -284,6 +282,27 @@
 (defun swb/backward-line-join ()
   (forward-line -1)
   (end-of-line))
+
+(defun swb/is-whitespace (char)
+  (or (eq char ? )
+      (eq char ?\t)
+      (eq char ?\n)))
+
+(defun swb/next-to-char-ignoring-whitespace (char &optional back)
+  (save-excursion
+    (while (swb/is-whitespace (if back (char-before) (char-after)))
+      (backward-char))
+    (eq (if back (char-before) (char-after)) char)))
+
+(defun swb/forward-argument ()
+  (while (and
+          (ignore-errors (forward-sexp) t)
+          (not (swb/next-to-char-ignoring-whitespace ?,)))))
+
+(defun swb/backward-argument ()
+  (while (and
+          (ignore-errors (backward-sexp) t)
+          (not (swb/next-to-char-ignoring-whitespace ?, t)))))
 
 (defun swb/find-delimiter (opener closer back till)
   (cl-assert (= (length opener) 1))
@@ -385,7 +404,7 @@
 (defun swb/select-prev-text-object-outer (n char) (interactive "p\ncObject:") (swb/select-text-object-generic n char 2 3))
 (defun swb/select-next-text-object-outer (n char) (interactive "p\ncObject:") (swb/select-text-object-generic n char 3 2))
 
-(defun swb/mark-text-objects-in-region (char &optional outer)
+(defun swb/mark-text-objects-in-region (char &optional outer back)
   (interactive "cObject:")
   (when (not mark-active) (user-error "mark must be active"))
   (let ((point (point))
@@ -393,17 +412,28 @@
     (deactivate-mark)
     (when (> point mark) (cl-rotatef mark point))
     (goto-char point)
-    (while (< (point) mark)
-      (if outer
-          (swb/select-next-text-object-outer 1 char)
-        (swb/select-next-text-object-inner 1 char))
-      (when (< (mark) mark) (mc/create-fake-cursor-at-point)))
+    (let ((prev-point (point-min)))
+      (while (and (< (point) mark) (< prev-point (point)))
+        (setq prev-point (point))
+        (if outer
+            (swb/select-next-text-object-outer 1 char)
+          (swb/select-next-text-object-inner 1 char))
+        (when (< (mark) mark) (mc/create-fake-cursor-at-point))))
     (mc/maybe-multiple-cursors-mode)
-    (mc/pop-state-from-overlay (car (mc/all-fake-cursors)))))
+    (mc/pop-state-from-overlay (car (mc/all-fake-cursors)))
+    (when back (mc/execute-command-for-all-cursors (swb/cmd (exchange-point-and-mark))))))
+
+(defun swb/mark-inner-text-objects-in-region-back (char)
+  (interactive "cObject:")
+  (swb/mark-text-objects-in-region char nil t))
 
 (defun swb/mark-outer-text-objects-in-region (char)
   (interactive "cObject:")
   (swb/mark-text-objects-in-region char t))
+
+(defun swb/mark-outer-text-objects-in-region-back (char)
+  (interactive "cObject:")
+  (swb/mark-text-objects-in-region char t t))
 
 (setq swb/text-objects nil) ;; just makes it easier to re-eval all this
 (swb/add-text-object ?p 'start-of-paragraph-text 'end-of-paragraph-text 'backward-paragraph 'forward-paragraph)
@@ -414,6 +444,7 @@
 (swb/add-text-object ?w 'backward-word 'forward-word)
 (swb/add-text-object ?W (lambda () (forward-symbol -1)) (lambda () (forward-symbol 1)))
 (swb/add-text-object ?j 'swb/backward-line-join 'swb/forward-line-join)
+(swb/add-text-object ?e 'swb/backward-argument 'swb/forward-argument)
 
 (swb/add-delimited-text-object ?r "(" ")")
 (swb/add-delimited-text-object ?c "{" "}")
@@ -657,6 +688,11 @@
 (swb/key "," (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-outer))
 (swb/key "." (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-outer))
 
+(swb/key "M-n" 'swb/mark-inner-text-objects-in-region-back)
+(swb/key "M-m" 'swb/mark-text-objects-in-region)
+(swb/key "M-," 'swb/mark-outer-text-objects-in-region-back)
+(swb/key "M-." 'swb/mark-outer-text-objects-in-region)
+
 (swb/key "v" (swb/cmd (setq swb/anchored t)))
 
 (swb/key "x" 'swb/expand-to-lines)
@@ -666,8 +702,6 @@
 (swb/key "u" 'repeat)
 
 (swb/key "s" 'vr/mc-mark)
-(swb/key "M-i" 'swb/mark-text-objects-in-region)
-(swb/key "M-a" 'swb/mark-outer-text-objects-in-region)
 (swb/key "/" 'swb/quit-mcs)
 
 (swb/key "z" 'swb/pop-point-and-mark-from-ring)

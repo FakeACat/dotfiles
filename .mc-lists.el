@@ -124,7 +124,9 @@
         swb/delete-current-cursor
         swb/mark-around-text-object
         swb/mark-in-text-object
+        swb/mark-inner-text-objects-in-region-back
         swb/mark-outer-text-objects-in-region
+        swb/mark-outer-text-objects-in-region-back
         swb/mark-text-objects-in-region
         swb/meow-find-mc
         swb/meow-search-mc-mark
