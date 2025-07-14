@@ -52,3 +52,5 @@ install .tmux.conf ~/.tmux.conf
 install sway/config ~/.config/sway/config
 
 install gtk-3.0/settings.ini ~/.config/gtk-3.0/settings.ini
+
+install rofi/config.rasi ~/.config/rofi/config.rasi

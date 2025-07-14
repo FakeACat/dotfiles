@@ -2,7 +2,7 @@ floating_modifier Mod4 normal
 
 bindsym Mod4+Return exec foot
 bindsym Mod4+Shift+q kill
-bindsym Mod4+d exec fuzzel
+bindsym Mod4+d exec rofi -show combi -combi-modes "window,drun" -modes combi
 bindsym Mod4+Shift+c reload
 bindsym Mod4+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
 
@@ -73,20 +73,10 @@ bindsym --locked XF86AudioMicMute exec pactl set-source-mute \@DEFAULT_SOURCE@ t
 bindsym Print exec grim -g "$(slurp)"
 bindsym Shift+Print exec grim
 
-default_border pixel 1
+default_border pixel
 smart_borders on
 
 output * bg ~/.dotfiles/wallpaper.jpg fill
-
-set $text #FFFFFF
-set $background #000000
-set $outline #505050
-set $selected #6060A0
-set $alert #A00000
-
-client.focused $outline $selected $text
-client.unfocused $outline $background $text
-client.urgent $outline $alert $text
 
 include /etc/sway/config.d/*
 
@@ -101,3 +91,6 @@ input type:pointer accel_profile "flat"
 exec gsettings set org.gnome.desktop.interface gtk-theme HighContrastInverse
 exec gsettings set org.gnome.desktop.interface icon-theme HighContrastInverse
 exec gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+
+for_window [app_id="thunar"] floating enable
+for_window [app_id="firefox"] border pixel # fixes firefox losing border when floating
