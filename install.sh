@@ -50,4 +50,4 @@ install .mc-lists.el ~/.emacs.d/.mc-lists.el
 
 install .tmux.conf ~/.tmux.conf
 
-install /niri/config.kdl ~/.config/niri/config.kdl
+install sway/config ~/.config/sway/config

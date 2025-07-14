@@ -145,13 +145,11 @@
 
 (use-package corfu
   :ensure
-  :bind (:map corfu-map ("RET" . nil))
   :custom
   (corfu-auto 1)
   (corfu-auto-prefix 1)
   (corfu-auto-delay 0.0)
   (corfu-cycle 1)
-  (corfu-preview-current nil)
   :init
   (global-corfu-mode 1)
   (corfu-echo-mode 1)
@@ -160,15 +158,6 @@
 (use-package corfu-terminal
   :vc (:url "https://codeberg.org/akib/emacs-corfu-terminal")
   :config (unless (display-graphic-p) (corfu-terminal-mode 1)))
-
-(use-package yasnippet
-  :ensure
-  :bind*
-  (:map yas-keymap
-        ("C-," . yas-prev-field)
-        ("C-." . yas-next-field)
-        ("TAB" . nil))
-  :config (yas-global-mode 1))
 
 (use-package zig-mode :ensure)
 (use-package glsl-mode :ensure :mode "\\.vs\\'" "\\.fs\\'")
