@@ -12,6 +12,7 @@
         c-electric-star
         c-indent-line-or-region
         capitalize-dwim
+        comment-dwim
         corfu-complete
         deactivate-mark
         dired-do-rename

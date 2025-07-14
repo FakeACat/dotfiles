@@ -40,7 +40,6 @@ install() {
 install .bashrc ~/.bashrc
 install .bash_profile ~/.bash_profile
 
-install keyd/app.conf ~/.config/keyd/app.conf
 install keyd/default.conf /etc/keyd/default.conf sudo
 
 install foot.ini ~/.config/foot/foot.ini

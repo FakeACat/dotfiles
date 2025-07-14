@@ -102,6 +102,7 @@
   (read-extended-command-predicate #'command-completion-default-include-p)
   (indent-tabs-mode nil)
   (save-interprogram-paste-before-kill 1)
+  (line-move-visual t)
   :bind
   ("M-u" . upcase-dwim)
   ("M-l" . downcase-dwim)
@@ -621,11 +622,13 @@
 (defun swb/forward-line-update-mark (&optional n)
   (interactive "p")
   (if swb/anchored (swb/start-marking) (deactivate-mark))
+  (setq this-command 'next-line)
   (next-line n))
 
 (defun swb/backward-line-update-mark (&optional n)
   (interactive "p")
   (if swb/anchored (swb/start-marking) (deactivate-mark))
+  (setq this-command 'previous-line)
   (previous-line n))
 
 (defmacro swb/prompt-once-run-for-all-cursors (fn)
