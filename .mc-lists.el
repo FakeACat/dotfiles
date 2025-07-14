@@ -104,6 +104,7 @@
         swb/without-expand/swb/select-prev-symbol
         upcase-dwim
         wdired--self-insert
+        xterm-paste
         ))
 
 (setq mc/cmds-to-run-once

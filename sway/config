@@ -97,3 +97,7 @@ input type:keyboard repeat_delay 200
 input type:keyboard repeat_rate 40
 
 input type:pointer accel_profile "flat"
+
+exec gsettings set org.gnome.desktop.interface gtk-theme HighContrastInverse
+exec gsettings set org.gnome.desktop.interface icon-theme HighContrastInverse
+exec gsettings set org.gnome.desktop.interface color-scheme prefer-dark

@@ -50,3 +50,5 @@ install .mc-lists.el ~/.emacs.d/.mc-lists.el
 install .tmux.conf ~/.tmux.conf
 
 install sway/config ~/.config/sway/config
+
+install gtk-3.0/settings.ini ~/.config/gtk-3.0/settings.ini
