@@ -1,6 +1,5 @@
 floating_modifier Mod4 normal
 
-bindsym Mod4+Return exec foot
 bindsym Mod4+Shift+q kill
 bindsym Mod4+d exec rofi -show combi -combi-modes "window,drun" -modes combi
 bindsym Mod4+Shift+c reload
@@ -27,16 +26,18 @@ bindsym Mod4+8 workspace number 8
 bindsym Mod4+9 workspace number 9
 bindsym Mod4+0 workspace number 10
 
-bindsym Mod4+Shift+1 move container to workspace number 1
-bindsym Mod4+Shift+2 move container to workspace number 2
-bindsym Mod4+Shift+3 move container to workspace number 3
-bindsym Mod4+Shift+4 move container to workspace number 4
-bindsym Mod4+Shift+5 move container to workspace number 5
-bindsym Mod4+Shift+6 move container to workspace number 6
-bindsym Mod4+Shift+7 move container to workspace number 7
-bindsym Mod4+Shift+8 move container to workspace number 8
-bindsym Mod4+Shift+9 move container to workspace number 9
-bindsym Mod4+Shift+0 move container to workspace number 10
+bindsym Mod4+Shift+1 move container to workspace number 1;  workspace number 1
+bindsym Mod4+Shift+2 move container to workspace number 2;  workspace number 2
+bindsym Mod4+Shift+3 move container to workspace number 3;  workspace number 3
+bindsym Mod4+Shift+4 move container to workspace number 4;  workspace number 4
+bindsym Mod4+Shift+5 move container to workspace number 5;  workspace number 5
+bindsym Mod4+Shift+6 move container to workspace number 6;  workspace number 6
+bindsym Mod4+Shift+7 move container to workspace number 7;  workspace number 7
+bindsym Mod4+Shift+8 move container to workspace number 8;  workspace number 8
+bindsym Mod4+Shift+9 move container to workspace number 9;  workspace number 9
+bindsym Mod4+Shift+0 move container to workspace number 10; workspace number 10
+
+bindsym Mod4+t move container to workspace number 11; workspace number 11; layout tabbed
 
 bindsym Mod4+b splith
 bindsym Mod4+v splitv
@@ -101,11 +102,15 @@ exec gsettings set org.gnome.desktop.interface gtk-theme HighContrastInverse
 exec gsettings set org.gnome.desktop.interface icon-theme HighContrastInverse
 exec gsettings set org.gnome.desktop.interface color-scheme prefer-dark
 
-for_window [app_id="thunar"] floating enable
-for_window [app_id="pavucontrol"] floating enable
-for_window [app_id="solaar"] floating enable
+for_window [app_id=thunar]      floating enable
+for_window [app_id=pavucontrol] floating enable
+for_window [app_id=solaar]      floating enable
 
-for_window [app_id="firefox"] border pixel # fixes firefox losing border when floating
+for_window [app_id=firefox] border pixel # fixes firefox losing border when floating
+
+for_window [app_id=foot]    move to workspace 1
+for_window [app_id=firefox] move to workspace 2
+for_window [class=discord]  move to workspace 3
 
 exec waybar
 exec dunst

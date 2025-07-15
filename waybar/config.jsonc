@@ -5,6 +5,9 @@
         "custom/notifications",
         "tray",
     ],
+    "modules-center": [
+        "sway/workspaces",
+    ],
     "modules-right": [
         "temperature",
         "cpu",

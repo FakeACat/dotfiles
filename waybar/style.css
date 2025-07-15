@@ -7,7 +7,7 @@ window#waybar {
     border: 1px solid #906090;
 }
 
-tooltip, #custom-notifications, #temperature, #cpu, #memory, #pulseaudio, #clock, #tray {
+tooltip, #custom-notifications, #temperature, #workspaces, #cpu, #memory, #pulseaudio, #clock, #tray {
     background-color: rgba(0, 0, 0, 0.5);
     border: 1px solid #906090;
     border-radius: 0px;
@@ -15,4 +15,16 @@ tooltip, #custom-notifications, #temperature, #cpu, #memory, #pulseaudio, #clock
 
 tooltip {
     background-color: black;
+}
+
+#workspaces button {
+    border-radius: 0px;
+}
+
+#workspaces button.focused {
+    background-color: #906090;
+}
+
+#workspaces button.urgent {
+    background-color: #A00000;
 }
