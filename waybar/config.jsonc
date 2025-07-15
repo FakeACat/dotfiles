@@ -2,6 +2,7 @@
 {
     "position": "right",
     "modules-left": [
+        "custom/notifications",
         "tray",
     ],
     "modules-right": [
@@ -41,5 +42,10 @@
     },
     "tray": {
         "show-passive-items": true,
+    },
+    "custom/notifications": {
+        "format": "!",
+        "on-click": "dunstctl history-pop",
+        "tooltip-format": "Notifications",
     },
 }

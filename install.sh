@@ -57,3 +57,5 @@ install rofi/config.rasi ~/.config/rofi/config.rasi
 
 install waybar/config.jsonc ~/.config/waybar/config.jsonc
 install waybar/style.css ~/.config/waybar/style.css
+
+install dunst/dunstrc ~/.config/dunst/dunstrc

@@ -1,0 +1,15 @@
+[global]
+    frame_width = 1
+    foreground = "#FFFFFF"
+    background = "#00000080"
+    origin = "bottom-left"
+    offset = (0, 0)
+
+[urgency_low]
+    frame_color = "#808080"
+
+[urgency_normal]
+    frame_color = "#906090"
+
+[urgency_critical]
+    frame_color = "#A00000"

@@ -1,4 +1,26 @@
+/*-*- mode: css; -*-*/
+
 configuration {
     show-icons: true;
+    separator-style: "none";
+    display-combi: "Focus/Run: ";
+    display-window: "Focus: ";
+    display-drun: "Run: ";
 }
-@theme "gruvbox-dark-hard"
+
+@theme "/dev/null"
+
+* {
+    color: white;
+    background-color: transparent;
+}
+
+window {
+    background-color: black;
+    border: 1px solid;
+    border-color: #906090;
+}
+
+element selected {
+    background-color: #906090;
+}

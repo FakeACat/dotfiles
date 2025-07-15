@@ -108,3 +108,4 @@ for_window [app_id="solaar"] floating enable
 for_window [app_id="firefox"] border pixel # fixes firefox losing border when floating
 
 exec waybar
+exec dunst
