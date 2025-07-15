@@ -1,7 +1,7 @@
 [global]
     frame_width = 1
     foreground = "#FFFFFF"
-    background = "#00000080"
+    background = "#000000"
     origin = "bottom-left"
     offset = (0, 0)
 
