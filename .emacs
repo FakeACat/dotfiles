@@ -5,7 +5,8 @@
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
  '(package-selected-packages
-   '(corfu-terminal odin-mode visual-regexp visual-regexp-steroids))
+   '(corfu-terminal json-mode odin-mode visual-regexp
+                    visual-regexp-steroids))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -166,6 +167,7 @@
 (use-package markdown-mode :ensure)
 (use-package cmake-mode :ensure)
 (use-package rust-mode :ensure)
+(use-package json-mode :ensure)
 
 (use-package format-all
   :ensure

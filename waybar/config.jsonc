@@ -1,0 +1,45 @@
+// -*- mode: jsonc -*-
+{
+    "position": "right",
+    "modules-left": [
+        "tray",
+    ],
+    "modules-right": [
+        "temperature",
+        "cpu",
+        "memory",
+        "pulseaudio",
+        "clock",
+    ],
+    "cpu": {
+        "format": "cpu\n{usage}%",
+        "interval": 1,
+    },
+    "memory": {
+        "format": "ram\n{percentage}%",
+        "tooltip-format": "{used}GiB / {total}GiB",
+        "interval": 1,
+    },
+    "pulseaudio": {
+        "format": "vol\n{volume}%",
+        "format-muted": "VOL\nMuted",
+        "on-click": "pavucontrol",
+    },
+    "clock": {
+        "tooltip-format": "{calendar}",
+        "format": "{:%H:%M\n%d/%m\n/%Y}",
+        "calendar": {
+            "mode" : "year",
+            "mode-mon-col" : 4,
+            "format": {
+                "today": "<span color='#ffff00'><b>{}</b></span>"
+            },
+        },
+    },
+    "temperature": {
+        "interval": 1,
+    },
+    "tray": {
+        "show-passive-items": true,
+    },
+}

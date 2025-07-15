@@ -73,12 +73,21 @@ bindsym --locked XF86AudioMicMute exec pactl set-source-mute \@DEFAULT_SOURCE@ t
 bindsym Print exec grim -g "$(slurp)"
 bindsym Shift+Print exec grim
 
-default_border pixel
+default_border pixel 1
 smart_borders on
 
 output * bg ~/.dotfiles/wallpaper.jpg fill
 
 include /etc/sway/config.d/*
+
+set $text #FFFFFF
+set $background #00000080
+set $outline #906090
+set $alert #A00000
+
+client.focused $outline $outline $text
+client.unfocused $outline $background $text
+client.urgent $outline $alert $text
 
 output DP-2 mode 1920x1080@144hz
 
@@ -93,4 +102,9 @@ exec gsettings set org.gnome.desktop.interface icon-theme HighContrastInverse
 exec gsettings set org.gnome.desktop.interface color-scheme prefer-dark
 
 for_window [app_id="thunar"] floating enable
+for_window [app_id="pavucontrol"] floating enable
+for_window [app_id="solaar"] floating enable
+
 for_window [app_id="firefox"] border pixel # fixes firefox losing border when floating
+
+exec waybar
