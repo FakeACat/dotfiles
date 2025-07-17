@@ -1,6 +1,7 @@
 // -*- mode: jsonc -*-
 {
     "position": "right",
+    "spacing": -1,
     "modules-left": [
         "custom/notifications",
         "tray",

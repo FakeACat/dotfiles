@@ -5,7 +5,7 @@
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
  '(package-selected-packages
-   '(corfu-terminal json-mode odin-mode visual-regexp
+   '(corfu-terminal frames-only-mode json-mode odin-mode visual-regexp
                     visual-regexp-steroids))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
@@ -75,10 +75,9 @@
 (use-package cc-styles :hook (java-mode-hook . (lambda () (c-set-offset 'case-label '+)))) ;; fix switch indenting in java
 (use-package dired :custom (dired-auto-revert-buffer #'dired-buffer-stale-p) (dired-dwim-target t))
 (use-package which-key :config (which-key-mode))
-(use-package frame :config (blink-cursor-mode -1))
-(use-package window :bind ("M-o" . other-window))
 (use-package show-paren :custom (show-paren-delay 0))
 (use-package flymake :custom (flymake-indicator-type 'fringes))
+(use-package frame :config (blink-cursor-mode -1))
 
 (use-package custom
   :config
@@ -137,7 +136,9 @@
   :config (add-to-list 'eglot-server-programs '(odin-mode . ("ols" "--stdio" :initializationOptions (:enable_fake_methods t :enable_references t :enable_inlay_hints t)))))
 
 (use-package isearch
-  :bind (:map isearch-mode-map ("RET" . swb/isearch-done-select))
+  :bind (:map isearch-mode-map
+              ("RET" . swb/isearch-done-select)
+              ("<return>" . swb/isearch-done-select))
   :init (defun swb/isearch-done-select () (interactive) (isearch-exit) (set-mark isearch-other-end)))
 
 (use-package cape :ensure :init (add-hook 'completion-at-point-functions (cape-capf-super #'cape-dabbrev #'cape-keyword)))
@@ -191,6 +192,14 @@
   (push 'swb/point-and-mark-ring mc/cursor-specific-vars)
   (defun mc/keyboard-quit () (interactive) (when (use-region-p) (deactivate-mark)))
   (defun swb/quit-mcs () (interactive) (mc/disable-multiple-cursors-mode)))
+
+(use-package frames-only-mode
+  :ensure
+  :bind
+  ;; muscle memory is too strong
+  ("C-x 1" . nil)
+  ("C-x 2" . nil)
+  :config (frames-only-mode))
 
 ;; custom modal editing
 
@@ -451,14 +460,16 @@
 
 (defun swb/insert-before ()
   (interactive)
-  (swb/go-to-beginning-of-region)
-  (swb/simple-mode -1))
+  (save-mark-and-excursion
+    (swb/go-to-beginning-of-region)
+    (swb/simple-mode -1)))
 
 (defun swb/newline-above (arg)
   (interactive "p")
-  (swb/go-to-beginning-of-region)
-  (beginning-of-line)
-  (newline arg))
+  (save-mark-and-excursion
+    (swb/go-to-beginning-of-region)
+    (beginning-of-line)
+    (newline arg)))
 
 (defun swb/insert-above (arg)
   (interactive "p")
@@ -700,6 +711,11 @@
 
 (swb/key "z" 'swb/pop-point-and-mark-from-ring)
 
+(swb/key "q" 'mc/mark-previous-like-this)
+(swb/key "M-q" 'mc/skip-to-previous-like-this)
+(swb/key "w" 'mc/mark-next-like-this)
+(swb/key "M-w" 'mc/skip-to-next-like-this)
+
 ;; editing
 
 (swb/key "i" 'swb/insert-before)
@@ -720,12 +736,6 @@
 (swb/key "[ SPC" 'swb/newline-above)
 (swb/key "] SPC" 'swb/newline-below)
 
-(swb/key "[ c" 'mc/mark-previous-like-this)
-(swb/key "] c" 'mc/mark-next-like-this)
-
-(swb/key "[ M-c" 'mc/skip-to-previous-like-this)
-(swb/key "] M-c" 'mc/skip-to-next-like-this)
-
 (swb/key "[ e" 'previous-error)
 (swb/key "] e" 'next-error)
 
@@ -745,3 +755,5 @@
 (swb/key "SPC e a" 'eglot-code-actions)
 (swb/key "SPC e r" 'eglot-rename)
 (swb/key "SPC e o" 'eglot-code-action-organize-imports)
+
+(swb/key "SPC s" 'make-frame)

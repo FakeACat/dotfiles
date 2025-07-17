@@ -1,6 +1,6 @@
 floating_modifier Mod4 normal
 
-bindsym Mod4+Shift+q kill
+bindsym Mod4+q kill
 bindsym Mod4+d exec rofi -show combi -combi-modes "window,drun" -modes combi
 bindsym Mod4+Shift+c reload
 bindsym Mod4+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
@@ -71,24 +71,26 @@ bindsym --locked XF86AudioLowerVolume exec pactl set-sink-volume \@DEFAULT_SINK@
 bindsym --locked XF86AudioRaiseVolume exec pactl set-sink-volume \@DEFAULT_SINK@ +5%
 bindsym --locked XF86AudioMicMute exec pactl set-source-mute \@DEFAULT_SOURCE@ toggle
 
-bindsym Print exec grim -g "$(slurp)"
-bindsym Shift+Print exec grim
-
-default_border pixel 1
-smart_borders on
+bindsym Print exec grim -g "$(slurp)" - | wl-copy
+bindsym Shift+Print exec grim - | wl-copy
 
 output * bg ~/.dotfiles/wallpaper.jpg fill
 
 include /etc/sway/config.d/*
 
-set $text #FFFFFF
-set $background #00000080
-set $outline #906090
-set $alert #A00000
+default_border pixel 1
+smart_borders on
 
-client.focused $outline $outline $text
-client.unfocused $outline $background $text
-client.urgent $outline $alert $text
+set $text      #FFFFFF
+set $unfocused #00000080
+set $focused   #906090
+set $alert     #A00000
+set $indicator #FFCCFF
+
+client.focused          $focused   $focused   $text $indicator
+client.unfocused        $unfocused $unfocused $text $indicator
+client.focused_inactive $unfocused $unfocused $text $indicator
+client.urgent           $alert     $alert     $text $indicator
 
 output DP-2 mode 1920x1080@144hz
 
@@ -106,11 +108,7 @@ for_window [app_id=thunar]      floating enable
 for_window [app_id=pavucontrol] floating enable
 for_window [app_id=solaar]      floating enable
 
-for_window [app_id=firefox] border pixel # fixes firefox losing border when floating
-
-for_window [app_id=foot]    move to workspace 1
-for_window [app_id=firefox] move to workspace 2
-for_window [class=discord]  move to workspace 3
+for_window [app_id=firefox] border pixel 1 # fixes firefox losing border when floating
 
 exec waybar
 exec dunst
