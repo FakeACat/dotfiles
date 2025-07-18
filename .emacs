@@ -5,8 +5,8 @@
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
  '(package-selected-packages
-   '(corfu-terminal frames-only-mode json-mode odin-mode visual-regexp
-                    visual-regexp-steroids))
+   '(frames-only-mode json-mode odin-mode visual-regexp
+                      visual-regexp-steroids))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -52,13 +52,16 @@
                       mode-line-format-right-align
                       (:eval (if flymake-mode flymake-mode-line-format ""))
                       "  "))
+  (server-client-instructions nil)
+  (vc-follow-symlinks t)
   :config
   (defun swb/editor-mode () (cond (swb/simple-mode (propertize "NORMAL" 'face 'bold))
                                   (t               (propertize "INSERT" 'face 'warning))))
   (tool-bar-mode 0)
   (menu-bar-mode 0)
   (set-frame-parameter (selected-frame) 'alpha-background 80)
-  (add-to-list 'default-frame-alist '(alpha-background . 80)))
+  (add-to-list 'default-frame-alist '(alpha-background . 80))
+  (server-start))
 
 (use-package novice :custom (disabled-command-function nil))
 (use-package ibuffer :bind ("C-x C-b" . ibuffer))
@@ -68,7 +71,6 @@
 (use-package saveplace :config (save-place-mode 1))
 (use-package scroll-bar :config (scroll-bar-mode 0))
 (use-package subword :config (global-subword-mode 1))
-(use-package winner :config (winner-mode 1))
 (use-package hideshow :hook (prog-mode-hook . hs-minor-mode))
 (use-package org :custom (org-hide-emphasis-markers t))
 (use-package cc-vars :custom (c-basic-offset 4))
@@ -78,6 +80,10 @@
 (use-package show-paren :custom (show-paren-delay 0))
 (use-package flymake :custom (flymake-indicator-type 'fringes))
 (use-package frame :config (blink-cursor-mode -1))
+
+(use-package display-fill-column-indicator
+  :custom (fill-column 80)
+  :config (global-display-fill-column-indicator-mode))
 
 (use-package custom
   :config
@@ -139,7 +145,17 @@
   :bind (:map isearch-mode-map
               ("RET" . swb/isearch-done-select)
               ("<return>" . swb/isearch-done-select))
-  :init (defun swb/isearch-done-select () (interactive) (isearch-exit) (set-mark isearch-other-end)))
+  :init (defun swb/isearch-done-select () (interactive) (isearch-exit) (set-mark isearch-other-end))
+  :config
+  ;; https://stackoverflow.com/a/32002122
+  (defun swb/isearch-with-region ()
+    (when mark-active
+      (let ((region (funcall region-extract-function nil)))
+        (goto-char (region-beginning))
+        (deactivate-mark)
+        (isearch-update)
+        (isearch-yank-string region))))
+  (add-hook 'isearch-mode-hook #'swb/isearch-with-region))
 
 (use-package cape :ensure :init (add-hook 'completion-at-point-functions (cape-capf-super #'cape-dabbrev #'cape-keyword)))
 (use-package magit :ensure :custom (magit-save-repository-buffers nil))
@@ -149,18 +165,12 @@
 (use-package corfu
   :ensure
   :custom
-  (corfu-auto 1)
-  (corfu-auto-prefix 1)
-  (corfu-auto-delay 0.0)
   (corfu-cycle 1)
+  (corfu-quit-at-boundary nil)
   :init
   (global-corfu-mode 1)
   (corfu-echo-mode 1)
   (corfu-history-mode 1))
-
-(use-package corfu-terminal
-  :vc (:url "https://codeberg.org/akib/emacs-corfu-terminal")
-  :config (unless (display-graphic-p) (corfu-terminal-mode 1)))
 
 (use-package zig-mode :ensure)
 (use-package glsl-mode :ensure :mode "\\.vs\\'" "\\.fs\\'")
@@ -196,38 +206,13 @@
 (use-package frames-only-mode
   :ensure
   :bind
-  ;; muscle memory is too strong
   ("C-x 1" . nil)
   ("C-x 2" . nil)
-  :config (frames-only-mode))
+  ("C-x 3" . nil)
+  :config
+  (frames-only-mode))
 
 ;; custom modal editing
-
-;; borrowed from meow mode
-;; i do not understand this
-(unless window-system
-  (defun swb/esc (map)
-    (if (and (let ((keys (this-single-command-keys)))
-               (and (> (length keys) 0)
-                    (= (aref keys (1- (length keys))) ?\e)))
-             (sit-for 0.01))
-        (prog1 [escape]
-          (when defining-kbd-macro
-            (end-kbd-macro)
-            (setq last-kbd-macro (vconcat last-kbd-macro [escape]))
-            (start-kbd-macro t t)))
-      map))
-
-  (defun swb/fix-term-esc (frame)
-    (with-selected-frame frame
-      (let ((term (frame-terminal frame)))
-        (unless (terminal-parameter term 'esc-map)
-          (let ((esc-map (lookup-key input-decode-map [?\e])))
-            (set-terminal-parameter term 'esc-map esc-map)
-            (define-key input-decode-map [?\e] `(menu-item "" ,esc-map :filter ,#'swb/esc)))))))
-
-  (add-hook 'after-make-frame-functions 'swb/fix-term-esc)
-  (mapc 'swb/fix-term-esc (frame-list)))
 
 (defun swb/simple-mode-or-exit-minibuffer ()
   (interactive)
@@ -460,13 +445,12 @@
 
 (defun swb/insert-before ()
   (interactive)
-  (save-mark-and-excursion
-    (swb/go-to-beginning-of-region)
-    (swb/simple-mode -1)))
+  (swb/go-to-beginning-of-region)
+  (swb/simple-mode -1))
 
 (defun swb/newline-above (arg)
   (interactive "p")
-  (save-mark-and-excursion
+  (save-excursion
     (swb/go-to-beginning-of-region)
     (beginning-of-line)
     (newline arg)))
@@ -755,5 +739,3 @@
 (swb/key "SPC e a" 'eglot-code-actions)
 (swb/key "SPC e r" 'eglot-rename)
 (swb/key "SPC e o" 'eglot-code-action-organize-imports)
-
-(swb/key "SPC s" 'make-frame)

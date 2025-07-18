@@ -1,9 +1,10 @@
 floating_modifier Mod4 normal
 
-bindsym Mod4+q kill
-bindsym Mod4+d exec rofi -show combi -combi-modes "window,drun" -modes combi
+bindsym Mod4+q       kill
+bindsym Mod4+d       exec rofi -show combi -combi-modes "window,drun" -modes combi
 bindsym Mod4+Shift+c reload
 bindsym Mod4+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
+bindsym Mod4+Return  exec emacsclient -c -n -e '(switch-to-buffer nil)'
 
 bindsym Mod4+h focus left
 bindsym Mod4+j focus down
@@ -37,8 +38,6 @@ bindsym Mod4+Shift+8 move container to workspace number 8;  workspace number 8
 bindsym Mod4+Shift+9 move container to workspace number 9;  workspace number 9
 bindsym Mod4+Shift+0 move container to workspace number 10; workspace number 10
 
-bindsym Mod4+t move container to workspace number 11; workspace number 11; layout tabbed
-
 bindsym Mod4+b splith
 bindsym Mod4+v splitv
 
@@ -46,19 +45,19 @@ bindsym Mod4+s layout stacking
 bindsym Mod4+w layout tabbed
 bindsym Mod4+e layout toggle split
 
-bindsym Mod4+f fullscreen
+bindsym Mod4+f           fullscreen
 bindsym Mod4+Shift+space floating toggle
-bindsym Mod4+space focus mode_toggle
-bindsym Mod4+a focus parent
+bindsym Mod4+space       focus mode_toggle
+bindsym Mod4+a           focus parent
 
 bindsym Mod4+Shift+minus move scratchpad
-bindsym Mod4+minus scratchpad show
+bindsym Mod4+minus       scratchpad show
 
 mode "resize" {
-    bindsym h resize shrink width 10px
-    bindsym j resize grow height 10px
+    bindsym h resize shrink width  10px
+    bindsym j resize grow   height 10px
     bindsym k resize shrink height 10px
-    bindsym l resize grow width 10px
+    bindsym l resize grow   width  10px
 
     bindsym Return mode "default"
     bindsym Escape mode "default"
@@ -66,10 +65,10 @@ mode "resize" {
 
 bindsym Mod4+r mode "resize"
 
-bindsym --locked XF86AudioMute exec pactl set-sink-mute \@DEFAULT_SINK@ toggle
-bindsym --locked XF86AudioLowerVolume exec pactl set-sink-volume \@DEFAULT_SINK@ -5%
-bindsym --locked XF86AudioRaiseVolume exec pactl set-sink-volume \@DEFAULT_SINK@ +5%
-bindsym --locked XF86AudioMicMute exec pactl set-source-mute \@DEFAULT_SOURCE@ toggle
+bindsym --locked XF86AudioMute        exec pactl set-sink-mute   \@DEFAULT_SINK@   toggle
+bindsym --locked XF86AudioLowerVolume exec pactl set-sink-volume \@DEFAULT_SINK@   -5%
+bindsym --locked XF86AudioRaiseVolume exec pactl set-sink-volume \@DEFAULT_SINK@   +5%
+bindsym --locked XF86AudioMicMute     exec pactl set-source-mute \@DEFAULT_SOURCE@ toggle
 
 bindsym Print exec grim -g "$(slurp)" - | wl-copy
 bindsym Shift+Print exec grim - | wl-copy
@@ -99,6 +98,8 @@ input type:keyboard repeat_delay 200
 input type:keyboard repeat_rate 40
 
 input type:pointer accel_profile "flat"
+
+focus_on_window_activation focus
 
 exec gsettings set org.gnome.desktop.interface gtk-theme HighContrastInverse
 exec gsettings set org.gnome.desktop.interface icon-theme HighContrastInverse
