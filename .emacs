@@ -5,21 +5,15 @@
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
  '(package-selected-packages
-   '(frames-only-mode json-mode odin-mode visual-regexp
-                      visual-regexp-steroids))
+   '(frames-only-mode json-mode odin-mode visual-regexp visual-regexp-steroids))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(eglot-diagnostic-tag-unnecessary-face ((t (:inherit shadow :underline t))))
- '(eglot-highlight-symbol-face ((t (:foreground "#FF00FF"))))
- '(eglot-inlay-hint-face ((t (:inherit shadow))))
- '(flymake-end-of-line-diagnostics-face ((t (:inherit nil :box nil :height 1.0))))
- '(flymake-error ((t (:inherit error :underline t))))
- '(flymake-note ((t (:inherit success :underline t))))
- '(flymake-warning ((t (:inherit warning :underline t))))
+ '(eglot-highlight-symbol-face ((t (:background "#808000"))))
+ '(flymake-end-of-line-diagnostics-face ((t (:inherit modus-themes-slant :box nil :height 0.85))))
  '(mc/cursor-face ((t (:background "#FFAAAA" :foreground "#000000" :inverse-video nil))))
  '(mode-line ((t (:box nil))))
  '(mode-line-inactive ((t (:box nil)))))
@@ -63,23 +57,58 @@
   (add-to-list 'default-frame-alist '(alpha-background . 80))
   (server-start))
 
-(use-package novice :custom (disabled-command-function nil))
-(use-package ibuffer :bind ("C-x C-b" . ibuffer))
-(use-package elec-pair :config (electric-pair-mode 1))
-(use-package savehist :config (savehist-mode 1))
-(use-package autorevert :config (global-auto-revert-mode 1))
-(use-package saveplace :config (save-place-mode 1))
-(use-package scroll-bar :config (scroll-bar-mode 0))
-(use-package subword :config (global-subword-mode 1))
-(use-package hideshow :hook (prog-mode-hook . hs-minor-mode))
-(use-package org :custom (org-hide-emphasis-markers t))
-(use-package cc-vars :custom (c-basic-offset 4))
-(use-package cc-styles :hook (java-mode-hook . (lambda () (c-set-offset 'case-label '+)))) ;; fix switch indenting in java
-(use-package dired :custom (dired-auto-revert-buffer #'dired-buffer-stale-p) (dired-dwim-target t))
-(use-package which-key :config (which-key-mode))
-(use-package show-paren :custom (show-paren-delay 0))
-(use-package flymake :custom (flymake-indicator-type 'fringes))
-(use-package frame :config (blink-cursor-mode -1))
+(use-package novice
+  :custom (disabled-command-function nil))
+
+(use-package ibuffer
+  :bind ("C-x C-b" . ibuffer))
+
+(use-package elec-pair
+  :config (electric-pair-mode 1))
+
+(use-package savehist
+  :config (savehist-mode 1))
+
+(use-package autorevert
+  :config (global-auto-revert-mode 1))
+
+(use-package saveplace
+  :config (save-place-mode 1))
+
+(use-package scroll-bar
+  :config (scroll-bar-mode 0))
+
+(use-package subword
+  :config (global-subword-mode 1))
+
+(use-package hideshow
+  :hook (prog-mode-hook . hs-minor-mode))
+
+(use-package org
+  :custom (org-hide-emphasis-markers t))
+
+(use-package cc-vars
+  :custom (c-basic-offset 4))
+
+(use-package cc-styles
+  :hook (java-mode-hook . (lambda () (c-set-offset 'case-label '+)))) ;; fix switch indenting in java
+
+(use-package dired
+  :custom (dired-auto-revert-buffer #'dired-buffer-stale-p) (dired-dwim-target t))
+
+(use-package which-key
+  :config (which-key-mode))
+
+(use-package show-paren
+  :custom (show-paren-delay 0))
+
+(use-package flymake
+  :custom
+  (flymake-show-diagnostics-at-end-of-line t)
+  (flymake-indicator-type 'fringes))
+
+(use-package frame
+  :config (blink-cursor-mode -1))
 
 (use-package display-fill-column-indicator
   :custom (fill-column 80)
@@ -88,7 +117,9 @@
 (use-package custom
   :config
   (load-theme 'modus-vivendi)
-  (defun swb/on-after-init () (unless (display-graphic-p (selected-frame)) (set-face-background 'default "unspecified-bg" (selected-frame))))
+  (defun swb/on-after-init ()
+    (unless (display-graphic-p (selected-frame))
+      (set-face-background 'default "unspecified-bg" (selected-frame))))
   (add-hook 'window-setup-hook 'swb/on-after-init))
 
 (use-package display-line-numbers
@@ -96,7 +127,16 @@
   :config (global-display-line-numbers-mode))
 
 (use-package whitespace
-  :custom (whitespace-style '(face tabs spaces trailing space-before-tab indentation empty space-after-tab space-mark tab-mark missing-newline-at-eof))
+  :custom (whitespace-style '(face
+                              tabs
+                              spaces
+                              trailing
+                              space-before-tab
+                              indentation
+                              empty
+                              space-after-tab
+                              tab-mark
+                              missing-newline-at-eof))
   :hook (prog-mode-hook . whitespace-mode))
 
 (use-package files
@@ -108,7 +148,7 @@
   (read-extended-command-predicate #'command-completion-default-include-p)
   (indent-tabs-mode nil)
   (save-interprogram-paste-before-kill 1)
-  (line-move-visual t)
+  (line-move-visual nil)
   :bind
   ("M-u" . upcase-dwim)
   ("M-l" . downcase-dwim)
@@ -126,8 +166,10 @@
   (compilation-scroll-output 1)
   (compile-command "")
   :config
-  (add-to-list 'compilation-error-regexp-alist 'zig-c-assert)
-  (add-to-list 'compilation-error-regexp-alist-alist '(zig-c-assert ".*file \\(.*\\), line \\([0-9]*\\)" 1 2))
+  (add-to-list 'compilation-error-regexp-alist
+               'zig-c-assert)
+  (add-to-list 'compilation-error-regexp-alist-alist
+               '(zig-c-assert ".*file \\(.*\\), line \\([0-9]*\\)" 1 2))
   (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter))
 
 (use-package eglot
@@ -139,13 +181,24 @@
   (eglot-events-buffer-size 0)
   (eglot-report-progress nil)
   (eglot-events-buffer-config '(:size 0 :format full))
-  :config (add-to-list 'eglot-server-programs '(odin-mode . ("ols" "--stdio" :initializationOptions (:enable_fake_methods t :enable_references t :enable_inlay_hints t)))))
+  :config
+  (add-to-list 'eglot-server-programs
+               '(odin-mode . ("ols"
+                              "--stdio"
+                              :initializationOptions
+                              (:enable_fake_methods t
+                               :enable_references   t
+                               :enable_inlay_hints  t)))))
 
 (use-package isearch
   :bind (:map isearch-mode-map
               ("RET" . swb/isearch-done-select)
               ("<return>" . swb/isearch-done-select))
-  :init (defun swb/isearch-done-select () (interactive) (isearch-exit) (set-mark isearch-other-end))
+  :init
+  (defun swb/isearch-done-select ()
+    (interactive)
+    (isearch-exit)
+    (set-mark isearch-other-end))
   :config
   ;; https://stackoverflow.com/a/32002122
   (defun swb/isearch-with-region ()
@@ -157,10 +210,23 @@
         (isearch-yank-string region))))
   (add-hook 'isearch-mode-hook #'swb/isearch-with-region))
 
-(use-package cape :ensure :init (add-hook 'completion-at-point-functions (cape-capf-super #'cape-dabbrev #'cape-keyword)))
-(use-package magit :ensure :custom (magit-save-repository-buffers nil))
-(use-package orderless :ensure :custom (completion-styles '(orderless)))
-(use-package vertico :ensure :init (vertico-mode))
+(use-package cape
+  :ensure
+  :init
+  (add-hook 'completion-at-point-functions
+            (cape-capf-super #'cape-dabbrev #'cape-keyword)))
+
+(use-package magit
+  :ensure
+  :custom (magit-save-repository-buffers nil))
+
+(use-package orderless
+  :ensure
+  :custom (completion-styles '(orderless)))
+
+(use-package vertico
+  :ensure
+  :init (vertico-mode))
 
 (use-package corfu
   :ensure
@@ -172,13 +238,27 @@
   (corfu-echo-mode 1)
   (corfu-history-mode 1))
 
-(use-package zig-mode :ensure)
-(use-package glsl-mode :ensure :mode "\\.vs\\'" "\\.fs\\'")
-(use-package odin-mode :vc (:url "https://github.com/mattt-b/odin-mode"))
-(use-package markdown-mode :ensure)
-(use-package cmake-mode :ensure)
-(use-package rust-mode :ensure)
-(use-package json-mode :ensure)
+(use-package zig-mode
+  :ensure)
+
+(use-package glsl-mode
+  :ensure
+  :mode "\\.vs\\'" "\\.fs\\'")
+
+(use-package odin-mode
+  :vc (:url "https://github.com/mattt-b/odin-mode"))
+
+(use-package markdown-mode
+  :ensure)
+
+(use-package cmake-mode
+  :ensure)
+
+(use-package rust-mode
+  :ensure)
+
+(use-package json-mode
+  :ensure)
 
 (use-package format-all
   :ensure
@@ -189,8 +269,11 @@
                   ("C" (clang-format))
                   ("Rust" (rustfmt)))))
 
-(use-package visual-regexp :ensure)
-(use-package visual-regexp-steroids :ensure)
+(use-package visual-regexp
+  :ensure)
+
+(use-package visual-regexp-steroids
+  :ensure)
 
 (use-package multiple-cursors
   :ensure
@@ -205,6 +288,7 @@
 
 (use-package frames-only-mode
   :ensure
+  :demand
   :bind
   ("C-x 1" . nil)
   ("C-x 2" . nil)
@@ -385,10 +469,21 @@
     (exchange-point-and-mark))
   (dotimes (i (- n 1)) (swb/execute-text-object-fn char forward-index)))
 
-(defun swb/select-prev-text-object-inner (n char) (interactive "p\ncObject:") (swb/select-text-object-generic n char 0 1))
-(defun swb/select-next-text-object-inner (n char) (interactive "p\ncObject:") (swb/select-text-object-generic n char 1 0))
-(defun swb/select-prev-text-object-outer (n char) (interactive "p\ncObject:") (swb/select-text-object-generic n char 2 3))
-(defun swb/select-next-text-object-outer (n char) (interactive "p\ncObject:") (swb/select-text-object-generic n char 3 2))
+(defun swb/select-prev-text-object-inner (n char)
+  (interactive "p\ncObject:")
+  (swb/select-text-object-generic n char 0 1))
+
+(defun swb/select-next-text-object-inner (n char)
+  (interactive "p\ncObject:")
+  (swb/select-text-object-generic n char 1 0))
+
+(defun swb/select-prev-text-object-outer (n char)
+  (interactive "p\ncObject:")
+  (swb/select-text-object-generic n char 2 3))
+
+(defun swb/select-next-text-object-outer (n char)
+  (interactive "p\ncObject:")
+  (swb/select-text-object-generic n char 3 2))
 
 (defun swb/mark-text-objects-in-region (char &optional outer back)
   (interactive "cObject:")
@@ -440,8 +535,13 @@
 (swb/add-regex-contained-text-object ?g "\"")
 (swb/add-regex-contained-text-object ?q "'")
 
-(defun swb/go-to-beginning-of-region () (interactive) (when (and mark-active (> (point) (mark))) (exchange-point-and-mark)))
-(defun swb/go-to-end-of-region () (interactive) (when (and mark-active (< (point) (mark))) (exchange-point-and-mark)))
+(defun swb/go-to-beginning-of-region ()
+  (interactive)
+  (when (and mark-active (> (point) (mark))) (exchange-point-and-mark)))
+
+(defun swb/go-to-end-of-region ()
+  (interactive)
+  (when (and mark-active (< (point) (mark))) (exchange-point-and-mark)))
 
 (defun swb/insert-before ()
   (interactive)
@@ -656,6 +756,8 @@
 (swb/key "9" 'digit-argument)
 (swb/key "-" 'negative-argument)
 
+(swb/key "\\" 'hs-toggle-hiding)
+
 ;; movement/selection
 
 (swb/key "h" 'swb/backward-char-update-mark)
@@ -725,6 +827,9 @@
 
 (swb/key "[ f" 'flymake-goto-prev-error)
 (swb/key "] f" 'flymake-goto-next-error)
+
+(swb/key "[ c" 'mc/cycle-backward)
+(swb/key "] c" 'mc/cycle-forward)
 
 ;; go to commands
 
