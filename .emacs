@@ -14,7 +14,7 @@
  ;; If there is more than one, they won't work right.
  '(eglot-highlight-symbol-face ((t (:background "#808000"))))
  '(flymake-end-of-line-diagnostics-face ((t (:inherit modus-themes-slant :box nil :height 0.85))))
- '(mc/cursor-bar-face ((t (:background "#FFAAAA" :foreground "#000000" :inverse-video nil))))
+ '(mc/cursor-bar-face ((t (:background "#FF0000" :foreground "#000000" :inverse-video nil :height 1))))
  '(mode-line ((t (:box nil))))
  '(mode-line-inactive ((t (:box nil)))))
 
@@ -28,12 +28,16 @@
   (inhibit-splash-screen 1)
   (initial-scratch-message nil)
   (enable-recursive-minibuffers t)
-  (minibuffer-prompt-properties '(read-only t cursor-intangible t face minibuffer-prompt))
+  (minibuffer-prompt-properties '(read-only
+                                  t
+                                  cursor-intangible
+                                  t
+                                  face
+                                  minibuffer-prompt))
   (tab-width 4)
   (use-short-answers 1)
   (dabbrev-case-fold-search nil)
   (ring-bell-function 'ignore)
-  (visible-cursor nil)
   (mode-line-format '("%e"
                       " "
                       (:eval (swb/editor-mode))
@@ -54,8 +58,6 @@
                                   (t               (propertize "INSERT" 'face 'warning))))
   (tool-bar-mode 0)
   (menu-bar-mode 0)
-  (set-frame-parameter (selected-frame) 'alpha-background 80)
-  (add-to-list 'default-frame-alist '(alpha-background . 80))
   (server-start))
 
 (use-package novice
@@ -489,21 +491,23 @@
 (defun swb/mark-text-objects-in-region (char &optional outer back)
   (interactive "cObject:")
   (when (not mark-active) (user-error "mark must be active"))
-  (let ((point (point))
-        (mark (mark)))
-    (deactivate-mark)
-    (when (> point mark) (cl-rotatef mark point))
-    (goto-char point)
-    (let ((prev-point (point-min)))
-      (while (and (< (point) mark) (< prev-point (point)))
-        (setq prev-point (point))
-        (if outer
-            (swb/select-next-text-object-outer 1 char)
-          (swb/select-next-text-object-inner 1 char))
-        (when (< (mark) mark) (mc/create-fake-cursor-at-point))))
-    (mc/maybe-multiple-cursors-mode)
-    (mc/pop-state-from-overlay (car (mc/all-fake-cursors)))
-    (when back (mc/execute-command-for-all-cursors (swb/cmd (exchange-point-and-mark))))))
+  (mc/execute-command-for-all-cursors
+   (swb/cmd
+    (let ((point (point))
+          (mark (mark)))
+      (deactivate-mark)
+      (when (> point mark) (cl-rotatef mark point))
+      (goto-char point)
+      (let ((prev-point (point-min)))
+        (while (and (< (point) mark) (< prev-point (point)))
+          (setq prev-point (point))
+          (if outer
+              (swb/select-next-text-object-outer 1 char)
+            (swb/select-next-text-object-inner 1 char))
+          (when (< (mark) mark) (mc/create-fake-cursor-at-point))))
+      (mc/pop-state-from-overlay (car (mc/all-fake-cursors))))))
+  (mc/maybe-multiple-cursors-mode)
+  (when back (mc/execute-command-for-all-cursors (swb/cmd (exchange-point-and-mark)))))
 
 (defun swb/mark-inner-text-objects-in-region-back (char)
   (interactive "cObject:")
@@ -518,15 +522,46 @@
   (swb/mark-text-objects-in-region char t t))
 
 (setq swb/text-objects nil) ;; just makes it easier to re-eval all this
-(swb/add-text-object ?p 'start-of-paragraph-text 'end-of-paragraph-text 'backward-paragraph 'forward-paragraph)
-(swb/add-text-object ?l 'swb/backward-line-text 'swb/forward-line-text 'swb/backward-line 'forward-line)
-(swb/add-text-object ?b 'beginning-of-buffer 'end-of-buffer)
-(swb/add-text-object ?x 'backward-sexp 'forward-sexp)
-(swb/add-text-object ?f 'beginning-of-defun 'end-of-defun)
-(swb/add-text-object ?w 'backward-word 'forward-word)
-(swb/add-text-object ?W (lambda () (forward-symbol -1)) (lambda () (forward-symbol 1)))
-(swb/add-text-object ?j 'swb/backward-line-join 'swb/forward-line-join)
-(swb/add-text-object ?e 'swb/backward-argument 'swb/forward-argument)
+
+(swb/add-text-object ?p
+                     'start-of-paragraph-text
+                     'end-of-paragraph-text
+                     'backward-paragraph
+                     'forward-paragraph)
+
+(swb/add-text-object ?l
+                     'swb/backward-line-text
+                     'swb/forward-line-text
+                     'swb/backward-line
+                     'forward-line)
+
+(swb/add-text-object ?b
+                     'beginning-of-buffer
+                     'end-of-buffer)
+
+(swb/add-text-object ?x
+                     'backward-sexp
+                     'forward-sexp)
+
+(swb/add-text-object ?f
+                     'beginning-of-defun
+                     'end-of-defun)
+
+(swb/add-text-object ?w
+                     'backward-word
+                     'forward-word)
+
+(swb/add-text-object ?W
+                     (lambda () (forward-symbol -1))
+                     (lambda () (forward-symbol 1)))
+
+(swb/add-text-object ?j
+                     'swb/backward-line-join
+                     'swb/forward-line-join)
+
+(swb/add-text-object ?e
+                     'swb/backward-argument
+                     'swb/forward-argument)
 
 (swb/add-delimited-text-object ?r "(" ")")
 (swb/add-delimited-text-object ?c "{" "}")
@@ -771,6 +806,10 @@
 (swb/key "-" 'negative-argument)
 
 (swb/key "\\" 'hs-toggle-hiding)
+(swb/key "C-/" (swb/cmd (save-mark-and-excursion
+                          (deactivate-mark)
+                          (undo)
+                          (setq deactivate-mark nil))))
 
 ;; movement/selection
 
@@ -779,8 +818,15 @@
 (swb/key "k" 'swb/backward-line-update-mark)
 (swb/key "l" 'swb/forward-char-update-mark)
 
-(swb/key "M-j" (lambda (arg) (interactive "p") (swb/forward-line-update-mark (* arg 30)) (recenter)))
-(swb/key "M-k" (lambda (arg) (interactive "p") (swb/backward-line-update-mark (* arg 30)) (recenter)))
+(swb/key "M-j" (lambda (arg)
+                 (interactive "p")
+                 (swb/forward-line-update-mark (* arg 30))
+                 (recenter)))
+
+(swb/key "M-k" (lambda (arg)
+                 (interactive "p")
+                 (swb/backward-line-update-mark (* arg 30))
+                 (recenter)))
 
 (swb/key "b" 'swb/select-prev-symbol)
 (swb/key "e" 'swb/select-next-symbol)
@@ -827,8 +873,16 @@
 
 (swb/key "d" 'swb/kill)
 (swb/key "y" 'kill-ring-save)
-(swb/key "p" (swb/cmd (setq swb/anchored nil) (yank) (setq deactivate-mark nil) (activate-mark)))
-(swb/key "M-p" (swb/cmd (setq swb/anchored nil) (yank-pop) (setq deactivate-mark nil) (activate-mark)))
+(swb/key "p" (swb/cmd
+              (setq swb/anchored nil)
+              (yank)
+              (setq deactivate-mark nil)
+              (activate-mark)))
+(swb/key "M-p" (swb/cmd
+                (setq swb/anchored nil)
+                (yank-pop)
+                (setq deactivate-mark nil)
+                (activate-mark)))
 (swb/key "r" 'swb/replace)
 (swb/key "c" 'swb/change)
 
