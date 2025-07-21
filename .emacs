@@ -14,7 +14,7 @@
  ;; If there is more than one, they won't work right.
  '(eglot-highlight-symbol-face ((t (:background "#808000"))))
  '(flymake-end-of-line-diagnostics-face ((t (:inherit modus-themes-slant :box nil :height 0.85))))
- '(mc/cursor-face ((t (:background "#FFAAAA" :foreground "#000000" :inverse-video nil))))
+ '(mc/cursor-bar-face ((t (:background "#FFAAAA" :foreground "#000000" :inverse-video nil))))
  '(mode-line ((t (:box nil))))
  '(mode-line-inactive ((t (:box nil)))))
 
@@ -48,6 +48,7 @@
                       "  "))
   (server-client-instructions nil)
   (vc-follow-symlinks t)
+  (cursor-type '(bar . 1))
   :config
   (defun swb/editor-mode () (cond (swb/simple-mode (propertize "NORMAL" 'face 'bold))
                                   (t               (propertize "INSERT" 'face 'warning))))
@@ -706,6 +707,19 @@
 
 (advice-add 'repeat :around 'swb/make-repeat-behave-with-multiple-cursors)
 
+(defun swb/delete-current-cursor (&optional back)
+  (interactive)
+  (let ((next-cursor
+         (if back
+             (mc/prev-fake-cursor-before-point)
+           (mc/next-fake-cursor-after-point))))
+    (when next-cursor
+      (mc/pop-state-from-overlay next-cursor))))
+
+(defun swb/delete-current-cursor-back ()
+  (interactive)
+  (swb/delete-current-cursor t))
+
 (defun swb/forward-char-update-mark (&optional n)
   (interactive "p")
   (if swb/anchored (swb/start-marking) (deactivate-mark))
@@ -797,10 +811,14 @@
 
 (swb/key "z" 'swb/pop-point-and-mark-from-ring)
 
-(swb/key "q" 'mc/mark-previous-like-this)
-(swb/key "M-q" 'mc/skip-to-previous-like-this)
-(swb/key "w" 'mc/mark-next-like-this)
-(swb/key "M-w" 'mc/skip-to-next-like-this)
+(swb/key "q"   'mc/mark-previous-like-this)
+(swb/key "Q"   'mc/skip-to-previous-like-this)
+(swb/key "C-q" 'mc/cycle-backward)
+(swb/key "M-q" 'swb/delete-current-cursor-back)
+(swb/key "w"   'mc/mark-next-like-this)
+(swb/key "W"   'mc/skip-to-next-like-this)
+(swb/key "C-w" 'mc/cycle-forward)
+(swb/key "M-w" 'swb/delete-current-cursor)
 
 ;; editing
 
@@ -827,9 +845,6 @@
 
 (swb/key "[ f" 'flymake-goto-prev-error)
 (swb/key "] f" 'flymake-goto-next-error)
-
-(swb/key "[ c" 'mc/cycle-backward)
-(swb/key "] c" 'mc/cycle-forward)
 
 ;; go to commands
 

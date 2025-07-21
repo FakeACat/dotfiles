@@ -124,6 +124,7 @@
         project-find-file
         repeat
         swb/delete-current-cursor
+        swb/delete-current-cursor-back
         swb/mark-around-text-object
         swb/mark-in-text-object
         swb/mark-inner-text-objects-in-region-back
