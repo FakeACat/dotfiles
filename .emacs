@@ -3,20 +3,21 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   '("7fea145741b3ca719ae45e6533ad1f49b2a43bf199d9afaee5b6135fd9e6f9b8" default))
  '(epg-gpg-program "gpg")
  '(package-selected-packages
-   '(frames-only-mode json-mode odin-mode visual-regexp visual-regexp-steroids))
+   '(cape cmake-mode consult corfu format-all frames-only-mode glsl-mode json-mode
+          magit markdown-mode multiple-cursors odin-mode orderless rust-mode
+          solarized-theme vertico visual-regexp-steroids zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(eglot-highlight-symbol-face ((t (:background "#808000"))))
- '(flymake-end-of-line-diagnostics-face ((t (:inherit modus-themes-slant :box nil :height 0.85))))
- '(mc/cursor-bar-face ((t (:background "#FF0000" :foreground "#000000" :inverse-video nil :height 1))))
- '(mode-line ((t (:box nil))))
- '(mode-line-inactive ((t (:box nil)))))
+ '(cursor ((t (:background "#FFFF00" :foreground "#FFFF00" :inverse-video nil))))
+ '(mc/cursor-bar-face ((t (:background "#FF0000" :foreground "#000000" :inverse-video nil :height 1)))))
 
 (defmacro swb/cmd (&rest body) `(lambda (&rest _) (interactive) ,@body))
 
@@ -38,24 +39,11 @@
   (use-short-answers 1)
   (dabbrev-case-fold-search nil)
   (ring-bell-function 'ignore)
-  (mode-line-format '("%e"
-                      " "
-                      (:eval (swb/editor-mode))
-                      " "
-                      "%b"
-                      (:eval (propertize (if buffer-read-only " read-only" "") 'face 'shadow))
-                      (:eval (propertize (if (buffer-modified-p) " unsaved" "") 'face 'warning))
-                      " "
-                      (:eval (propertize default-directory 'face 'shadow))
-                      mode-line-format-right-align
-                      (:eval (if flymake-mode flymake-mode-line-format ""))
-                      "  "))
+  (mode-line-format nil)
   (server-client-instructions nil)
   (vc-follow-symlinks t)
-  (cursor-type '(bar . 1))
+  (cursor-type '(bar . 2))
   :config
-  (defun swb/editor-mode () (cond (swb/simple-mode (propertize "NORMAL" 'face 'bold))
-                                  (t               (propertize "INSERT" 'face 'warning))))
   (tool-bar-mode 0)
   (menu-bar-mode 0)
   (server-start))
@@ -111,23 +99,29 @@
   (flymake-indicator-type 'fringes))
 
 (use-package frame
-  :config (blink-cursor-mode -1))
+  :custom
+  (window-divider-default-places t)
+  (window-divider-default-bottom-width 1)
+  (window-divider-default-right-width 1)
+  :config
+  (window-divider-mode 1)
+  (blink-cursor-mode -1))
 
 (use-package display-fill-column-indicator
   :custom (fill-column 80)
   :config (global-display-fill-column-indicator-mode))
 
-(use-package custom
-  :config
-  (load-theme 'modus-vivendi)
-  (defun swb/on-after-init ()
-    (unless (display-graphic-p (selected-frame))
-      (set-face-background 'default "unspecified-bg" (selected-frame))))
-  (add-hook 'window-setup-hook 'swb/on-after-init))
+(use-package solarized-theme
+  :ensure
+  :demand
+  :config (load-theme 'solarized-dark))
 
 (use-package display-line-numbers
   :custom (display-line-numbers-type 'relative)
   :config (global-display-line-numbers-mode))
+
+(use-package hl-line
+  :config (global-hl-line-mode 1))
 
 (use-package whitespace
   :custom (whitespace-style '(face
@@ -313,7 +307,6 @@
   :after-hook
   (deactivate-mark)
   (corfu-quit)
-  (force-mode-line-update)
   (setq swb/anchored nil))
 
 (add-hook 'minibuffer-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
