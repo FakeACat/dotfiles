@@ -1,28 +1,25 @@
+;;; ...  -*- lexical-binding: t -*-
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("7fea145741b3ca719ae45e6533ad1f49b2a43bf199d9afaee5b6135fd9e6f9b8" default))
  '(epg-gpg-program "gpg")
  '(package-selected-packages
-   '(cape cmake-mode consult corfu format-all frames-only-mode glsl-mode json-mode
-          magit markdown-mode multiple-cursors odin-mode orderless rust-mode
-          solarized-theme vertico visual-regexp-steroids zig-mode))
+   '(cape cmake-mode consult corfu doom-themes format-all frames-only-mode
+          glsl-mode json-mode magit markdown-mode multiple-cursors odin-mode
+          orderless rust-mode vertico visual-regexp-steroids zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(cursor ((t (:background "#FFFF00" :foreground "#FFFF00" :inverse-video nil))))
- '(mc/cursor-bar-face ((t (:background "#FF0000" :foreground "#000000" :inverse-video nil :height 1)))))
 
 (defmacro swb/cmd (&rest body) `(lambda (&rest _) (interactive) ,@body))
 
-(use-package package :config (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t))
-(use-package use-package-core :custom (use-package-always-defer 1))
+(use-package package
+  :config (add-to-list 'package-archives
+                       '("melpa" . "https://melpa.org/packages/") t))
+
+(use-package use-package-core
+  :custom (use-package-always-defer 1))
 
 (use-package emacs
   :custom
@@ -42,7 +39,7 @@
   (mode-line-format nil)
   (server-client-instructions nil)
   (vc-follow-symlinks t)
-  (cursor-type '(bar . 2))
+  (cursor-type 'bar)
   :config
   (tool-bar-mode 0)
   (menu-bar-mode 0)
@@ -50,9 +47,6 @@
 
 (use-package novice
   :custom (disabled-command-function nil))
-
-(use-package ibuffer
-  :bind ("C-x C-b" . ibuffer))
 
 (use-package elec-pair
   :config (electric-pair-mode 1))
@@ -82,10 +76,14 @@
   :custom (c-basic-offset 4))
 
 (use-package cc-styles
-  :hook (java-mode-hook . (lambda () (c-set-offset 'case-label '+)))) ;; fix switch indenting in java
+  :hook
+  (java-mode-hook . (lambda ()
+                      (c-set-offset 'case-label '+)))) ;; fix switch indenting in java
 
 (use-package dired
-  :custom (dired-auto-revert-buffer #'dired-buffer-stale-p) (dired-dwim-target t))
+  :custom
+  (dired-auto-revert-buffer #'dired-buffer-stale-p)
+  (dired-dwim-target t))
 
 (use-package which-key
   :config (which-key-mode))
@@ -111,10 +109,10 @@
   :custom (fill-column 80)
   :config (global-display-fill-column-indicator-mode))
 
-(use-package solarized-theme
+(use-package doom-themes
   :ensure
   :demand
-  :config (load-theme 'solarized-dark))
+  :config (load-theme 'doom-solarized-dark t))
 
 (use-package display-line-numbers
   :custom (display-line-numbers-type 'relative)
@@ -279,19 +277,20 @@
   :config
   ;; don't want C-g to quit multiple cursors
   (push 'corfu-mode mc/unsupported-minor-modes)
+  (push 'global-hl-line-mode mc/unsupported-minor-modes)
   (push 'swb/point-and-mark-ring mc/cursor-specific-vars)
-  (defun mc/keyboard-quit () (interactive) (when (use-region-p) (deactivate-mark)))
-  (defun swb/quit-mcs () (interactive) (mc/disable-multiple-cursors-mode)))
+  (defun mc/keyboard-quit ()
+    (interactive)
+    (when (use-region-p)
+      (deactivate-mark)))
+  (defun swb/quit-mcs ()
+    (interactive)
+    (mc/disable-multiple-cursors-mode)))
 
 (use-package frames-only-mode
   :ensure
   :demand
-  :bind
-  ("C-x 1" . nil)
-  ("C-x 2" . nil)
-  ("C-x 3" . nil)
-  :config
-  (frames-only-mode))
+  :config (frames-only-mode))
 
 ;; custom modal editing
 
@@ -300,6 +299,7 @@
   (if (minibufferp) (abort-minibuffers) (swb/simple-mode 1)))
 
 (global-set-key (kbd "<escape>") 'swb/simple-mode-or-exit-minibuffer)
+(global-set-key (kbd "M-<escape>") (swb/cmd (swb/simple-mode)))
 
 (define-minor-mode swb/simple-mode "Simple editing mode"
   :init-value t
@@ -387,7 +387,8 @@
     (let ((next-char (if back (char-before) (char-after)))
           (prev-char (if back (char-after) (char-before))))
       (if till
-          (when (and (= next-char (string-to-char pop)) (/= prev-char (string-to-char push)))
+          (when (and (= next-char (string-to-char pop))
+                     (/= prev-char (string-to-char push)))
             (forward-char (if back -1 1)))
         (when (= next-char (string-to-char push))
           (forward-char (if back -1 1)))))
@@ -426,7 +427,12 @@
 
 (defvar swb/text-objects)
 
-(defun swb/add-text-object (char inner-beg inner-end &optional outer-beg outer-end)
+(defun swb/add-text-object (char
+                            inner-beg
+                            inner-end
+                            &optional
+                            outer-beg
+                            outer-end)
   (push (list char . (inner-beg
                       inner-end
                       (or outer-beg inner-beg)
@@ -435,18 +441,34 @@
 
 (defun swb/add-delimited-text-object (char opener closer)
   (swb/add-text-object char
-                       `(lambda () (interactive) (swb/find-delimiter ,opener ,closer t t))
-                       `(lambda () (interactive) (swb/find-delimiter ,opener ,closer nil t))
-                       `(lambda () (interactive) (swb/find-delimiter ,opener ,closer t nil))
-                       `(lambda () (interactive) (swb/find-delimiter ,opener ,closer nil nil))))
+                       `(lambda ()
+                          (interactive)
+                          (swb/find-delimiter ,opener ,closer t t))
+                       `(lambda ()
+                          (interactive)
+                          (swb/find-delimiter ,opener ,closer nil t))
+                       `(lambda ()
+                          (interactive)
+                          (swb/find-delimiter ,opener ,closer t nil))
+                       `(lambda ()
+                          (interactive)
+                          (swb/find-delimiter ,opener ,closer nil nil))))
 
 (defun swb/add-regex-contained-text-object (char opener &optional closer)
   (setq closer (or closer opener))
   (swb/add-text-object char
-                       `(lambda () (interactive) (swb/find-regex ,opener t t))
-                       `(lambda () (interactive) (swb/find-regex ,closer nil t))
-                       `(lambda () (interactive) (swb/find-regex ,opener t nil))
-                       `(lambda () (interactive) (swb/find-regex ,closer nil nil))))
+                       `(lambda ()
+                          (interactive)
+                          (swb/find-regex ,opener t t))
+                       `(lambda ()
+                          (interactive)
+                          (swb/find-regex ,closer nil t))
+                       `(lambda ()
+                          (interactive)
+                          (swb/find-regex ,opener t nil))
+                       `(lambda ()
+                          (interactive)
+                          (swb/find-regex ,closer nil nil))))
 
 (defun swb/execute-text-object-fn (char element)
   (let ((object (assoc char swb/text-objects)))
@@ -500,7 +522,9 @@
           (when (< (mark) mark) (mc/create-fake-cursor-at-point))))
       (mc/pop-state-from-overlay (car (mc/all-fake-cursors))))))
   (mc/maybe-multiple-cursors-mode)
-  (when back (mc/execute-command-for-all-cursors (swb/cmd (exchange-point-and-mark)))))
+  (when back
+    (mc/execute-command-for-all-cursors
+     (swb/cmd (exchange-point-and-mark)))))
 
 (defun swb/mark-inner-text-objects-in-region-back (char)
   (interactive "cObject:")
@@ -662,7 +686,8 @@
 (defun swb/find (arg char)
   (interactive "p\ncFind:")
   (let* ((case-fold-search nil)
-         (end (save-mark-and-excursion (search-forward (char-to-string char) nil t arg))))
+         (end (save-mark-and-excursion
+                (search-forward (char-to-string char) nil t arg))))
     (when end
       (unless swb/anchored (deactivate-mark))
       (swb/start-marking)
@@ -703,7 +728,8 @@
   (unless (or (and (not (ring-empty-p swb/point-and-mark-ring))
                    (swb/at-point-and-mark (ring-ref swb/point-and-mark-ring 0)))
               (eq this-command 'swb/pop-point-and-mark-from-ring))
-    (ring-insert swb/point-and-mark-ring (list (point) (if mark-active (mark) nil)))
+    (ring-insert swb/point-and-mark-ring
+                 (list (point) (if mark-active (mark) nil)))
     (setq swb/last-point-push-command last-command)))
 
 (add-hook 'pre-command-hook 'swb/maybe-push-point-to-ring)
@@ -711,26 +737,38 @@
 
 (defun swb/go-to-point-and-mark (point-and-mark)
   (goto-char (car point-and-mark))
-  (let ((mark (cadr point-and-mark))) (if mark (set-mark mark) (deactivate-mark))))
+  (let ((mark (cadr point-and-mark)))
+    (if mark
+        (set-mark mark)
+      (deactivate-mark))))
 
 (defun swb/pop-point-and-mark-from-ring (arg)
   (interactive "p")
   (let* ((back (< arg 0))
          (point-and-mark (swb/ring-rotate swb/point-and-mark-ring back)))
-    (when (swb/at-point-and-mark point-and-mark) (setq point-and-mark (swb/ring-rotate swb/point-and-mark-ring back)))
+    (when (swb/at-point-and-mark point-and-mark)
+      (setq point-and-mark (swb/ring-rotate swb/point-and-mark-ring back)))
     (swb/go-to-point-and-mark point-and-mark)))
 
 (defun swb/reset-point-and-mark-ring-for-all-cursors ()
-  (mc/execute-command-for-all-cursors (lambda () (interactive) (setq swb/point-and-mark-ring (swb/make-point-and-mark-ring)))))
+  (mc/execute-command-for-all-cursors
+   (lambda ()
+     (interactive)
+     (setq swb/point-and-mark-ring (swb/make-point-and-mark-ring)))))
 
-(advice-add 'mc/maybe-multiple-cursors-mode :after 'swb/reset-point-and-mark-ring-for-all-cursors)
+(advice-add 'mc/maybe-multiple-cursors-mode
+            :after
+            'swb/reset-point-and-mark-ring-for-all-cursors)
 
 (defun swb/make-repeat-behave-with-multiple-cursors (orig-fn repeat-arg)
   (when (eq last-repeatable-command 'repeat)
     (setq last-repeatable-command repeat-previous-repeated-command))
 
   (if (memq last-repeatable-command mc/cmds-to-run-for-all)
-      (mc/execute-command-for-all-cursors (lambda () (interactive) (funcall orig-fn repeat-arg)))
+      (mc/execute-command-for-all-cursors
+       (lambda ()
+         (interactive)
+         (funcall orig-fn repeat-arg)))
     (funcall orig-fn repeat-arg)))
 
 (advice-add 'repeat :around 'swb/make-repeat-behave-with-multiple-cursors)
@@ -779,7 +817,8 @@
           (interactive)
           (apply ,(list 'quote fn) args))))))
 
-(defmacro swb/key (key-name command) `(bind-key ,key-name ,(macroexpand command) swb/simple-mode-map))
+(defmacro swb/key (key-name command)
+  `(bind-key ,key-name ,(macroexpand command) swb/simple-mode-map))
 
 (swb/key [remap self-insert-command] 'ignore)
 
@@ -811,15 +850,8 @@
 (swb/key "k" 'swb/backward-line-update-mark)
 (swb/key "l" 'swb/forward-char-update-mark)
 
-(swb/key "M-j" (lambda (arg)
-                 (interactive "p")
-                 (swb/forward-line-update-mark (* arg 30))
-                 (recenter)))
-
-(swb/key "M-k" (lambda (arg)
-                 (interactive "p")
-                 (swb/backward-line-update-mark (* arg 30))
-                 (recenter)))
+(swb/key "M-j" 'scroll-up-command)
+(swb/key "M-k" 'scroll-down-command)
 
 (swb/key "b" 'swb/select-prev-symbol)
 (swb/key "e" 'swb/select-next-symbol)
@@ -827,10 +859,14 @@
 (swb/key "t" (swb/prompt-once-run-for-all-cursors swb/till))
 (swb/key "f" (swb/prompt-once-run-for-all-cursors swb/find))
 
-(swb/key "n" (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-inner))
-(swb/key "m" (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-inner))
-(swb/key "," (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-outer))
-(swb/key "." (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-outer))
+(swb/key "n" (swb/prompt-once-run-for-all-cursors
+              swb/select-prev-text-object-inner))
+(swb/key "m" (swb/prompt-once-run-for-all-cursors
+              swb/select-next-text-object-inner))
+(swb/key "," (swb/prompt-once-run-for-all-cursors
+              swb/select-prev-text-object-outer))
+(swb/key "." (swb/prompt-once-run-for-all-cursors
+              swb/select-next-text-object-outer))
 
 (swb/key "M-n" 'swb/mark-inner-text-objects-in-region-back)
 (swb/key "M-m" 'swb/mark-text-objects-in-region)
@@ -903,6 +939,17 @@
 
 ;; leader commands
 
+(swb/key "SPC f" 'find-file)
+(swb/key "SPC b" 'switch-to-buffer)
+(swb/key "SPC k" 'kill-buffer)
+(swb/key "SPC g" 'magit-status)
+(swb/key "SPC s" 'save-buffer)
+(swb/key "SPC c" 'compile)
+(swb/key "SPC p" (global-key-binding (kbd "C-x p")))
 (swb/key "SPC e a" 'eglot-code-actions)
 (swb/key "SPC e r" 'eglot-rename)
 (swb/key "SPC e o" 'eglot-code-action-organize-imports)
+
+;; this is a terrible hack
+;; hopefully fixes the screen not redrawing correctly sometimes
+(add-hook 'post-command-hook 'redraw-frame)
