@@ -506,21 +506,28 @@
 (defun swb/mark-text-objects-in-region (char &optional outer back)
   (interactive "cObject:")
   (when (not mark-active) (user-error "mark must be active"))
-  (mc/execute-command-for-all-cursors
-   (swb/cmd
-    (let ((point (point))
-          (mark (mark)))
-      (deactivate-mark)
-      (when (> point mark) (cl-rotatef mark point))
-      (goto-char point)
-      (let ((prev-point (point-min)))
-        (while (and (< (point) mark) (< prev-point (point)))
-          (setq prev-point (point))
-          (if outer
-              (swb/select-next-text-object-outer 1 char)
-            (swb/select-next-text-object-inner 1 char))
-          (when (< (mark) mark) (mc/create-fake-cursor-at-point))))
-      (mc/pop-state-from-overlay (car (mc/all-fake-cursors))))))
+  (let ((new-cursors nil))
+    (mc/execute-command-for-all-cursors
+     (swb/cmd
+      (let ((point (point))
+            (mark (mark)))
+        (deactivate-mark)
+        (when (> point mark) (cl-rotatef mark point))
+        (goto-char point)
+        (let ((prev-point (point-min)))
+          (while (and (< (point) mark) (< prev-point (point)))
+            (setq prev-point (point))
+            (if outer
+                (swb/select-next-text-object-outer 1 char)
+              (swb/select-next-text-object-inner 1 char))
+            (when (< (mark) mark)
+              (push (list (point) (mark))
+                    new-cursors)))))))
+    (mc/disable-multiple-cursors-mode)
+    (dolist (pt-and-mark new-cursors nil)
+      (swb/go-to-point-and-mark pt-and-mark)
+      (mc/create-fake-cursor-at-point))
+    (mc/pop-state-from-overlay (car (mc/all-fake-cursors))))
   (mc/maybe-multiple-cursors-mode)
   (when back
     (mc/execute-command-for-all-cursors
