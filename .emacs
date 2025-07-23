@@ -9,8 +9,14 @@
  '(package-selected-packages
    '(cape cmake-mode consult corfu doom-themes format-all frames-only-mode
           glsl-mode json-mode magit markdown-mode multiple-cursors odin-mode
-          orderless rust-mode vertico visual-regexp-steroids zig-mode))
+          orderless rust-mode vertico visual-regexp-steroids yasnippet zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(eglot-highlight-symbol-face ((t (:underline t)))))
 
 (defmacro swb/cmd (&rest body) `(lambda (&rest _) (interactive) ,@body))
 
@@ -112,7 +118,7 @@
 (use-package doom-themes
   :ensure
   :demand
-  :config (load-theme 'doom-solarized-dark t))
+  :config (load-theme 'doom-gruvbox t))
 
 (use-package display-line-numbers
   :custom (display-line-numbers-type 'relative)
@@ -230,8 +236,13 @@
   (corfu-quit-at-boundary nil)
   :init
   (global-corfu-mode 1)
-  (corfu-echo-mode 1)
   (corfu-history-mode 1))
+
+(use-package yasnippet
+  :ensure
+  :config
+  (yas-global-mode)
+  (setq yas-keymap nil))
 
 (use-package zig-mode
   :ensure)
@@ -771,12 +782,13 @@
   (when (eq last-repeatable-command 'repeat)
     (setq last-repeatable-command repeat-previous-repeated-command))
 
-  (if (memq last-repeatable-command mc/cmds-to-run-for-all)
-      (mc/execute-command-for-all-cursors
-       (lambda ()
-         (interactive)
-         (funcall orig-fn repeat-arg)))
-    (funcall orig-fn repeat-arg)))
+  (let ((swb/anchored t))
+    (if (memq last-repeatable-command mc/cmds-to-run-for-all)
+        (mc/execute-command-for-all-cursors
+         (lambda ()
+           (interactive)
+           (funcall orig-fn repeat-arg)))
+      (funcall orig-fn repeat-arg))))
 
 (advice-add 'repeat :around 'swb/make-repeat-behave-with-multiple-cursors)
 
@@ -845,10 +857,10 @@
 (swb/key "-" 'negative-argument)
 
 (swb/key "\\" 'hs-toggle-hiding)
-(swb/key "C-/" (swb/cmd (save-mark-and-excursion
-                          (deactivate-mark)
-                          (undo)
-                          (setq deactivate-mark nil))))
+(swb/key "C-/" (swb/cmd
+                (deactivate-mark)
+                (undo)
+                (setq deactivate-mark nil)))
 
 ;; movement/selection
 
@@ -943,6 +955,7 @@
 (swb/key "g b" 'xref-go-back)
 
 (swb/key "g f" 'ffap)
+(swb/key "g l" 'goto-line)
 
 ;; leader commands
 
@@ -956,7 +969,3 @@
 (swb/key "SPC e a" 'eglot-code-actions)
 (swb/key "SPC e r" 'eglot-rename)
 (swb/key "SPC e o" 'eglot-code-action-organize-imports)
-
-;; this is a terrible hack
-;; hopefully fixes the screen not redrawing correctly sometimes
-(add-hook 'post-command-hook 'redraw-frame)
