@@ -381,60 +381,66 @@
           (ignore-errors (backward-sexp) t)
           (not (swb/next-to-char-ignoring-whitespace ?, t)))))
 
-(defun swb/find-delimiter (opener closer back till)
-  (cl-assert (= (length opener) 1))
-  (cl-assert (= (length closer) 1))
+(defun swb/forward-whitespace (&optional back)
+  (if back (backward-char) (forward-char))
+  (while (let ((next-char (if back (char-before) (char-after)))
+               (prev-char (if back (char-after) (char-before))))
+           (or (swb/is-whitespace next-char)
+               (not (swb/is-whitespace prev-char))))
+    (if back (backward-char) (forward-char))))
 
-  (let ((search-fn (if back 'search-backward 'search-forward))
-        (push (if back closer opener))
-        (pop (if back opener closer))
-        (initial-point (point))
-        (layers 1)
-        (failed nil)
-        (first-pop nil))
+(defun swb/backward-whitespace ()
+  (swb/forward-whitespace t))
 
-    ;; needs to skip over pop symbols if till, else skip over push symbols
-    ;; this lets regions expand correctly
-    (let ((next-char (if back (char-before) (char-after)))
-          (prev-char (if back (char-after) (char-before))))
-      (if till
-          (when (and (= next-char (string-to-char pop))
-                     (/= prev-char (string-to-char push)))
-            (forward-char (if back -1 1)))
-        (when (= next-char (string-to-char push))
-          (forward-char (if back -1 1)))))
+(defun swb/forward-contiguous (&optional back)
+  (if back (backward-char) (forward-char))
+  (while (let ((next-char (if back (char-before) (char-after)))
+               (prev-char (if back (char-after) (char-before))))
+           (or (not (swb/is-whitespace next-char))
+               (swb/is-whitespace prev-char)))
+    (if back (backward-char) (forward-char))))
 
-    (while (and (> layers 0) (not failed))
-      (let* ((next-push (save-excursion (funcall search-fn push nil t)))
-             (next-pop (save-excursion (funcall search-fn pop nil t)))
-             (push-dist (if next-push (abs (- next-push (point))) nil))
-             (pop-dist (if next-pop (abs (- next-pop (point))) nil)))
-        (cond
-         ((not next-pop)
-          (setq failed t))
-         ((or (not next-push) (< pop-dist push-dist))
-          (goto-char next-pop)
-          (setq layers (- layers 1))
-          (when (= layers 1) (unless first-pop (setq first-pop next-pop))))
-         (t
-          (goto-char next-push)
-          (setq layers (+ layers 1))))))
+(defun swb/backward-contiguous ()
+  (swb/forward-contiguous t))
 
-    (if failed
-        (progn (goto-char (or first-pop initial-point))
-               (when (and till first-pop) (forward-char (if back 1 -1))))
-      (when till (forward-char (if back 1 -1))))))
+(defvar swb/alphanumeric-regex "[a-zA-Z0-9_]")
+(defvar swb/whitespace-regex "[\s\n]")
+(defvar swb/not-alphanumeric-or-whitespace-regex "[^a-zA-Z0-9_\s\n]")
 
-(defun swb/find-regex (regex &optional back till)
-  (let* ((search-fn          (if back 're-search-backward 're-search-forward))
-         (backward-search-fn (if back 're-search-forward 're-search-backward))
-         (end (save-excursion
-                (forward-char (if back (- 1) 1))
-                (funcall search-fn regex nil t))))
-    (swb/start-marking)
-    (when end
-      (goto-char end)
-      (when till (funcall backward-search-fn regex nil t)))))
+(defvar swb/end-of-vim-word-regex
+  (concat swb/alphanumeric-regex
+          swb/not-alphanumeric-or-whitespace-regex
+          "\\|"
+          swb/not-alphanumeric-or-whitespace-regex
+          swb/alphanumeric-regex
+          "\\|"
+          swb/alphanumeric-regex
+          swb/whitespace-regex
+          "\\|"
+          swb/not-alphanumeric-or-whitespace-regex
+          swb/whitespace-regex))
+
+(defvar swb/beginning-of-vim-word-regex
+  (concat swb/alphanumeric-regex
+          swb/not-alphanumeric-or-whitespace-regex
+          "\\|"
+          swb/not-alphanumeric-or-whitespace-regex
+          swb/alphanumeric-regex
+          "\\|"
+          swb/whitespace-regex
+          swb/alphanumeric-regex
+          "\\|"
+          swb/whitespace-regex
+          swb/not-alphanumeric-or-whitespace-regex))
+
+(defun swb/forward-vim-word ()
+  (when (re-search-forward swb/end-of-vim-word-regex nil t)
+    (backward-char)))
+
+(defun swb/backward-vim-word ()
+  (if (re-search-backward swb/beginning-of-vim-word-regex nil t)
+      (forward-char)
+    (goto-char (point-min))))
 
 (defvar swb/text-objects)
 
@@ -449,37 +455,6 @@
                       (or outer-beg inner-beg)
                       (or outer-end inner-end)))
         swb/text-objects))
-
-(defun swb/add-delimited-text-object (char opener closer)
-  (swb/add-text-object char
-                       `(lambda ()
-                          (interactive)
-                          (swb/find-delimiter ,opener ,closer t t))
-                       `(lambda ()
-                          (interactive)
-                          (swb/find-delimiter ,opener ,closer nil t))
-                       `(lambda ()
-                          (interactive)
-                          (swb/find-delimiter ,opener ,closer t nil))
-                       `(lambda ()
-                          (interactive)
-                          (swb/find-delimiter ,opener ,closer nil nil))))
-
-(defun swb/add-regex-contained-text-object (char opener &optional closer)
-  (setq closer (or closer opener))
-  (swb/add-text-object char
-                       `(lambda ()
-                          (interactive)
-                          (swb/find-regex ,opener t t))
-                       `(lambda ()
-                          (interactive)
-                          (swb/find-regex ,closer nil t))
-                       `(lambda ()
-                          (interactive)
-                          (swb/find-regex ,opener t nil))
-                       `(lambda ()
-                          (interactive)
-                          (swb/find-regex ,closer nil nil))))
 
 (defun swb/execute-text-object-fn (char element)
   (let ((object (assoc char swb/text-objects)))
@@ -586,7 +561,7 @@
                      'backward-word
                      'forward-word)
 
-(swb/add-text-object ?W
+(swb/add-text-object ?s
                      (lambda () (forward-symbol -1))
                      (lambda () (forward-symbol 1)))
 
@@ -594,17 +569,21 @@
                      'swb/backward-line-join
                      'swb/forward-line-join)
 
-(swb/add-text-object ?e
+(swb/add-text-object ?a
                      'swb/backward-argument
                      'swb/forward-argument)
 
-(swb/add-delimited-text-object ?r "(" ")")
-(swb/add-delimited-text-object ?c "{" "}")
-(swb/add-delimited-text-object ?s "[" "]")
-(swb/add-delimited-text-object ?a "<" ">")
+(swb/add-text-object (string-to-char " ")
+                     'swb/backward-whitespace
+                     'swb/forward-whitespace)
 
-(swb/add-regex-contained-text-object ?g "\"")
-(swb/add-regex-contained-text-object ?q "'")
+(swb/add-text-object ?v
+                     'swb/backward-vim-word
+                     'swb/forward-vim-word)
+
+(swb/add-text-object ?V
+                     'swb/backward-contiguous
+                     'swb/forward-contiguous)
 
 (defun swb/go-to-beginning-of-region ()
   (interactive)
@@ -672,13 +651,21 @@
   (swb/delete)
   (yank))
 
-(defun swb/select-next-symbol (arg)
+(defun swb/select-next-vim-word (arg)
   (interactive "p")
-  (swb/select-next-text-object-inner arg ?W))
+  (swb/select-next-text-object-inner arg ?v))
 
-(defun swb/select-prev-symbol (arg)
+(defun swb/select-prev-vim-word (arg)
   (interactive "p")
-  (swb/select-prev-text-object-inner arg ?W))
+  (swb/select-prev-text-object-inner arg ?v))
+
+(defun swb/select-next-vim-WORD (arg)
+  (interactive "p")
+  (swb/select-next-text-object-inner arg ?V))
+
+(defun swb/select-prev-vim-WORD (arg)
+  (interactive "p")
+  (swb/select-prev-text-object-inner arg ?V))
 
 (defun swb/expand-to-lines (arg)
   (interactive "p")
@@ -827,6 +814,22 @@
   (setq this-command 'previous-line)
   (previous-line n))
 
+(defun swb/expand (arg)
+  (interactive "p")
+  (when swb/anchored (swb/start-marking))
+  (up-list arg t t)
+  (unless swb/anchored (mark-sexp (if (> arg 0) -1 1))))
+
+(defun swb/shrink (arg)
+  (interactive "p")
+  (unless mark-active (user-error "mark must be active"))
+  (if (> (point) (mark))
+      (progn
+        (goto-char (- (point) 1))
+        (set-mark (+ (mark) 1)))
+    (goto-char (+ (point) 1))
+    (set-mark (- (mark) 1))))
+
 (defmacro swb/prompt-once-run-for-all-cursors (fn)
   (let ((name (intern (format "swb/prompt-once-run-for-all-cursors/%s" fn))))
     `(defun ,name (&rest args)
@@ -872,8 +875,11 @@
 (swb/key "M-j" 'scroll-up-command)
 (swb/key "M-k" 'scroll-down-command)
 
-(swb/key "b" 'swb/select-prev-symbol)
-(swb/key "e" 'swb/select-next-symbol)
+(swb/key "b" 'swb/select-prev-vim-word)
+(swb/key "e" 'swb/select-next-vim-word)
+
+(swb/key "B" 'swb/select-prev-vim-WORD)
+(swb/key "E" 'swb/select-next-vim-WORD)
 
 (swb/key "t" (swb/prompt-once-run-for-all-cursors swb/till))
 (swb/key "f" (swb/prompt-once-run-for-all-cursors swb/find))
@@ -891,6 +897,9 @@
 (swb/key "M-m" 'swb/mark-text-objects-in-region)
 (swb/key "M-," 'swb/mark-outer-text-objects-in-region-back)
 (swb/key "M-." 'swb/mark-outer-text-objects-in-region)
+
+(swb/key "'" 'swb/expand)
+(swb/key "M-'" 'swb/shrink)
 
 (swb/key "v" (swb/cmd (setq swb/anchored t)))
 

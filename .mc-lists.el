@@ -67,6 +67,7 @@
         swb/backward-line-update-mark
         swb/change
         swb/enable-or-reset-anchor
+        swb/expand
         swb/expand-inside-pairs
         swb/expand-or-arg-1
         swb/expand-to-line-text
@@ -88,7 +89,9 @@
         swb/remove-anchor-and-selection
         swb/replace
         swb/select-next-symbol
+        swb/select-next-vim-word
         swb/select-prev-symbol
+        swb/shrink
         swb/with-expand/backward-char
         swb/with-expand/forward-char
         swb/with-expand/next-line
