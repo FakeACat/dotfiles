@@ -4,7 +4,7 @@ bindsym Mod4+q       kill
 bindsym Mod4+d       exec rofi -show combi -combi-modes "window,drun" -modes combi
 bindsym Mod4+Shift+c reload
 bindsym Mod4+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
-bindsym Mod4+Return  exec emacsclient -c -n -e '(switch-to-buffer nil)'
+bindsym Mod4+Return  exec emacsclient -a="" -c -e '(switch-to-buffer nil)'
 
 bindsym Mod4+h focus left
 bindsym Mod4+j focus down
@@ -77,19 +77,22 @@ output * bg ~/.dotfiles/wallpaper.jpg fill
 
 include /etc/sway/config.d/*
 
-default_border pixel 1
-smart_borders on
+default_border normal 1
+default_floating_border normal 1
 
-set $text      #FFFFFF
-set $unfocused #00000080
-set $focused   #906090
-set $alert     #A00000
-set $indicator #FFCCFF
+titlebar_padding 2
 
-client.focused          $focused   $focused   $text $indicator
-client.unfocused        $focused   $unfocused $text $indicator
-client.focused_inactive $focused   $unfocused $text $indicator
-client.urgent           $alert     $alert     $text $indicator
+set $text          #FFFFFF
+set $unfocused     #00000080
+set $focused       #906090
+set $focused_trans #90609080
+set $alert         #A00000
+set $indicator     #FFCCFF
+
+client.focused          $focused   $focused_trans $text $indicator $focused
+client.unfocused        $focused   $unfocused     $text $indicator $focused
+client.focused_inactive $focused   $unfocused     $text $indicator $focused
+client.urgent           $alert     $alert         $text $indicator $alert
 
 output DP-2 mode 1920x1080@144hz
 
@@ -108,9 +111,10 @@ exec gsettings set org.gnome.desktop.interface color-scheme prefer-dark
 for_window [app_id=thunar]      floating enable
 for_window [app_id=pavucontrol] floating enable
 
-for_window [app_id=firefox] border pixel 1 # fixes firefox losing border when floating
+bar {
+    swaybar_command waybar
+}
 
-exec waybar
 exec dunst
 
 # ABS_X = 21600

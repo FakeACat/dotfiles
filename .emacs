@@ -7,16 +7,17 @@
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
  '(package-selected-packages
-   '(cape cmake-mode consult corfu doom-themes format-all frames-only-mode
-          glsl-mode json-mode magit markdown-mode multiple-cursors odin-mode
-          orderless rust-mode vertico visual-regexp-steroids yasnippet zig-mode))
+   '(cape cmake-mode consult corfu format-all frames-only-mode glsl-mode json-mode
+          magit markdown-mode multiple-cursors odin-mode orderless rust-mode
+          vertico visual-regexp-steroids yasnippet zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(eglot-highlight-symbol-face ((t (:underline t)))))
+ '(eglot-highlight-symbol-face ((t (:underline t))))
+ '(mc/cursor-bar-face ((t (:background "#ffffff" :foreground "#000000" :height 1)))))
 
 (defmacro swb/cmd (&rest body) `(lambda (&rest _) (interactive) ,@body))
 
@@ -46,10 +47,12 @@
   (server-client-instructions nil)
   (vc-follow-symlinks t)
   (cursor-type 'bar)
+  (frame-title-format "%b - Emacs")
   :config
   (tool-bar-mode 0)
   (menu-bar-mode 0)
-  (server-start))
+  (set-frame-parameter (selected-frame) 'alpha-background 80)
+  (add-to-list 'default-frame-alist '(alpha-background . 80)))
 
 (use-package novice
   :custom (disabled-command-function nil))
@@ -115,10 +118,9 @@
   :custom (fill-column 80)
   :config (global-display-fill-column-indicator-mode))
 
-(use-package doom-themes
-  :ensure
-  :demand
-  :config (load-theme 'doom-gruvbox t))
+(use-package custom
+  :config
+  (load-theme 'modus-vivendi))
 
 (use-package display-line-numbers
   :custom (display-line-numbers-type 'relative)
@@ -503,9 +505,9 @@
         (let ((prev-point (point-min)))
           (while (and (< (point) mark) (< prev-point (point)))
             (setq prev-point (point))
-            (if outer
-                (swb/select-next-text-object-outer 1 char)
-              (swb/select-next-text-object-inner 1 char))
+            (ignore-errors (if outer
+                               (swb/select-next-text-object-outer 1 char)
+                             (swb/select-next-text-object-inner 1 char)))
             (when (< (mark) mark)
               (push (list (point) (mark))
                     new-cursors)))))))
@@ -583,7 +585,11 @@
 
 (swb/add-text-object ?V
                      'swb/backward-contiguous
-                     'swb/forward-contiguous)
+                     'swb/forward-contiguous
+                     (swb/cmd (swb/backward-contiguous)
+                              (swb/backward-whitespace))
+                     (swb/cmd (swb/forward-contiguous)
+                              (swb/forward-whitespace)))
 
 (defun swb/go-to-beginning-of-region ()
   (interactive)
@@ -818,7 +824,10 @@
   (interactive "p")
   (when swb/anchored (swb/start-marking))
   (up-list arg t t)
-  (unless swb/anchored (mark-sexp (if (> arg 0) -1 1))))
+  (unless swb/anchored
+    (set-mark (point))
+    (forward-list (if (> arg 0) -1 1))
+    (exchange-point-and-mark)))
 
 (defun swb/shrink (arg)
   (interactive "p")

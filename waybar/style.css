@@ -22,7 +22,8 @@ tooltip {
 }
 
 #workspaces button.focused {
-    background-color: #906090;
+    border: 1px solid #906090;
+    background-color: rgba(144, 96, 144, 0.5);
 }
 
 #workspaces button.urgent {

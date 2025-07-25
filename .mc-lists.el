@@ -89,8 +89,11 @@
         swb/remove-anchor-and-selection
         swb/replace
         swb/select-next-symbol
+        swb/select-next-vim-WORD
         swb/select-next-vim-word
         swb/select-prev-symbol
+        swb/select-prev-vim-WORD
+        swb/select-prev-vim-word
         swb/shrink
         swb/with-expand/backward-char
         swb/with-expand/forward-char
@@ -117,6 +120,7 @@
         Custom-save
         corfu-quit
         describe-variable
+        handle-switch-frame
         hydra--digit-argument
         hydra--negative-argument
         ignore

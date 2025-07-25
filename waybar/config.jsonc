@@ -27,7 +27,7 @@
     },
     "pulseaudio": {
         "format": "vol\n{volume}%",
-        "format-muted": "VOL\nMuted",
+        "format-muted": " vol\nmuted",
         "on-click": "pavucontrol",
     },
     "clock": {
