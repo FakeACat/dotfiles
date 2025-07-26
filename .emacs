@@ -43,7 +43,18 @@
   (use-short-answers 1)
   (dabbrev-case-fold-search nil)
   (ring-bell-function 'ignore)
-  (mode-line-format nil)
+  (mode-line-format '("%e"
+                      " "
+                      (:eval (swb/editor-mode))
+                      " "
+                      "%b"
+                      (:eval (propertize (if buffer-read-only " read-only" "") 'face 'shadow))
+                      (:eval (propertize (if (buffer-modified-p) " unsaved" "") 'face 'warning))
+                      " "
+                      (:eval (propertize default-directory 'face 'shadow))
+                      mode-line-format-right-align
+                      (:eval (if flymake-mode flymake-mode-line-format ""))
+                      "  "))
   (server-client-instructions nil)
   (vc-follow-symlinks t)
   (cursor-type 'bar)
@@ -52,7 +63,10 @@
   (tool-bar-mode 0)
   (menu-bar-mode 0)
   (set-frame-parameter (selected-frame) 'alpha-background 80)
-  (add-to-list 'default-frame-alist '(alpha-background . 80)))
+  (add-to-list 'default-frame-alist '(alpha-background . 80))
+  (defun swb/editor-mode () (cond (swb/anchored    (propertize "ANCHOR" 'face 'error))
+                                  (swb/simple-mode (propertize "NORMAL" 'face 'bold))
+                                  (t               (propertize "INSERT" 'face 'warning)))))
 
 (use-package novice
   :custom (disabled-command-function nil))
@@ -106,12 +120,7 @@
   (flymake-indicator-type 'fringes))
 
 (use-package frame
-  :custom
-  (window-divider-default-places t)
-  (window-divider-default-bottom-width 1)
-  (window-divider-default-right-width 1)
   :config
-  (window-divider-mode 1)
   (blink-cursor-mode -1))
 
 (use-package winner
@@ -322,14 +331,16 @@
   :after-hook
   (deactivate-mark)
   (corfu-quit)
-  (setq swb/anchored nil))
+  (setq swb/anchored nil)
+  (force-mode-line-update))
 
 (add-hook 'minibuffer-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
 (add-hook 'git-commit-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
 
 (defvar-local swb/anchored nil)
 
-(advice-add 'deactivate-mark :after (swb/cmd (setq swb/anchored nil)))
+(advice-add 'deactivate-mark :after (swb/cmd (setq swb/anchored nil)
+                                             (force-mode-line-update)))
 
 (defun swb/start-marking () (interactive) (unless mark-active (set-mark (point))))
 (defun swb/stop-marking () (interactive) (when mark-active (deactivate-mark)))
@@ -872,7 +883,6 @@
 (swb/key "9" 'digit-argument)
 (swb/key "-" 'negative-argument)
 
-(swb/key "\\" 'hs-toggle-hiding)
 (swb/key "C-/" (swb/cmd
                 (deactivate-mark)
                 (undo)
@@ -918,7 +928,8 @@
 (swb/key "'" 'swb/expand)
 (swb/key "M-'" 'swb/shrink)
 
-(swb/key "v" (swb/cmd (setq swb/anchored t)))
+(swb/key "v" (swb/cmd (setq swb/anchored t)
+                      (force-mode-line-update)))
 
 (swb/key "x" 'swb/expand-to-lines)
 (swb/key "o" 'swb/expand-to-line-text)
@@ -995,30 +1006,35 @@
 (swb/key "SPC Q" 'save-buffers-kill-emacs)
 (swb/key "SPC c" 'compile)
 (swb/key "SPC p" (global-key-binding (kbd "C-x p")))
+
 (swb/key "SPC e a" 'eglot-code-actions)
 (swb/key "SPC e r" 'eglot-rename)
 (swb/key "SPC e o" 'eglot-code-action-organize-imports)
 
-(swb/key "SPC w h" 'windmove-left)
-(swb/key "SPC w j" 'windmove-down)
-(swb/key "SPC w k" 'windmove-up)
-(swb/key "SPC w l" 'windmove-right)
+(swb/key "SPC h t" 'hs-toggle-hiding)
 
-(swb/key "SPC w s h" 'windmove-swap-states-left)
-(swb/key "SPC w s j" 'windmove-swap-states-down)
-(swb/key "SPC w s k" 'windmove-swap-states-up)
-(swb/key "SPC w s l" 'windmove-swap-states-right)
+;; window commands
 
-(swb/key "SPC w b" 'split-window-right)
-(swb/key "SPC w v" 'split-window-below)
+(swb/key "\\ h" 'windmove-left)
+(swb/key "\\ j" 'windmove-down)
+(swb/key "\\ k" 'windmove-up)
+(swb/key "\\ l" 'windmove-right)
 
-(swb/key "SPC w q" 'delete-window)
-(swb/key "SPC w o" 'delete-other-windows)
+(swb/key "\\ s h" 'windmove-swap-states-left)
+(swb/key "\\ s j" 'windmove-swap-states-down)
+(swb/key "\\ s k" 'windmove-swap-states-up)
+(swb/key "\\ s l" 'windmove-swap-states-right)
 
-(swb/key "SPC w /" 'winner-undo)
-(swb/key "SPC w ?" 'winner-redo)
+(swb/key "\\ b" 'split-window-right)
+(swb/key "\\ v" 'split-window-below)
 
-(defhydra "hydra-resize-window" (swb/simple-mode-map "SPC w r")
+(swb/key "\\ q" 'delete-window)
+(swb/key "\\ o" 'delete-other-windows)
+
+(swb/key "\\ /" 'winner-undo)
+(swb/key "\\ ?" 'winner-redo)
+
+(defhydra "hydra-resize-window" (swb/simple-mode-map "\\ r")
   ("h" shrink-window-horizontally "shrink width")
   ("j" enlarge-window "enlarge height")
   ("k" shrink-window "shrink height")
