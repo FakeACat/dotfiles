@@ -7,9 +7,9 @@
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
  '(package-selected-packages
-   '(cape cmake-mode consult corfu format-all frames-only-mode glsl-mode json-mode
-          magit markdown-mode multiple-cursors odin-mode orderless rust-mode
-          vertico visual-regexp-steroids yasnippet zig-mode))
+   '(cape cmake-mode consult corfu format-all glsl-mode hydra json-mode magit
+          markdown-mode multiple-cursors odin-mode orderless rust-mode vertico
+          visual-regexp-steroids yasnippet zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -113,6 +113,10 @@
   :config
   (window-divider-mode 1)
   (blink-cursor-mode -1))
+
+(use-package winner
+  :config
+  (winner-mode))
 
 (use-package display-fill-column-indicator
   :custom (fill-column 80)
@@ -300,10 +304,8 @@
     (interactive)
     (mc/disable-multiple-cursors-mode)))
 
-(use-package frames-only-mode
-  :ensure
-  :demand
-  :config (frames-only-mode))
+(use-package hydra
+  :ensure)
 
 ;; custom modal editing
 
@@ -823,11 +825,13 @@
 (defun swb/expand (arg)
   (interactive "p")
   (when swb/anchored (swb/start-marking))
-  (up-list arg t t)
-  (unless swb/anchored
-    (set-mark (point))
-    (forward-list (if (> arg 0) -1 1))
-    (exchange-point-and-mark)))
+  (backward-up-list (abs arg) t t)
+  (if swb/anchored
+      (when (> arg 0) (forward-sexp))
+    (if (> arg 0)
+        (progn (set-mark (point))
+               (forward-sexp))
+      (mark-sexp))))
 
 (defun swb/shrink (arg)
   (interactive "p")
@@ -873,6 +877,10 @@
                 (deactivate-mark)
                 (undo)
                 (setq deactivate-mark nil)))
+
+(swb/key "C--" 'text-scale-adjust)
+(swb/key "C-=" 'text-scale-adjust)
+(swb/key "C-0" 'text-scale-adjust)
 
 ;; movement/selection
 
@@ -977,13 +985,41 @@
 
 ;; leader commands
 
+(swb/key "C-x" 'ignore)
+
 (swb/key "SPC f" 'find-file)
 (swb/key "SPC b" 'switch-to-buffer)
 (swb/key "SPC k" 'kill-buffer)
 (swb/key "SPC g" 'magit-status)
 (swb/key "SPC s" 'save-buffer)
+(swb/key "SPC Q" 'save-buffers-kill-emacs)
 (swb/key "SPC c" 'compile)
 (swb/key "SPC p" (global-key-binding (kbd "C-x p")))
 (swb/key "SPC e a" 'eglot-code-actions)
 (swb/key "SPC e r" 'eglot-rename)
 (swb/key "SPC e o" 'eglot-code-action-organize-imports)
+
+(swb/key "SPC w h" 'windmove-left)
+(swb/key "SPC w j" 'windmove-down)
+(swb/key "SPC w k" 'windmove-up)
+(swb/key "SPC w l" 'windmove-right)
+
+(swb/key "SPC w s h" 'windmove-swap-states-left)
+(swb/key "SPC w s j" 'windmove-swap-states-down)
+(swb/key "SPC w s k" 'windmove-swap-states-up)
+(swb/key "SPC w s l" 'windmove-swap-states-right)
+
+(swb/key "SPC w b" 'split-window-right)
+(swb/key "SPC w v" 'split-window-below)
+
+(swb/key "SPC w q" 'delete-window)
+(swb/key "SPC w o" 'delete-other-windows)
+
+(swb/key "SPC w /" 'winner-undo)
+(swb/key "SPC w ?" 'winner-redo)
+
+(defhydra "hydra-resize-window" (swb/simple-mode-map "SPC w r")
+  ("h" shrink-window-horizontally "shrink width")
+  ("j" enlarge-window "enlarge height")
+  ("k" shrink-window "shrink height")
+  ("l" enlarge-window-horizontally "enlarge width"))

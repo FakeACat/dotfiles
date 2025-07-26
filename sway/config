@@ -1,10 +1,10 @@
 floating_modifier Mod4 normal
 
-bindsym Mod4+q       kill
+bindsym Mod4+Shift+q kill
 bindsym Mod4+d       exec rofi -show combi -combi-modes "window,drun" -modes combi
 bindsym Mod4+Shift+c reload
 bindsym Mod4+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
-bindsym Mod4+Return  exec emacsclient -a="" -c -e '(switch-to-buffer nil)'
+bindsym Mod4+Return  exec foot
 
 bindsym Mod4+h focus left
 bindsym Mod4+j focus down
@@ -110,6 +110,7 @@ exec gsettings set org.gnome.desktop.interface color-scheme prefer-dark
 
 for_window [app_id=thunar]      floating enable
 for_window [app_id=pavucontrol] floating enable
+for_window [class=steam_app_.*] floating enable
 
 bar {
     swaybar_command waybar
