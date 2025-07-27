@@ -6,10 +6,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
- '(package-selected-packages
-   '(cape cmake-mode consult corfu format-all glsl-mode hydra json-mode magit
-          markdown-mode multiple-cursors odin-mode orderless rust-mode vertico
-          visual-regexp-steroids yasnippet zig-mode))
+ '(package-selected-packages nil)
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -17,7 +14,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(eglot-highlight-symbol-face ((t (:underline t))))
- '(mc/cursor-bar-face ((t (:background "#ffffff" :foreground "#000000" :height 1)))))
+ '(mc/cursor-face ((t (:background "#FFFF00" :inverse-video nil)))))
 
 (defmacro swb/cmd (&rest body) `(lambda (&rest _) (interactive) ,@body))
 
@@ -57,7 +54,6 @@
                       "  "))
   (server-client-instructions nil)
   (vc-follow-symlinks t)
-  (cursor-type 'bar)
   (frame-title-format "%b - Emacs")
   :config
   (tool-bar-mode 0)
