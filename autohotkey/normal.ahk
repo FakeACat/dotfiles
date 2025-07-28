@@ -4,5 +4,5 @@
 {
     Send "{Blind}{Ctrl up}"
     If (A_PriorKey = "CapsLock")
-        Send "{Esc}"
+        Send "{Blind}{Esc}"
 }

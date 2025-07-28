@@ -6,7 +6,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
- '(package-selected-packages nil)
+ '(package-selected-packages
+   '(cape cmake-mode corfu format-all glsl-mode hydra json-mode magit markdown-mode
+          multiple-cursors odin-mode orderless rust-mode vertico
+          visual-regexp-steroids yasnippet zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -238,6 +241,9 @@
 
 (use-package vertico
   :ensure
+  :bind
+  ("M-DEL" . vertico-directory-up)
+  ("C-<backspace>" . vertico-directory-up)
   :init (vertico-mode))
 
 (use-package corfu
@@ -328,7 +334,13 @@
   (deactivate-mark)
   (corfu-quit)
   (setq swb/anchored nil)
-  (force-mode-line-update))
+  (force-mode-line-update)
+  (if swb/simple-mode
+      (swb/insert-mode -1)
+    (swb/insert-mode 1)))
+
+(define-minor-mode swb/insert-mode "Text insert mode"
+  :keymap (make-sparse-keymap))
 
 (add-hook 'minibuffer-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
 (add-hook 'git-commit-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
@@ -511,12 +523,13 @@
         (deactivate-mark)
         (when (> point mark) (cl-rotatef mark point))
         (goto-char point)
-        (let ((prev-point (point-min)))
+        (let ((prev-point (- (point-min) 1)))
           (while (and (< (point) mark) (< prev-point (point)))
             (setq prev-point (point))
-            (ignore-errors (if outer
-                               (swb/select-next-text-object-outer 1 char)
-                             (swb/select-next-text-object-inner 1 char)))
+            (ignore-errors
+              (if outer
+                  (swb/select-next-text-object-outer 1 char)
+                (swb/select-next-text-object-inner 1 char)))
             (when (< (mark) mark)
               (push (list (point) (mark))
                     new-cursors)))))))
@@ -862,6 +875,9 @@
 (defmacro swb/key (key-name command)
   `(bind-key ,key-name ,(macroexpand command) swb/simple-mode-map))
 
+(defmacro swb/insert-key (key-name command)
+  `(bind-key ,key-name ,(macroexpand command) swb/insert-mode-map))
+
 (swb/key [remap self-insert-command] 'ignore)
 
 ;; misc
@@ -995,6 +1011,7 @@
 (swb/key "C-x" 'ignore)
 
 (swb/key "SPC f" 'find-file)
+(swb/key "SPC d" 'dired)
 (swb/key "SPC b" 'switch-to-buffer)
 (swb/key "SPC k" 'kill-buffer)
 (swb/key "SPC g" 'magit-status)
@@ -1035,3 +1052,7 @@
   ("j" enlarge-window "enlarge height")
   ("k" shrink-window "shrink height")
   ("l" enlarge-window-horizontally "enlarge width"))
+
+;; insert mode
+
+(swb/insert-key "TAB" 'completion-at-point)
