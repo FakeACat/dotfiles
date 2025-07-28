@@ -58,14 +58,17 @@
   (server-client-instructions nil)
   (vc-follow-symlinks t)
   (frame-title-format "%b - Emacs")
+  (tab-always-indent 'complete)
+  (c-tab-always-indent 'complete)
   :config
   (tool-bar-mode 0)
   (menu-bar-mode 0)
   (set-frame-parameter (selected-frame) 'alpha-background 80)
   (add-to-list 'default-frame-alist '(alpha-background . 80))
-  (defun swb/editor-mode () (cond (swb/anchored    (propertize "ANCHOR" 'face 'error))
-                                  (swb/simple-mode (propertize "NORMAL" 'face 'bold))
-                                  (t               (propertize "INSERT" 'face 'warning)))))
+  (defun swb/editor-mode ()
+    (cond (swb/anchored    (propertize "ANCHOR" 'face 'error))
+          (swb/simple-mode (propertize "NORMAL" 'face 'bold))
+          (t               (propertize "INSERT" 'face 'warning)))))
 
 (use-package novice
   :custom (disabled-command-function nil))
@@ -241,10 +244,11 @@
 
 (use-package vertico
   :ensure
-  :bind
-  ("M-DEL" . vertico-directory-up)
-  ("C-<backspace>" . vertico-directory-up)
-  :init (vertico-mode))
+  :config
+  (setq vertico-multiform-categories
+        '((file (:keymap . vertico-directory-map))))
+  (vertico-multiform-mode)
+  (vertico-mode))
 
 (use-package corfu
   :ensure
@@ -334,13 +338,7 @@
   (deactivate-mark)
   (corfu-quit)
   (setq swb/anchored nil)
-  (force-mode-line-update)
-  (if swb/simple-mode
-      (swb/insert-mode -1)
-    (swb/insert-mode 1)))
-
-(define-minor-mode swb/insert-mode "Text insert mode"
-  :keymap (make-sparse-keymap))
+  (force-mode-line-update))
 
 (add-hook 'minibuffer-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
 (add-hook 'git-commit-mode-hook (lambda () (interactive) (swb/simple-mode -1)))
@@ -875,9 +873,6 @@
 (defmacro swb/key (key-name command)
   `(bind-key ,key-name ,(macroexpand command) swb/simple-mode-map))
 
-(defmacro swb/insert-key (key-name command)
-  `(bind-key ,key-name ,(macroexpand command) swb/insert-mode-map))
-
 (swb/key [remap self-insert-command] 'ignore)
 
 ;; misc
@@ -1052,7 +1047,3 @@
   ("j" enlarge-window "enlarge height")
   ("k" shrink-window "shrink height")
   ("l" enlarge-window-horizontally "enlarge width"))
-
-;; insert mode
-
-(swb/insert-key "TAB" 'completion-at-point)
