@@ -1,4 +1,4 @@
-;;; ...  -*- lexical-binding: t -*-
+;;;  -*- lexical-binding: t -*-
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -8,7 +8,7 @@
  '(epg-gpg-program "gpg")
  '(package-selected-packages
    '(cape cmake-mode corfu format-all glsl-mode hydra json-mode magit markdown-mode
-          multiple-cursors odin-mode orderless rust-mode vertico
+          multiple-cursors odin-mode orderless rust-mode smart-tabs-mode vertico
           visual-regexp-steroids yasnippet zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
@@ -39,7 +39,6 @@
                                   t
                                   face
                                   minibuffer-prompt))
-  (tab-width 4)
   (use-short-answers 1)
   (dabbrev-case-fold-search nil)
   (ring-bell-function 'ignore)
@@ -96,9 +95,6 @@
 
 (use-package org
   :custom (org-hide-emphasis-markers t))
-
-(use-package cc-vars
-  :custom (c-basic-offset 4))
 
 (use-package cc-styles
   :hook
@@ -164,7 +160,6 @@
 (use-package simple
   :custom
   (read-extended-command-predicate #'command-completion-default-include-p)
-  (indent-tabs-mode nil)
   (save-interprogram-paste-before-kill 1)
   (line-move-visual nil)
   :bind
@@ -264,6 +259,24 @@
   :config
   (yas-global-mode)
   (setq yas-keymap nil))
+
+;; https://github.com/jcsalomon/smarttabs/pull/54
+(defmacro smart-tabs-create-advice-list (advice-list)
+  `(cl-loop for (func . offset) in ,advice-list
+            collect `(smart-tabs-advice ,func ,offset)))
+
+(use-package smart-tabs-mode
+  :ensure
+  :hook (add-hook 'odin-mode-hook 'indent-tabs-mode)
+  :config
+  (indent-tabs-mode nil)
+  (setq tab-width 8)
+  (defvaralias 'c-basic-offset 'tab-width)
+  (defvaralias 'js-indent-level 'tab-width)
+  (smart-tabs-add-language-support odin odin-mode-hook
+    ((js-indent-line . js-indent-level)
+     (indent-region-line-by-line . js-indent-level)))
+  (smart-tabs-insinuate 'odin))
 
 (use-package zig-mode
   :ensure)
