@@ -438,8 +438,8 @@
   (swb/forward-contiguous t))
 
 (defvar swb/alphanumeric-regex "[a-zA-Z0-9_]")
-(defvar swb/whitespace-regex "[\s\n]")
-(defvar swb/not-alphanumeric-or-whitespace-regex "[^a-zA-Z0-9_\s\n]")
+(defvar swb/whitespace-regex "[\s\n\t]")
+(defvar swb/not-alphanumeric-or-whitespace-regex "[^a-zA-Z0-9_\s\n\t]")
 
 (defvar swb/end-of-vim-word-regex
   (concat swb/alphanumeric-regex
@@ -1060,3 +1060,19 @@
   ("j" enlarge-window "enlarge height")
   ("k" shrink-window "shrink height")
   ("l" enlarge-window-horizontally "enlarge width"))
+
+;; tab commands
+
+(swb/key "SPC t n" 'tab-new)
+(swb/key "SPC t q" 'tab-close)
+(swb/key "SPC t o" 'tab-close-other)
+
+(swb/key "SPC 1" 'tab-select)
+(swb/key "SPC 2" 'tab-select)
+(swb/key "SPC 3" 'tab-select)
+(swb/key "SPC 4" 'tab-select)
+(swb/key "SPC 5" 'tab-select)
+(swb/key "SPC 6" 'tab-select)
+(swb/key "SPC 7" 'tab-select)
+(swb/key "SPC 8" 'tab-select)
+(swb/key "SPC 9" 'tab-select)
