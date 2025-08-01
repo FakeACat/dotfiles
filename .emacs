@@ -7,9 +7,9 @@
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
  '(package-selected-packages
-   '(cape cmake-mode corfu format-all glsl-mode hydra json-mode magit markdown-mode
-          multiple-cursors odin-mode orderless rust-mode smart-tabs-mode vertico
-          visual-regexp-steroids yasnippet zig-mode))
+   '(avy cape cmake-mode corfu format-all glsl-mode hydra json-mode magit
+	 markdown-mode multiple-cursors odin-mode orderless rust-mode
+	 smart-tabs-mode vertico visual-regexp-steroids yasnippet zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -159,6 +159,7 @@
   (read-extended-command-predicate #'command-completion-default-include-p)
   (save-interprogram-paste-before-kill 1)
   (line-move-visual nil)
+  (indent-tabs-mode nil)
   :bind
   ("M-u" . upcase-dwim)
   ("M-l" . downcase-dwim)
@@ -244,6 +245,27 @@
   (vertico-multiform-mode)
   (vertico-mode))
 
+(use-package consult
+  :ensure)
+
+(use-package avy
+  :ensure
+  :custom
+  (avy-keys (number-sequence ?a ?z))
+  (avy-single-candidate-jump nil)
+  :bind ("C-'" . avy-goto-char-timer)
+  :config
+  (avy-setup-default)
+  (defun swb/avy-place-cursor (pt)
+    (save-mark-and-excursion
+      (deactivate-mark)
+      (goto-char pt)
+      (mc/create-fake-cursor-at-point)
+      (mc/maybe-multiple-cursors-mode)))
+  (setf (alist-get (string-to-char " ") avy-dispatch-alist) 'swb/avy-place-cursor)
+  (advice-add 'avy-goto-char-timer :before (swb/cmd (swb/start-marking)))
+  (advice-add 'avy-isearch         :before (swb/cmd (swb/start-marking))))
+
 (use-package corfu
   :ensure
   :custom
@@ -266,9 +288,7 @@
 
 (use-package smart-tabs-mode
   :ensure
-  :hook (add-hook 'odin-mode-hook 'indent-tabs-mode)
   :config
-  (indent-tabs-mode nil)
   (setq tab-width 8)
   (defvaralias 'c-basic-offset 'tab-width)
   (defvaralias 'js-indent-level 'tab-width)
@@ -286,7 +306,9 @@
 
 (use-package odin-mode
   :vc (:url "https://github.com/mattt-b/odin-mode")
-  :config (push '("Odin" odin-mode) language-id--definitions))
+  :config
+  (push '("Odin" odin-mode) language-id--definitions)
+  (add-hook 'odin-mode-hook 'indent-tabs-mode))
 
 (use-package markdown-mode
   :ensure)
@@ -314,7 +336,7 @@
                 '(("Java" (astyle "--mode=java"))
                   ("C" (clang-format))
                   ("Rust" (rustfmt))
-		  ("Odin" (odinfmt)))))
+                  ("Odin" (odinfmt)))))
 
 (use-package visual-regexp
   :ensure)
@@ -1021,7 +1043,10 @@
 (swb/key "g b" 'xref-go-back)
 
 (swb/key "g f" 'ffap)
-(swb/key "g l" 'goto-line)
+
+(swb/key "g g" 'consult-ripgrep)
+(swb/key "g l" 'consult-line)
+(swb/key "g n" 'consult-goto-line)
 
 ;; leader commands
 
