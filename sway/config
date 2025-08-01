@@ -81,6 +81,7 @@ default_border normal 1
 default_floating_border normal 1
 
 titlebar_padding 2
+title_align center
 
 set $text          #FFFFFF
 set $unfocused     #00000080

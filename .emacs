@@ -72,9 +72,6 @@
 (use-package novice
   :custom (disabled-command-function nil))
 
-(use-package elec-pair
-  :config (electric-pair-mode 1))
-
 (use-package savehist
   :config (savehist-mode 1))
 
@@ -235,10 +232,12 @@
 
 (use-package orderless
   :ensure
+  :demand
   :custom (completion-styles '(orderless)))
 
 (use-package vertico
   :ensure
+  :demand
   :config
   (setq vertico-multiform-categories
         '((file (:keymap . vertico-directory-map))))
@@ -286,7 +285,8 @@
   :mode "\\.vs\\'" "\\.fs\\'")
 
 (use-package odin-mode
-  :vc (:url "https://github.com/mattt-b/odin-mode"))
+  :vc (:url "https://github.com/mattt-b/odin-mode")
+  :config (push '("Odin" odin-mode) language-id--definitions))
 
 (use-package markdown-mode
   :ensure)
@@ -304,10 +304,17 @@
   :ensure
   :hook (prog-mode . format-all-mode)
   :config
+  (define-format-all-formatter odinfmt
+    (:executable "odinfmt")
+    (:install)
+    (:languages "Odin")
+    (:features)
+    (:format (format-all--buffer-easy executable "-stdin")))
   (setq-default format-all-formatters
                 '(("Java" (astyle "--mode=java"))
                   ("C" (clang-format))
-                  ("Rust" (rustfmt)))))
+                  ("Rust" (rustfmt))
+		  ("Odin" (odinfmt)))))
 
 (use-package visual-regexp
   :ensure)
@@ -960,6 +967,8 @@
 (swb/key "s" 'vr/mc-mark)
 (swb/key "/" 'swb/quit-mcs)
 
+(swb/key "M-s" 'vr/query-replace)
+
 (swb/key "z" 'swb/pop-point-and-mark-from-ring)
 
 (swb/key "q"   'mc/mark-previous-like-this)
@@ -1033,6 +1042,8 @@
 (swb/key "SPC e o" 'eglot-code-action-organize-imports)
 
 (swb/key "SPC h t" 'hs-toggle-hiding)
+(swb/key "SPC h s" 'hs-show-all)
+(swb/key "SPC h h" 'hs-hide-all)
 
 ;; window commands
 
