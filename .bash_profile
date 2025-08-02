@@ -4,9 +4,17 @@
 
 [[ -f ~/.bashrc ]] && . ~/.bashrc
 
-export _JAVA_AWT_WM_NONREPARENTING=1 # fixes intellij
-export __GL_THREADED_OPTIMIZATIONS=0 # fixes minecraft
-export EDITOR=emacs # the only good text editor
+# fixes intellij
+export _JAVA_AWT_WM_NONREPARENTING=1
+
+# fixes minecraft
+export __GL_THREADED_OPTIMIZATIONS=0
+
+# fixes a few xwayland games
+export WLR_RENDER_NO_EXPLICIT_SYNC=1
+
+# the only good text editor
+export EDITOR=emacs
 
 export PATH=$PATH\
 :~/.dotfiles/scripts

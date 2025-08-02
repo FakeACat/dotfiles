@@ -1,7 +1,7 @@
 floating_modifier Mod4 normal
 
 bindsym Mod4+Shift+q kill
-bindsym Mod4+d       exec rofi -show combi -combi-modes "window,drun" -modes combi | xargs swaymsg exec --
+bindsym Mod4+d       exec rofi -show combi -combi-modes "window,drun" -modes combi
 bindsym Mod4+Shift+c reload
 bindsym Mod4+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
 bindsym Mod4+Return  exec foot
@@ -113,11 +113,22 @@ for_window [app_id=thunar]      floating enable
 for_window [app_id=pavucontrol] floating enable
 for_window [class=steam_app_.*] floating enable
 
+for_window [class=steam_app_.*] move container to workspace number 1
+for_window [class=Aseprite]     move container to workspace number 1
+
+for_window [class=steam]        move container to workspace number 2
+
+for_window [app_id=firefox]     move container to workspace number 3
+
+for_window [class=discord]      move container to workspace number 4
+
 bar {
     swaybar_command waybar
 }
 
 exec dunst
+
+output * adaptive_sync on
 
 # ABS_X = 21600
 # ABS_Y = 13500
