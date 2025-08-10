@@ -159,7 +159,6 @@
   (read-extended-command-predicate #'command-completion-default-include-p)
   (save-interprogram-paste-before-kill 1)
   (line-move-visual nil)
-  (indent-tabs-mode nil)
   :bind
   ("M-u" . upcase-dwim)
   ("M-l" . downcase-dwim)
@@ -297,6 +296,10 @@
      (indent-region-line-by-line . js-indent-level)))
   (smart-tabs-insinuate 'odin))
 
+(use-package elisp-mode
+  :config
+  (add-hook 'emacs-lisp-mode-hook (swb/cmd (indent-tabs-mode -1))))
+
 (use-package zig-mode
   :ensure)
 
@@ -306,9 +309,7 @@
 
 (use-package odin-mode
   :vc (:url "https://github.com/mattt-b/odin-mode")
-  :config
-  (push '("Odin" odin-mode) language-id--definitions)
-  (add-hook 'odin-mode-hook 'indent-tabs-mode))
+  :config (push '("Odin" odin-mode) language-id--definitions))
 
 (use-package markdown-mode
   :ensure)
@@ -594,6 +595,34 @@
 (defun swb/mark-outer-text-objects-in-region-back (char)
   (interactive "cObject:")
   (swb/mark-text-objects-in-region char t t))
+
+(defun swb/transpose-text-objects (n char &optional outer back)
+  (interactive "p\ncObject:")
+  (deactivate-mark)
+  (when back (setq n (- n)))
+  (transpose-subr (lambda (n2)
+                    (interactive "p")
+                    (if outer
+                        (swb/select-next-text-object-outer n2 char)
+                      (swb/select-next-text-object-inner n2 char)))
+                  n)
+  (setq deactivate-mark nil)
+  (if outer
+      (swb/select-prev-text-object-outer 1 char)
+    (swb/select-prev-text-object-inner 1 char))
+  (exchange-point-and-mark))
+
+(defun swb/transpose-text-objects-inner-back (n char)
+  (interactive "p\ncObject:")
+  (swb/transpose-text-objects n char nil t))
+
+(defun swb/transpose-text-objects-outer (n char)
+  (interactive "p\ncObject:")
+  (swb/transpose-text-objects n char t nil))
+
+(defun swb/transpose-text-objects-outer-back (n char)
+  (interactive "p\ncObject:")
+  (swb/transpose-text-objects n char t t))
 
 (setq swb/text-objects nil) ;; just makes it easier to re-eval all this
 
@@ -974,6 +1003,11 @@
 (swb/key "M-," 'swb/mark-outer-text-objects-in-region-back)
 (swb/key "M-." 'swb/mark-outer-text-objects-in-region)
 
+(swb/key "C-n" 'swb/transpose-text-objects-inner-back)
+(swb/key "C-m" 'swb/transpose-text-objects)
+(swb/key "C-," 'swb/transpose-text-objects-outer-back)
+(swb/key "C-." 'swb/transpose-text-objects-outer)
+
 (swb/key "'" 'swb/expand)
 (swb/key "M-'" 'swb/shrink)
 
@@ -1069,6 +1103,8 @@
 (swb/key "SPC h t" 'hs-toggle-hiding)
 (swb/key "SPC h s" 'hs-show-all)
 (swb/key "SPC h h" 'hs-hide-all)
+
+(swb/key "SPC m r" 'mc/reverse-regions)
 
 ;; window commands
 

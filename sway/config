@@ -110,6 +110,7 @@ exec gsettings set org.gnome.desktop.interface icon-theme HighContrastInverse
 exec gsettings set org.gnome.desktop.interface color-scheme prefer-dark
 
 for_window [app_id=thunar]      floating enable
+for_window [app_id=Thunar]      floating enable
 for_window [app_id=pavucontrol] floating enable
 for_window [class=steam_app_.*] floating enable
 
