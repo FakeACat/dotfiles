@@ -56,9 +56,8 @@
                       "  "))
   (server-client-instructions nil)
   (vc-follow-symlinks t)
-  (frame-title-format "%b - Emacs")
+  (frame-title-format "%b - Vim")
   (tab-always-indent 'complete)
-  (c-tab-always-indent 'complete)
   :config
   (tool-bar-mode 0)
   (menu-bar-mode 0)
@@ -97,6 +96,16 @@
   :hook
   (java-mode-hook . (lambda ()
                       (c-set-offset 'case-label '+)))) ;; fix switch indenting in java
+
+(use-package cc-mode
+  :config
+  ;; https://www.reddit.com/r/emacs/comments/u8szz6/help_me_get_c_tab_completion_working/
+  (defun c-indent-then-complete ()
+    (interactive)
+    (if (= 0 (c-indent-line-or-region))
+        (completion-at-point)))
+  (dolist (map (list c-mode-map c++-mode-map))
+    (define-key map (kbd "<tab>") #'c-indent-then-complete)))
 
 (use-package dired
   :custom
@@ -203,7 +212,8 @@
 (use-package isearch
   :bind (:map isearch-mode-map
               ("RET" . swb/isearch-done-select)
-              ("<return>" . swb/isearch-done-select))
+              ("<return>" . swb/isearch-done-select)
+              ("<escape>" . isearch-abort))
   :init
   (defun swb/isearch-done-select ()
     (interactive)
@@ -294,11 +304,9 @@
   (smart-tabs-add-language-support odin odin-mode-hook
     ((js-indent-line . js-indent-level)
      (indent-region-line-by-line . js-indent-level)))
-  (smart-tabs-insinuate 'odin))
-
-(use-package elisp-mode
-  :config
-  (add-hook 'emacs-lisp-mode-hook (swb/cmd (indent-tabs-mode -1))))
+  (smart-tabs-insinuate 'odin)
+  (add-hook 'emacs-lisp-mode-hook (swb/cmd (indent-tabs-mode -1)))
+  (add-hook 'java-mode-hook (swb/cmd (indent-tabs-mode -1))))
 
 (use-package zig-mode
   :ensure)
