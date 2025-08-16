@@ -7,6 +7,7 @@
         c-electric-brace
         c-electric-colon
         c-electric-delete-forward
+        c-electric-lt-gt
         c-electric-paren
         c-electric-semi&comma
         c-electric-slash
@@ -24,6 +25,7 @@
         forward-sexp
         indent-for-tab-command
         keyboard-quit
+        kill-region
         mark-paragraph
         mark-sexp
         meow-append

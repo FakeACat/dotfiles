@@ -17,7 +17,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(eglot-highlight-symbol-face ((t (:underline t))))
- '(mc/cursor-face ((t (:background "#FFFF00" :inverse-video nil)))))
+ '(mc/cursor-face ((t (:background "#FFFF00" :inverse-video nil))))
+ '(mc/cursor-bar-face ((t (:background "#FFFF00" :inverse-video nil)))))
 
 (defmacro swb/cmd (&rest body) `(lambda (&rest _) (interactive) ,@body))
 
@@ -56,7 +57,7 @@
                       "  "))
   (server-client-instructions nil)
   (vc-follow-symlinks t)
-  (frame-title-format "%b - Vim")
+  (frame-title-format "%b - VSCode")
   (tab-always-indent 'complete)
   :config
   (tool-bar-mode 0)
@@ -368,7 +369,10 @@
       (deactivate-mark)))
   (defun swb/quit-mcs ()
     (interactive)
-    (mc/disable-multiple-cursors-mode)))
+    (mc/disable-multiple-cursors-mode))
+  ;; only on linux since bar multiple cursors don't work on windows
+  (when (eq system-type 'gnu/linux)
+    (setq-default cursor-type '(bar . 2))))
 
 (use-package hydra
   :ensure)
