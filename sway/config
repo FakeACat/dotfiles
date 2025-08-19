@@ -135,3 +135,5 @@ output * adaptive_sync on
 # ABS_Y = 13500
 # ABS_Z = 0
 input 1386:891:Wacom_One_by_Wacom_M_Pen left_handed enable
+
+workspace_layout tabbed

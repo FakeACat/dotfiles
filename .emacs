@@ -22,6 +22,11 @@
 
 (defmacro swb/cmd (&rest body) `(lambda (&rest _) (interactive) ,@body))
 
+(defun swb/random-element-in-list (items)
+  (let* ((size (length items))
+         (index (random size)))
+    (nth index items)))
+
 (use-package package
   :config (add-to-list 'package-archives
                        '("melpa" . "https://melpa.org/packages/") t))
@@ -57,7 +62,11 @@
                       "  "))
   (server-client-instructions nil)
   (vc-follow-symlinks t)
-  (frame-title-format "%b - VSCode")
+  (frame-title-format (concat "%b - "
+                              (swb/random-element-in-list '("Emacs"
+                                                            "VSCode"
+                                                            "Vim"
+                                                            "Notepad"))))
   (tab-always-indent 'complete)
   :config
   (tool-bar-mode 0)
@@ -344,7 +353,8 @@
     (:format (format-all--buffer-easy executable "-stdin")))
   (setq-default format-all-formatters
                 '(("Java" (astyle "--mode=java"))
-                  ("C" (clang-format))
+                  ("C" (astyle "-t"))
+                  ("C++" (astyle "-t"))
                   ("Rust" (rustfmt))
                   ("Odin" (odinfmt)))))
 
