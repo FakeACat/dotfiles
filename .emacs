@@ -7,9 +7,9 @@
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
  '(package-selected-packages
-   '(avy cape cmake-mode corfu format-all glsl-mode hydra json-mode magit
-	 markdown-mode multiple-cursors odin-mode orderless rust-mode
-	 smart-tabs-mode vertico visual-regexp-steroids yasnippet zig-mode))
+   '(cape cmake-mode corfu format-all glsl-mode hydra json-mode magit markdown-mode
+          multiple-cursors odin-mode orderless rust-mode smart-tabs-mode vertico
+          visual-regexp-steroids yasnippet zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -17,8 +17,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(eglot-highlight-symbol-face ((t (:underline t))))
- '(mc/cursor-face ((t (:background "#FFFF00" :inverse-video nil))))
- '(mc/cursor-bar-face ((t (:background "#FFFF00" :inverse-video nil)))))
+ '(mc/cursor-bar-face ((t (:background "#FFFF00" :inverse-video nil))))
+ '(mc/cursor-face ((t (:background "#FFFF00" :inverse-video nil)))))
 
 (defmacro swb/cmd (&rest body) `(lambda (&rest _) (interactive) ,@body))
 
@@ -266,24 +266,6 @@
 
 (use-package consult
   :ensure)
-
-(use-package avy
-  :ensure
-  :custom
-  (avy-keys (number-sequence ?a ?z))
-  (avy-single-candidate-jump nil)
-  :bind ("C-'" . avy-goto-char-timer)
-  :config
-  (avy-setup-default)
-  (defun swb/avy-place-cursor (pt)
-    (save-mark-and-excursion
-      (deactivate-mark)
-      (goto-char pt)
-      (mc/create-fake-cursor-at-point)
-      (mc/maybe-multiple-cursors-mode)))
-  (setf (alist-get (string-to-char " ") avy-dispatch-alist) 'swb/avy-place-cursor)
-  (advice-add 'avy-goto-char-timer :before (swb/cmd (swb/start-marking)))
-  (advice-add 'avy-isearch         :before (swb/cmd (swb/start-marking))))
 
 (use-package corfu
   :ensure
@@ -954,6 +936,18 @@
     (goto-char (+ (point) 1))
     (set-mark (- (mark) 1))))
 
+(defvar swb/reverse-one-shot nil)
+
+(defun swb/begin-reverse-one-shot ()
+  (interactive)
+  (swb/simple-mode -1)
+  (setq swb/reverse-one-shot t))
+
+(add-hook 'pre-command-hook (swb/cmd
+                              (when swb/reverse-one-shot
+                                (swb/simple-mode)
+                                (setq swb/reverse-one-shot nil))))
+
 (defmacro swb/prompt-once-run-for-all-cursors (fn)
   (let ((name (intern (format "swb/prompt-once-run-for-all-cursors/%s" fn))))
     `(defun ,name (&rest args)
@@ -991,6 +985,8 @@
 (swb/key "C--" 'text-scale-adjust)
 (swb/key "C-=" 'text-scale-adjust)
 (swb/key "C-0" 'text-scale-adjust)
+
+(swb/key "`" 'swb/begin-reverse-one-shot)
 
 ;; movement/selection
 
@@ -1103,6 +1099,7 @@
 (swb/key "g g" 'consult-ripgrep)
 (swb/key "g l" 'consult-line)
 (swb/key "g n" 'consult-goto-line)
+(swb/key "g e" 'consult-compile-error)
 
 ;; leader commands
 
