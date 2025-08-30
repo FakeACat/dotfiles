@@ -1100,6 +1100,7 @@
 (swb/key "g l" 'consult-line)
 (swb/key "g n" 'consult-goto-line)
 (swb/key "g e" 'consult-compile-error)
+(swb/key "g i" 'consult-imenu)
 
 ;; leader commands
 
@@ -1113,6 +1114,7 @@
 (swb/key "SPC s" 'save-buffer)
 (swb/key "SPC Q" 'save-buffers-kill-emacs)
 (swb/key "SPC c" 'compile)
+(swb/key "SPC r" 'recompile)
 (swb/key "SPC p" (global-key-binding (kbd "C-x p")))
 
 (swb/key "SPC e a" 'eglot-code-actions)
