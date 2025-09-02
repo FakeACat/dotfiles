@@ -114,7 +114,7 @@
     (interactive)
     (if (= 0 (c-indent-line-or-region))
         (completion-at-point)))
-  (dolist (map (list c-mode-map c++-mode-map))
+  (dolist (map (list c-mode-map c++-mode-map java-mode-map))
     (define-key map (kbd "<tab>") #'c-indent-then-complete)))
 
 (use-package dired

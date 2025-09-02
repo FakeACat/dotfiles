@@ -105,10 +105,6 @@ input type:pointer accel_profile "flat"
 
 focus_on_window_activation focus
 
-exec gsettings set org.gnome.desktop.interface gtk-theme HighContrastInverse
-exec gsettings set org.gnome.desktop.interface icon-theme HighContrastInverse
-exec gsettings set org.gnome.desktop.interface color-scheme prefer-dark
-
 for_window [app_id=thunar]      floating enable
 for_window [app_id=Thunar]      floating enable
 for_window [app_id=pavucontrol] floating enable
