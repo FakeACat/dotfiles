@@ -290,7 +290,7 @@
 (use-package smart-tabs-mode
   :ensure
   :config
-  (setq tab-width 8)
+  (setq tab-width 4)
   (defvaralias 'c-basic-offset 'tab-width)
   (defvaralias 'js-indent-level 'tab-width)
   (smart-tabs-add-language-support odin odin-mode-hook
