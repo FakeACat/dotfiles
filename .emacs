@@ -9,7 +9,7 @@
  '(package-selected-packages
    '(cape cmake-mode corfu format-all glsl-mode hydra json-mode magit markdown-mode
           multiple-cursors odin-mode orderless rust-mode smart-tabs-mode vertico
-          visual-regexp-steroids yasnippet zig-mode))
+          visual-regexp-steroids wgrep yasnippet zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -26,6 +26,9 @@
   (let* ((size (length items))
          (index (random size)))
     (nth index items)))
+
+(use-package hydra
+  :ensure)
 
 (use-package package
   :config (add-to-list 'package-archives
@@ -63,10 +66,18 @@
   (server-client-instructions nil)
   (vc-follow-symlinks t)
   (frame-title-format (concat "%b - "
-                              (swb/random-element-in-list '("Emacs"
+                              (swb/random-element-in-list '(
+                                                            "GNU Emacs"
                                                             "VSCode"
                                                             "Vim"
-                                                            "Notepad"))))
+                                                            "Notepad"
+                                                            "Microsoft PowerPoint"
+                                                            "Microsoft Word"
+                                                            "GNU ed"
+                                                            "GNU nano"
+                                                            "Notepad++"
+                                                            "Neovim"
+                                                            ))))
   (tab-always-indent 'complete)
   :config
   (tool-bar-mode 0)
@@ -121,6 +132,11 @@
   :custom
   (dired-auto-revert-buffer #'dired-buffer-stale-p)
   (dired-dwim-target t))
+
+(use-package grep
+  :custom
+  (grep-use-null-device nil)
+  (grep-command "rg --no-heading "))
 
 (use-package which-key
   :config (which-key-mode))
@@ -366,7 +382,7 @@
   (when (eq system-type 'gnu/linux)
     (setq-default cursor-type '(bar . 2))))
 
-(use-package hydra
+(use-package wgrep
   :ensure)
 
 ;; custom modal editing
@@ -948,6 +964,24 @@
                                 (swb/simple-mode)
                                 (setq swb/reverse-one-shot nil))))
 
+(defun swb/writable-begin ()
+  (interactive)
+  (cond ((eq major-mode 'grep-mode) (wgrep-change-to-wgrep-mode))
+        ((eq major-mode 'dired-mode) (wdired-change-to-wdired-mode))
+        (t (user-error "major mode not supported"))))
+
+(defun swb/writable-cancel ()
+  (interactive)
+  (cond ((eq major-mode 'grep-mode) (wgrep-abort-changes))
+        ((eq major-mode 'wdired-mode) (wdired-abort-changes))
+        (t (user-error "major mode not supported"))))
+
+(defun swb/save-dwim ()
+  (interactive)
+  (cond ((eq major-mode 'grep-mode) (wgrep-finish-edit))
+        ((eq major-mode 'wdired-mode) (wdired-finish-edit))
+        (t (save-buffer))))
+
 (defmacro swb/prompt-once-run-for-all-cursors (fn)
   (let ((name (intern (format "swb/prompt-once-run-for-all-cursors/%s" fn))))
     `(defun ,name (&rest args)
@@ -1111,7 +1145,7 @@
 (swb/key "SPC b" 'switch-to-buffer)
 (swb/key "SPC k" 'kill-buffer)
 (swb/key "SPC g" 'magit-status)
-(swb/key "SPC s" 'save-buffer)
+(swb/key "SPC s" 'swb/save-dwim)
 (swb/key "SPC Q" 'save-buffers-kill-emacs)
 (swb/key "SPC c" 'compile)
 (swb/key "SPC r" 'recompile)
@@ -1126,6 +1160,9 @@
 (swb/key "SPC h h" 'hs-hide-all)
 
 (swb/key "SPC m r" 'mc/reverse-regions)
+
+(swb/key "SPC w b" 'swb/writable-begin)
+(swb/key "SPC w c" 'swb/writable-cancel)
 
 ;; window commands
 

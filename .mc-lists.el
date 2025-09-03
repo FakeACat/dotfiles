@@ -188,6 +188,7 @@
         swb/without-expand/swb/go-to-text-object-inner-beg
         swb/without-expand/swb/go-to-text-object-inner-end
         swb/without-expand/swb/till
+        swb/writable-begin
         switch-to-buffer
         text-scale-adjust
         xref-find-references
