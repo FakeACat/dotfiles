@@ -1,31 +1,32 @@
 * {
-    font-family: monospace;
+	font-family: monospace;
+	color: #FFFFFF;
 }
 
 window#waybar {
-    background-color: transparent;
-    border: 1px solid #906090;
+	background-color: transparent;
+	border: 1px solid #906090;
 }
 
-tooltip, #custom-notifications, #temperature, #workspaces, #cpu, #memory, #pulseaudio, #clock, #tray {
-    background-color: rgba(0, 0, 0, 0.5);
-    border: 1px solid #906090;
-    border-radius: 0px;
+tooltip, #custom-notifications, #temperature, #workspaces, #cpu, #memory, #pulseaudio, #battery, #clock, #tray {
+	background-color: rgba(0, 0, 0, 0.5);
+	border: 1px solid #906090;
+	border-radius: 0px;
 }
 
 tooltip {
-    background-color: black;
+	background-color: black;
 }
 
 #workspaces button {
-    border-radius: 0px;
+	border-radius: 0px;
 }
 
 #workspaces button.focused {
-    border: 1px solid #906090;
-    background-color: rgba(144, 96, 144, 0.5);
+	border: 1px solid #906090;
+	background-color: rgba(144, 96, 144, 0.5);
 }
 
 #workspaces button.urgent {
-    background-color: #A00000;
+	background-color: #A00000;
 }

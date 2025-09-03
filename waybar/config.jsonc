@@ -1,56 +1,60 @@
 // -*- mode: jsonc -*-
 {
-    "position": "right",
-    "spacing": -1,
-    "modules-left": [
-        "custom/notifications",
-        "tray",
-    ],
-    "modules-center": [
-        "sway/workspaces",
-    ],
-    "modules-right": [
-        "temperature",
-        "cpu",
-        "memory",
-        "pulseaudio",
-        "clock",
-    ],
-    "cpu": {
-        "format": "cpu\n{usage}%",
-        "interval": 1,
-    },
-    "memory": {
-        "format": "ram\n{percentage}%",
-        "tooltip-format": "{used}GiB / {total}GiB",
-        "interval": 1,
-    },
-    "pulseaudio": {
-        "format": "vol\n{volume}%",
-        "format-muted": " vol\nmuted",
-        "on-click": "pavucontrol",
-    },
-    "clock": {
-        "tooltip-format": "{calendar}",
-        "format": "{:%H:%M\n%d/%m\n/%Y}",
-        "calendar": {
-            "mode" : "year",
-            "mode-mon-col" : 4,
-            "format": {
-                "today": "<span color='#ffff00'><b>{}</b></span>"
-            },
-        },
-    },
-    "temperature": {
-        "interval": 1,
-    },
-    "tray": {
-        "show-passive-items": true,
-    },
-    "custom/notifications": {
-        "format": "!",
-        "on-click": "dunstctl history-pop",
-        "on-click-right": "dunstctl close-all",
-        "tooltip-format": "Notifications",
-    },
+	"position": "right",
+	"spacing": -1,
+	"modules-left": [
+		"custom/notifications",
+		"tray",
+	],
+	"modules-center": [
+		"sway/workspaces",
+	],
+	"modules-right": [
+		"temperature",
+		"cpu",
+		"memory",
+		"pulseaudio",
+		"battery",
+		"clock",
+	],
+	"cpu": {
+		"format": "cpu\n{usage}%",
+		"interval": 1,
+	},
+	"memory": {
+		"format": "ram\n{percentage}%",
+		"tooltip-format": "{used}GiB / {total}GiB",
+		"interval": 1,
+	},
+	"pulseaudio": {
+		"format": "vol\n{volume}%",
+		"format-muted": " vol\nmuted",
+		"on-click": "pavucontrol",
+	},
+	"battery": {
+		"format": "bat\n{capacity}%"
+	},
+	"clock": {
+		"tooltip-format": "{calendar}",
+		"format": "{:%H:%M\n%d/%m\n/%Y}",
+		"calendar": {
+			"mode" : "year",
+			"mode-mon-col" : 4,
+			"format": {
+				"today": "<span color='#ffff00'><b>{}</b></span>"
+			},
+		},
+	},
+	"temperature": {
+		"interval": 1,
+	},
+	"tray": {
+		"show-passive-items": true,
+	},
+	"custom/notifications": {
+		"format": "!",
+		"on-click": "dunstctl history-pop",
+		"on-click-right": "dunstctl close-all",
+		"tooltip-format": "Notifications",
+	},
 }
