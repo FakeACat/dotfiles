@@ -146,7 +146,6 @@
 
 (use-package flymake
   :custom
-  (flymake-show-diagnostics-at-end-of-line t)
   (flymake-indicator-type 'fringes))
 
 (use-package frame
