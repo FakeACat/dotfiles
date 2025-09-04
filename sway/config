@@ -70,6 +70,11 @@ bindsym --locked XF86AudioLowerVolume exec pactl set-sink-volume \@DEFAULT_SINK@
 bindsym --locked XF86AudioRaiseVolume exec pactl set-sink-volume \@DEFAULT_SINK@   +5%
 bindsym --locked XF86AudioMicMute     exec pactl set-source-mute \@DEFAULT_SOURCE@ toggle
 
+bindsym XF86MonBrightnessDown exec brightnessctl set 5%-
+bindsym XF86MonBrightnessUp   exec brightnessctl set 5%+
+
+bindsym Mod4+n exec "~/.dotfiles/scripts/toggle_night_light.sh"
+
 bindsym Print exec grim -g "$(slurp)" - | wl-copy
 bindsym Shift+Print exec grim - | wl-copy
 

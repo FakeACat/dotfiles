@@ -22,6 +22,7 @@ fi
 export EDITOR=emacs
 
 export PATH=$PATH\
-:~/.dotfiles/scripts
+:~/.dotfiles/scripts\
+:~/bin
 
 [ "$(tty)" = "/dev/tty1" ] && exec sway --unsupported-gpu

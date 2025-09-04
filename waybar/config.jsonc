@@ -14,6 +14,7 @@
 		"cpu",
 		"memory",
 		"pulseaudio",
+		"network",
 		"battery",
 		"clock",
 	],
@@ -30,6 +31,9 @@
 		"format": "vol\n{volume}%",
 		"format-muted": " vol\nmuted",
 		"on-click": "pavucontrol",
+	},
+	"network": {
+		"format-wifi": "wifi\n{signalStrength}%"
 	},
 	"battery": {
 		"format": "bat\n{capacity}%"
