@@ -36,7 +36,8 @@
 		"format-wifi": "wifi\n{signalStrength}%"
 	},
 	"battery": {
-		"format": "bat\n{capacity}%"
+		"format": "bat\n{capacity}%",
+		"format-charging": "bat\n{capacity}%^"
 	},
 	"clock": {
 		"tooltip-format": "{calendar}",
