@@ -12,7 +12,7 @@ window#waybar {
 	border: 1px solid #906090;
 }
 
-tooltip, #custom-notifications, #temperature, #workspaces, #cpu, #memory, #pulseaudio, #network, #battery, #clock, #tray {
+tooltip, #custom-notifications, #temperature, #cpu, #memory, #pulseaudio, #network, #battery, #clock, #tray {
 	border: 1px solid #906090;
 	border-radius: 0px;
 	padding-left: 5;
@@ -26,13 +26,13 @@ tooltip {
 #workspaces {
 	padding-left: 0;
 	padding-right: 0;
+	border: 1px solid #906090;
 }
 
 #workspaces button {
 	border-radius: 0px;
 	padding-left: 5;
 	padding-right: 5;
-	border: 1px solid #906090;
 }
 
 #workspaces button.focused {
