@@ -1,15 +1,12 @@
 // -*- mode: jsonc -*-
 {
-	"position": "right",
-	"spacing": -1,
+	"height": 10,
 	"modules-left": [
-		"custom/notifications",
-		"tray",
-	],
-	"modules-center": [
 		"sway/workspaces",
 	],
 	"modules-right": [
+		"custom/notifications",
+		"tray",
 		"temperature",
 		"cpu",
 		"memory",
@@ -19,29 +16,32 @@
 		"clock",
 	],
 	"cpu": {
-		"format": "cpu\n{usage}%",
+		"format": "cpu {usage:3}%",
 		"interval": 1,
 	},
 	"memory": {
-		"format": "ram\n{percentage}%",
+		"format": "ram {percentage:3}%",
 		"tooltip-format": "{used}GiB / {total}GiB",
 		"interval": 1,
 	},
 	"pulseaudio": {
-		"format": "vol\n{volume}%",
-		"format-muted": " vol\nmuted",
+		"format": "volume {volume:3}%",
+		"format-muted": " volume muted",
 		"on-click": "pavucontrol",
 	},
 	"network": {
-		"format-wifi": "wifi\n{signalStrength}%"
+		"format-wifi": "wifi {signalStrength:3}%, up {bandwidthUpBytes:>}, down {bandwidthDownBytes:>}",
+		"format-ethernet": "ethernet, up {bandwidthUpBytes:>}, down {bandwidthDownBytes:>}",
+		"interval": 1,
 	},
 	"battery": {
-		"format": "bat\n{capacity}%",
-		"format-charging": "bat\n{capacity}%^"
+		"format": "battery {capacity:3}%",
+		"format-charging": "battery {capacity:3}% (charging)",
+		"interval": 15,
 	},
 	"clock": {
 		"tooltip-format": "{calendar}",
-		"format": "{:%H:%M\n%d/%m\n/%Y}",
+		"format": "{:%H:%M %d/%m/%Y}",
 		"calendar": {
 			"mode" : "year",
 			"mode-mon-col" : 4,
@@ -57,9 +57,18 @@
 		"show-passive-items": true,
 	},
 	"custom/notifications": {
-		"format": "!",
+		"format": "notifications",
 		"on-click": "dunstctl history-pop",
 		"on-click-right": "dunstctl close-all",
 		"tooltip-format": "Notifications",
+	},
+	"sway/workspaces": {
+		"format": "{icon}",
+		"format-icons": {
+			"1": "primary",
+			"2": "secondary",
+			"3": "browser",
+			"4": "communication",
+		}
 	},
 }
