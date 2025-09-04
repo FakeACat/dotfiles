@@ -26,13 +26,14 @@ tooltip {
 #workspaces {
 	padding-left: 0;
 	padding-right: 0;
-	border: 1px solid #906090;
 }
 
 #workspaces button {
+	border-right: 1px solid #906090;
 	border-radius: 0px;
 	padding-left: 5;
 	padding-right: 5;
+	margin-left: -1;
 }
 
 #workspaces button.focused {
