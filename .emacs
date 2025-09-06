@@ -236,7 +236,8 @@
 
 (use-package eldoc
   :custom
-  (eldoc-idle-delay 0))
+  ;; low but not so low that it shows everything i scroll over
+  (eldoc-idle-delay 0.05))
 
 (use-package isearch
   :bind (:map isearch-mode-map
