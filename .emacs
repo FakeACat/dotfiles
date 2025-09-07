@@ -232,7 +232,12 @@
                               :initializationOptions
                               (:enable_fake_methods t
                                :enable_references   t
-                               :enable_inlay_hints  t)))))
+                               :enable_inlay_hints  t))))
+  (defun swb/maybe-eglot-format ()
+    (interactive)
+    (when (eq major-mode 'java-mode)
+      (eglot-format)))
+  (add-hook 'before-save-hook 'swb/maybe-eglot-format))
 
 (use-package eldoc
   :custom
@@ -354,7 +359,7 @@
     (:features)
     (:format (format-all--buffer-easy executable "-stdin")))
   (setq-default format-all-formatters
-                '(("Java" (astyle "--mode=java"))
+                '(;; ("Java" (astyle "--mode=java"))
                   ("C" (astyle "-t"))
                   ("C++" (astyle "-t"))
                   ("Rust" (rustfmt))
