@@ -1084,7 +1084,7 @@
 (swb/key "s" 'vr/mc-mark)
 (swb/key "/" 'swb/quit-mcs)
 
-(swb/key "M-s" 'vr/query-replace)
+(swb/key "M-s" 'replace-string)
 
 (swb/key "z" 'swb/pop-point-and-mark-from-ring)
 
