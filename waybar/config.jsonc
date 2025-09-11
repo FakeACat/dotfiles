@@ -27,7 +27,7 @@
 	},
 	"pulseaudio": {
 		"format": "volume {volume:3}%",
-		"format-muted": " volume muted",
+		"format-muted": "volume muted",
 		"on-click": "pavucontrol",
 	},
 	"network": {
