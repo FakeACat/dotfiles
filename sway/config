@@ -80,8 +80,11 @@ bindsym Shift+Print exec grim - | wl-copy
 
 output * bg ~/.dotfiles/wallpaper.jpg fill
 
-default_border normal 1
-default_floating_border normal 1
+default_border pixel 4
+default_floating_border pixel 4
+hide_edge_borders --i3 smart
+
+smart_borders on
 
 titlebar_padding 1
 title_align center
@@ -89,15 +92,15 @@ title_align center
 font monospace 8
 
 set $text          #FFFFFF
-set $unfocused     #00000080
+set $unfocused     #000000E6
 set $focused       #906090
 set $focused_trans #90609080
 set $alert         #A00000
-set $indicator     #FFCCFF
+set $indicator     #FFFFFF
 
 client.focused          $focused   $focused_trans $text $indicator $focused
-client.unfocused        $focused   $unfocused     $text $indicator $focused
-client.focused_inactive $focused   $unfocused     $text $indicator $focused
+client.unfocused        $focused   $unfocused     $text $indicator $unfocused
+client.focused_inactive $focused   $unfocused     $text $indicator $unfocused
 client.urgent           $alert     $alert         $text $indicator $alert
 
 output DP-2 mode 1920x1080@144hz
@@ -120,6 +123,8 @@ for_window [app_id=firefox] move container to workspace number 3
 for_window [class=discord] move container to workspace number 4
 
 for_window [app_id=com.obsproject.Studio] move container to workspace number 5
+
+for_window [app_id=thunar] floating enable
 
 bar {
     swaybar_command waybar

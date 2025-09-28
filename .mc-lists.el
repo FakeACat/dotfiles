@@ -13,6 +13,7 @@
         c-electric-slash
         c-electric-star
         c-indent-line-or-region
+        c-indent-then-complete
         capitalize-dwim
         comment-dwim
         corfu-complete
