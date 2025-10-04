@@ -1065,10 +1065,14 @@
 (swb/key "M-," 'swb/mark-outer-text-objects-in-region-back)
 (swb/key "M-." 'swb/mark-outer-text-objects-in-region)
 
-(swb/key "C-n" 'swb/transpose-text-objects-inner-back)
-(swb/key "C-m" 'swb/transpose-text-objects)
-(swb/key "C-," 'swb/transpose-text-objects-outer-back)
-(swb/key "C-." 'swb/transpose-text-objects-outer)
+(swb/key "C-n" (swb/prompt-once-run-for-all-cursors
+                swb/transpose-text-objects-inner-back))
+(swb/key "C-m" (swb/prompt-once-run-for-all-cursors
+                swb/transpose-text-objects))
+(swb/key "C-," (swb/prompt-once-run-for-all-cursors
+                swb/transpose-text-objects-outer-back))
+(swb/key "C-." (swb/prompt-once-run-for-all-cursors
+                swb/transpose-text-objects-outer))
 
 (swb/key "'" 'swb/expand)
 (swb/key "M-'" 'swb/shrink)

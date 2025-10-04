@@ -178,6 +178,7 @@
         swb/prompt-once-run-for-all-cursors/swb/select-prev-text-object-inner
         swb/prompt-once-run-for-all-cursors/swb/select-prev-text-object-outer
         swb/prompt-once-run-for-all-cursors/swb/till
+        swb/prompt-once-run-for-all-cursors/swb/transpose-text-objects-outer
         swb/save-dwim
         swb/simple-mode
         swb/simple-mode-or-exit-minibuffer
