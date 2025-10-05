@@ -290,9 +290,6 @@
   (vertico-multiform-mode)
   (vertico-mode))
 
-(use-package consult
-  :ensure)
-
 (use-package corfu
   :ensure
   :custom
@@ -1144,11 +1141,9 @@
 
 (swb/key "g f" 'ffap)
 
-(swb/key "g g" 'consult-ripgrep)
-(swb/key "g l" 'consult-line)
-(swb/key "g n" 'consult-goto-line)
-(swb/key "g e" 'consult-compile-error)
-(swb/key "g i" 'consult-imenu)
+(swb/key "g g" 'grep)
+(swb/key "g l" 'goto-line)
+(swb/key "g i" 'imenu)
 
 ;; leader commands
 
