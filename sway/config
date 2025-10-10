@@ -78,6 +78,9 @@ bindsym Mod4+n exec "~/.dotfiles/scripts/toggle_night_light.sh"
 bindsym Print exec grim -g "$(slurp)" - | wl-copy
 bindsym Shift+Print exec grim - | wl-copy
 
+bindsym Mod4+Alt+s exec systemctl suspend
+bindsym Mod4+Alt+p exec poweroff
+
 output * bg ~/.dotfiles/wallpaper.jpg fill
 
 default_border pixel 4
