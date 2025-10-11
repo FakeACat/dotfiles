@@ -209,6 +209,7 @@
   :custom
   (compilation-scroll-output 1)
   (compile-command "")
+  (compilation-ask-about-save nil)
   :config
   (add-to-list 'compilation-error-regexp-alist
                'zig-c-assert)
