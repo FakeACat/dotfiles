@@ -7,7 +7,7 @@
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
  '(package-selected-packages
-   '(cape cmake-mode corfu format-all glsl-mode hydra json-mode magit markdown-mode
+   '(cape cmake-mode corfu format-all glsl-mode json-mode magit markdown-mode
           multiple-cursors odin-mode orderless rust-mode smart-tabs-mode vertico
           visual-regexp-steroids wgrep yasnippet zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
@@ -26,9 +26,6 @@
   (let* ((size (length items))
          (index (random size)))
     (nth index items)))
-
-(use-package hydra
-  :ensure)
 
 (use-package package
   :config (add-to-list 'package-archives
@@ -322,7 +319,8 @@
      (indent-region-line-by-line . js-indent-level)))
   (smart-tabs-insinuate 'odin)
   (add-hook 'emacs-lisp-mode-hook (swb/cmd (indent-tabs-mode -1)))
-  (add-hook 'java-mode-hook (swb/cmd (indent-tabs-mode -1))))
+  (add-hook 'java-mode-hook (swb/cmd (indent-tabs-mode -1)))
+  (add-hook 'csharp-mode-hook (swb/cmd (indent-tabs-mode -1))))
 
 (use-package zig-mode
   :ensure)
@@ -361,6 +359,7 @@
                 '(("Java" (google-java-format "-a"))
                   ("C" (astyle "-t"))
                   ("C++" (astyle "-t"))
+                  ("C#" (astyle))
                   ("Rust" (rustfmt))
                   ("Odin" (odinfmt)))))
 
@@ -1194,12 +1193,6 @@
 
 (swb/key "\\ /" 'winner-undo)
 (swb/key "\\ ?" 'winner-redo)
-
-(defhydra "hydra-resize-window" (swb/simple-mode-map "\\ r")
-  ("h" shrink-window-horizontally "shrink width")
-  ("j" enlarge-window "enlarge height")
-  ("k" shrink-window "shrink height")
-  ("l" enlarge-window-horizontally "enlarge width"))
 
 ;; tab commands
 
