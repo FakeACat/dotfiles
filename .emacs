@@ -133,7 +133,8 @@
 (use-package grep
   :custom
   (grep-use-null-device nil)
-  (grep-command "rg --no-heading "))
+  (grep-command "rg --no-heading ''")
+  (grep-command-position (length grep-command)))
 
 (use-package which-key
   :config (which-key-mode))
