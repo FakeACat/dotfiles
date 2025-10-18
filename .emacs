@@ -526,11 +526,11 @@
           swb/not-alphanumeric-or-whitespace-regex))
 
 (defun swb/forward-vim-word ()
-  (when (re-search-forward swb/end-of-vim-word-regex nil t)
+  (when (re-search-forward swb/end-of-vim-word-regex nil 1)
     (backward-char)))
 
 (defun swb/backward-vim-word ()
-  (if (re-search-backward swb/beginning-of-vim-word-regex nil t)
+  (if (re-search-backward swb/beginning-of-vim-word-regex nil 1)
       (forward-char)
     (goto-char (point-min))))
 
