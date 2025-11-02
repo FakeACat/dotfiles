@@ -112,7 +112,10 @@ input type:keyboard xkb_layout gb
 input type:keyboard repeat_delay 200
 input type:keyboard repeat_rate 40
 
-input type:pointer accel_profile "flat"
+input type:pointer {
+    accel_profile "flat"
+	pointer_accel 1.0
+}
 
 focus_on_window_activation smart
 
