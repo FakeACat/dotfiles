@@ -7,13 +7,17 @@
 # fixes intellij
 export _JAVA_AWT_WM_NONREPARENTING=1
 
-if [[ $(hostname) = "ilovelinux" ]]
+if [[ $(hostname) = "ilovelinux" ]] # home desktop
 then
     # nvidia issues :3
 
     # fixes minecraft
     export __GL_THREADED_OPTIMIZATIONS=0
 
+    # fixes a few xwayland games
+    export WLR_RENDER_NO_EXPLICIT_SYNC=1
+elif [[ $(hostname) = "i-love-linux" ]] # laptop
+then
     # fixes a few xwayland games
     export WLR_RENDER_NO_EXPLICIT_SYNC=1
 fi

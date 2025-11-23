@@ -1,7 +1,7 @@
 floating_modifier Mod4 normal
 
 bindsym Mod4+Shift+q kill
-bindsym Mod4+d       exec rofi -show combi -combi-modes "window,drun" -modes combi
+bindsym Mod4+d       exec rofi -show combi -combi-modes "window,drun,run" -modes combi
 bindsym Mod4+Shift+c reload
 bindsym Mod4+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
 bindsym Mod4+Return  exec foot
@@ -123,6 +123,7 @@ for_window [app_id=emacs] move container to workspace number 1
 for_window [class=Aseprite] move container to workspace number 1
 
 for_window [class=steam] move container to workspace number 2
+for_window [class=r2modman] move container to workspace number 2
 
 for_window [app_id=firefox] move container to workspace number 3
 
