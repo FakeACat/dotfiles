@@ -4,7 +4,7 @@ bindsym Mod4+Shift+q kill
 bindsym Mod4+d       exec rofi -show combi -combi-modes "window,drun,run" -modes combi
 bindsym Mod4+Shift+c reload
 bindsym Mod4+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
-bindsym Mod4+Return  exec foot
+bindsym Mod4+Return  exec foot -T "Command Prompt"
 
 bindsym Mod4+h focus left
 bindsym Mod4+j focus down
