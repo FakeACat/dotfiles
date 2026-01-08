@@ -65,6 +65,7 @@
         meow-to-block
         meow-yank
         replace-regexp
+        replace-string
         swb/backward-char-update-mark
         swb/backward-line-update-mark
         swb/change

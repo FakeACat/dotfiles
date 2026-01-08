@@ -6,10 +6,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
- '(package-selected-packages
-   '(cape cmake-mode corfu format-all glsl-mode json-mode magit markdown-mode
-          multiple-cursors odin-mode orderless rust-mode smart-tabs-mode vertico
-          visual-regexp-steroids wgrep yasnippet zig-mode))
+ '(package-selected-packages nil)
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -21,11 +18,6 @@
  '(mc/cursor-face ((t (:background "#FFFF00" :inverse-video nil)))))
 
 (defmacro swb/cmd (&rest body) `(lambda (&rest _) (interactive) ,@body))
-
-(defun swb/random-element-in-list (items)
-  (let* ((size (length items))
-         (index (random size)))
-    (nth index items)))
 
 (use-package package
   :config (add-to-list 'package-archives
@@ -62,19 +54,7 @@
                       "  "))
   (server-client-instructions nil)
   (vc-follow-symlinks t)
-  (frame-title-format (concat "%b - "
-                              (swb/random-element-in-list '(
-                                                            "GNU Emacs"
-                                                            "VSCode"
-                                                            "Vim"
-                                                            "Notepad"
-                                                            "Microsoft PowerPoint"
-                                                            "Microsoft Word"
-                                                            "GNU ed"
-                                                            "GNU nano"
-                                                            "Notepad++"
-                                                            "Neovim"
-                                                            ))))
+  (frame-title-format "%b - Notepad")
   (tab-always-indent 'complete)
   :config
   (tool-bar-mode 0)
@@ -265,6 +245,10 @@
         (isearch-yank-string region))))
   (add-hook 'isearch-mode-hook #'swb/isearch-with-region))
 
+(use-package elec-pair
+  :config
+  (electric-pair-mode 1))
+
 (use-package cape
   :ensure
   :init
@@ -358,8 +342,8 @@
     (:format (format-all--buffer-easy executable "-stdin")))
   (setq-default format-all-formatters
                 '(("Java" (google-java-format "-a"))
-                  ("C" (astyle "-t"))
-                  ("C++" (astyle "-t"))
+                  ("C" (astyle "-toO"))
+                  ("C++" (astyle "-tO"))
                   ("C#" (astyle))
                   ("Rust" (rustfmt))
                   ("Odin" (odinfmt)))))
@@ -972,15 +956,17 @@
                                 (swb/simple-mode)
                                 (setq swb/reverse-one-shot nil))))
 
+(defun wgreppable-mode (mode) (member mode '(grep-mode compilation-mode xref--xref-buffer-mode)))
+
 (defun swb/writable-begin ()
   (interactive)
-  (cond ((eq major-mode 'grep-mode) (wgrep-change-to-wgrep-mode))
+  (cond ((wgreppable-mode major-mode) (wgrep-change-to-wgrep-mode))
         ((eq major-mode 'dired-mode) (wdired-change-to-wdired-mode))
         (t (user-error "major mode not supported"))))
 
 (defun swb/writable-cancel ()
   (interactive)
-  (cond ((eq major-mode 'grep-mode) (wgrep-abort-changes))
+  (cond ((wgreppable-mode major-mode) (wgrep-abort-changes))
         ((eq major-mode 'wdired-mode) (wdired-abort-changes))
         (t (user-error "major mode not supported"))))
 
@@ -1037,8 +1023,8 @@
 (swb/key "k" 'swb/backward-line-update-mark)
 (swb/key "l" 'swb/forward-char-update-mark)
 
-(swb/key "M-j" 'scroll-up-command)
-(swb/key "M-k" 'scroll-down-command)
+(swb/key "C-u" 'scroll-up-command)
+(swb/key "C-d" 'scroll-down-command)
 
 (swb/key "b" 'swb/select-prev-vim-word)
 (swb/key "e" 'swb/select-next-vim-word)

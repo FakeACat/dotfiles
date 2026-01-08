@@ -117,6 +117,11 @@ input type:pointer {
 	pointer_accel 1.0
 }
 
+input type:touchpad {
+    accel_profile "flat"
+	pointer_accel 1.0
+}
+
 focus_on_window_activation smart
 
 for_window [app_id=emacs] move container to workspace number 1
