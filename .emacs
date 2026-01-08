@@ -228,7 +228,9 @@
   :bind (:map isearch-mode-map
               ("RET" . swb/isearch-done-select)
               ("<return>" . swb/isearch-done-select)
-              ("<escape>" . isearch-abort))
+              ("<escape>" . isearch-abort)
+              ("C-<backspace>" . swb/isearch-delete-entire-query)
+              ("M-DEL" . swb/isearch-delete-entire-query))
   :init
   (defun swb/isearch-done-select ()
     (interactive)
@@ -243,7 +245,11 @@
         (deactivate-mark)
         (isearch-update)
         (isearch-yank-string region))))
-  (add-hook 'isearch-mode-hook #'swb/isearch-with-region))
+  (add-hook 'isearch-mode-hook #'swb/isearch-with-region)
+  ;; https://www.reddit.com/r/emacs/comments/ydbxtw/comment/itrc6rl/
+  (defun swb/isearch-delete-entire-query ()
+    (interactive)
+    (isearch-del-char most-positive-fixnum)))
 
 (use-package elec-pair
   :config
