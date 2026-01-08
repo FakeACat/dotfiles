@@ -1023,8 +1023,9 @@
 (swb/key "k" 'swb/backward-line-update-mark)
 (swb/key "l" 'swb/forward-char-update-mark)
 
-(swb/key "C-u" 'scroll-up-command)
-(swb/key "C-d" 'scroll-down-command)
+;; these are flipped ???
+(swb/key "C-u" 'scroll-down-command)
+(swb/key "C-d" 'scroll-up-command)
 
 (swb/key "b" 'swb/select-prev-vim-word)
 (swb/key "e" 'swb/select-next-vim-word)
