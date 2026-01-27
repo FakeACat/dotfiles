@@ -55,7 +55,6 @@
   (server-client-instructions nil)
   (vc-follow-symlinks t)
   (frame-title-format "%b - Notepad")
-  (tab-always-indent 'complete)
   :config
   (tool-bar-mode 0)
   (menu-bar-mode 0)
@@ -94,16 +93,6 @@
   :hook
   (java-mode-hook . (lambda ()
                       (c-set-offset 'case-label '+)))) ;; fix switch indenting in java
-
-(use-package cc-mode
-  :config
-  ;; https://www.reddit.com/r/emacs/comments/u8szz6/help_me_get_c_tab_completion_working/
-  (defun c-indent-then-complete ()
-    (interactive)
-    (if (= 0 (c-indent-line-or-region))
-        (completion-at-point)))
-  (dolist (map (list c-mode-map c++-mode-map java-mode-map))
-    (define-key map (kbd "<tab>") #'c-indent-then-complete)))
 
 (use-package dired
   :custom

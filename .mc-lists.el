@@ -16,7 +16,9 @@
         c-indent-then-complete
         capitalize-dwim
         comment-dwim
+        completion-at-point
         corfu-complete
+        dabbrev-expand
         deactivate-mark
         dired-do-rename
         downcase-dwim
@@ -179,6 +181,7 @@
         swb/prompt-once-run-for-all-cursors/swb/select-prev-text-object-inner
         swb/prompt-once-run-for-all-cursors/swb/select-prev-text-object-outer
         swb/prompt-once-run-for-all-cursors/swb/till
+        swb/prompt-once-run-for-all-cursors/swb/transpose-text-objects
         swb/prompt-once-run-for-all-cursors/swb/transpose-text-objects-outer
         swb/save-dwim
         swb/simple-mode
@@ -195,5 +198,6 @@
         swb/writable-begin
         switch-to-buffer
         text-scale-adjust
+        winner-undo
         xref-find-references
         ))
