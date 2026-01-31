@@ -16,6 +16,7 @@
         c-indent-then-complete
         capitalize-dwim
         comment-dwim
+        complete-symbol
         completion-at-point
         corfu-complete
         dabbrev-expand

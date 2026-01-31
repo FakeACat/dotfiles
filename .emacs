@@ -300,7 +300,8 @@
   (smart-tabs-insinuate 'odin)
   (add-hook 'emacs-lisp-mode-hook (swb/cmd (indent-tabs-mode -1)))
   (add-hook 'java-mode-hook (swb/cmd (indent-tabs-mode -1)))
-  (add-hook 'csharp-mode-hook (swb/cmd (indent-tabs-mode -1))))
+  (add-hook 'csharp-mode-hook (swb/cmd (indent-tabs-mode -1)))
+  (add-hook 'html-mode-hook (swb/cmd (indent-tabs-mode -1))))
 
 (use-package zig-mode
   :ensure)
