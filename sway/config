@@ -92,6 +92,11 @@ smart_borders on
 titlebar_padding 1
 title_align center
 
+# gaps inner 10
+# smart_gaps on
+
+# workspace_layout tabbed
+
 font monospace 8
 
 set $text          #FFFFFF
@@ -136,8 +141,6 @@ for_window [class=discord] move container to workspace number 4
 
 for_window [app_id=com.obsproject.Studio] move container to workspace number 5
 
-for_window [app_id=thunar] floating enable
-
 bar {
     swaybar_command waybar
 }
@@ -150,7 +153,5 @@ output * adaptive_sync on
 # ABS_Y = 13500
 # ABS_Z = 0
 input 1386:891:Wacom_One_by_Wacom_M_Pen left_handed enable
-
-workspace_layout tabbed
 
 include /etc/sway/config.d/*

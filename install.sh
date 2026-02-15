@@ -59,3 +59,5 @@ install waybar/style.css ~/.config/waybar/style.css
 install dunst/dunstrc ~/.config/dunst/dunstrc
 
 install gdbinit ~/.config/gdb/gdbinit
+
+install gtk-3.0/settings.ini ~/.config/gtk-3.0/settings.ini
