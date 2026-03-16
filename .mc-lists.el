@@ -69,6 +69,7 @@
         meow-yank
         replace-regexp
         replace-string
+        sgml-slash
         swb/backward-char-update-mark
         swb/backward-line-update-mark
         swb/change

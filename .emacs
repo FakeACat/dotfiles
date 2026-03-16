@@ -6,7 +6,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(epg-gpg-program "gpg")
- '(package-selected-packages nil)
+ '(package-selected-packages
+   '(cape cmake-mode corfu ess format-all glsl-mode json-mode magit markdown-mode
+          multiple-cursors odin-mode orderless rust-mode smart-tabs-mode vertico
+          visual-regexp-steroids wgrep yasnippet zig-mode))
  '(package-vc-selected-packages '((odin-mode :url "https://github.com/mattt-b/odin-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -325,6 +328,11 @@
 
 (use-package json-mode
   :ensure)
+
+(use-package ess
+  :ensure
+  :custom
+  (ess-indent-with-fancy-comments nil))
 
 (use-package format-all
   :ensure
