@@ -293,18 +293,18 @@
 
 (use-package smart-tabs-mode
   :ensure
+  :custom
+  (indent-tabs-mode nil)
+  (tab-width 4)
   :config
-  (setq-default tab-width 4)
   (defvaralias 'c-basic-offset 'tab-width)
   (defvaralias 'js-indent-level 'tab-width)
   (smart-tabs-add-language-support odin odin-mode-hook
     ((js-indent-line . js-indent-level)
      (indent-region-line-by-line . js-indent-level)))
   (smart-tabs-insinuate 'odin)
-  (add-hook 'emacs-lisp-mode-hook (swb/cmd (indent-tabs-mode -1)))
-  (add-hook 'java-mode-hook (swb/cmd (indent-tabs-mode -1)))
-  (add-hook 'csharp-mode-hook (swb/cmd (indent-tabs-mode -1)))
-  (add-hook 'html-mode-hook (swb/cmd (indent-tabs-mode -1))))
+  (add-hook 'odin-mode-hook (swb/cmd (indent-tabs-mode 1)
+                                     (setq tab-width 8))))
 
 (use-package zig-mode
   :ensure)
@@ -882,15 +882,26 @@
   (when (eq last-repeatable-command 'repeat)
     (setq last-repeatable-command repeat-previous-repeated-command))
 
-  (let ((swb/anchored t))
-    (if (memq last-repeatable-command mc/cmds-to-run-for-all)
-        (mc/execute-command-for-all-cursors
-         (lambda ()
-           (interactive)
-           (funcall orig-fn repeat-arg)))
-      (funcall orig-fn repeat-arg))))
+  (if (memq last-repeatable-command mc/cmds-to-run-for-all)
+      (mc/execute-command-for-all-cursors
+       (lambda ()
+         (interactive)
+         (funcall orig-fn repeat-arg)))
+    (funcall orig-fn repeat-arg)))
 
 (advice-add 'repeat :around 'swb/make-repeat-behave-with-multiple-cursors)
+
+(defvar swb/last-repeatable-command nil)
+
+(defun swb/save-last-repeatable-command ()
+  (when (not (eq last-repeatable-command 'swb/anchor))
+    (setq swb/last-repeatable-command last-repeatable-command)))
+
+(add-hook 'pre-command-hook 'swb/save-last-repeatable-command)
+
+(defun swb/fix-repeatable-command (&rest _) (setq last-repeatable-command swb/last-repeatable-command))
+
+(advice-add 'repeat :before 'swb/fix-repeatable-command)
 
 (defun swb/delete-current-cursor (&optional back)
   (interactive)
@@ -1040,34 +1051,26 @@
 (swb/key "t" (swb/prompt-once-run-for-all-cursors swb/till))
 (swb/key "f" (swb/prompt-once-run-for-all-cursors swb/find))
 
-(swb/key "n" (swb/prompt-once-run-for-all-cursors
-              swb/select-prev-text-object-inner))
-(swb/key "m" (swb/prompt-once-run-for-all-cursors
-              swb/select-next-text-object-inner))
-(swb/key "," (swb/prompt-once-run-for-all-cursors
-              swb/select-prev-text-object-outer))
-(swb/key "." (swb/prompt-once-run-for-all-cursors
-              swb/select-next-text-object-outer))
+(swb/key "n" (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-inner))
+(swb/key "m" (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-inner))
+(swb/key "," (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-outer))
+(swb/key "." (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-outer))
 
 (swb/key "M-n" 'swb/mark-inner-text-objects-in-region-back)
 (swb/key "M-m" 'swb/mark-text-objects-in-region)
 (swb/key "M-," 'swb/mark-outer-text-objects-in-region-back)
 (swb/key "M-." 'swb/mark-outer-text-objects-in-region)
 
-(swb/key "C-n" (swb/prompt-once-run-for-all-cursors
-                swb/transpose-text-objects-inner-back))
-(swb/key "C-m" (swb/prompt-once-run-for-all-cursors
-                swb/transpose-text-objects))
-(swb/key "C-," (swb/prompt-once-run-for-all-cursors
-                swb/transpose-text-objects-outer-back))
-(swb/key "C-." (swb/prompt-once-run-for-all-cursors
-                swb/transpose-text-objects-outer))
+(swb/key "C-n" (swb/prompt-once-run-for-all-cursors swb/transpose-text-objects-inner-back))
+(swb/key "C-m" (swb/prompt-once-run-for-all-cursors swb/transpose-text-objects))
+(swb/key "C-," (swb/prompt-once-run-for-all-cursors swb/transpose-text-objects-outer-back))
+(swb/key "C-." (swb/prompt-once-run-for-all-cursors swb/transpose-text-objects-outer))
 
 (swb/key "'" 'swb/expand)
 (swb/key "M-'" 'swb/shrink)
 
-(swb/key "v" (swb/cmd (setq swb/anchored t)
-                      (force-mode-line-update)))
+(defun swb/anchor () (interactive) (setq swb/anchored t) (force-mode-line-update))
+(swb/key "v" 'swb/anchor)
 
 (swb/key "x" 'swb/expand-to-lines)
 (swb/key "o" 'swb/expand-to-line-text)

@@ -26,6 +26,9 @@
         electric-newline-and-maybe-indent
         electric-pair-delete-pair
         elisp-eval-region-or-buffer
+        ess-indent-or-complete
+        ess-roxy-newline
+        ess-smart-comma
         forward-sexp
         indent-for-tab-command
         keyboard-quit
@@ -134,6 +137,7 @@
         hydra--digit-argument
         hydra--negative-argument
         ignore
+        mc--insert-number-and-increase
         mc/mark-next-lines
         meow-describe-key
         meow-keypad
