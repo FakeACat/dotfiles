@@ -894,7 +894,12 @@
 (defvar swb/last-repeatable-command nil)
 
 (defun swb/save-last-repeatable-command ()
-  (when (not (eq last-repeatable-command 'swb/anchor))
+  (when (and swb/simple-mode
+             (not (member last-repeatable-command
+                          '(swb/anchor
+                            exchange-point-and-mark
+                            swb/simple-mode-or-exit-minibuffer
+                            swb/save-dwim))))
     (setq swb/last-repeatable-command last-repeatable-command)))
 
 (add-hook 'pre-command-hook 'swb/save-last-repeatable-command)
