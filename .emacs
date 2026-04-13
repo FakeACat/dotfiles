@@ -203,13 +203,7 @@
                               :initializationOptions
                               (:enable_fake_methods t
                                :enable_references   t
-                               :enable_inlay_hints  t))))
-  ;; (defun swb/maybe-eglot-format ()
-  ;;   (interactive)
-  ;;   (when (eq major-mode 'java-mode)
-  ;;     (eglot-format)))
-  ;; (add-hook 'before-save-hook 'swb/maybe-eglot-format)
-  )
+                               :enable_inlay_hints  t)))))
 
 (use-package eldoc
   :custom
@@ -304,7 +298,7 @@
      (indent-region-line-by-line . js-indent-level)))
   (smart-tabs-insinuate 'odin)
   (add-hook 'odin-mode-hook (swb/cmd (indent-tabs-mode 1)
-                                     (setq tab-width 8))))
+                                     (setq tab-width 4))))
 
 (use-package zig-mode
   :ensure)
@@ -363,10 +357,10 @@
   :demand
   :bind (:map mc/keymap ("<return>" . nil))
   :config
-  ;; don't want C-g to quit multiple cursors
   (push 'corfu-mode mc/unsupported-minor-modes)
   (push 'global-hl-line-mode mc/unsupported-minor-modes)
   (push 'swb/point-and-mark-ring mc/cursor-specific-vars)
+  ;; don't want C-g to quit multiple cursors
   (defun mc/keyboard-quit ()
     (interactive)
     (when (use-region-p)

@@ -147,6 +147,7 @@
         project-find-file
         recompile
         repeat
+        swb/anchor
         swb/delete-current-cursor
         swb/delete-current-cursor-back
         swb/mark-around-text-object
