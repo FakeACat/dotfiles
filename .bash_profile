@@ -29,4 +29,11 @@ export PATH=$PATH\
 :~/.dotfiles/scripts\
 :~/bin
 
+DOTNET_LOCATION=~/thirdparty/dotnet
+if [ -d $DOTNET_LOCATION ]
+then
+    export DOTNET_ROOT=$DOTNET_LOCATION
+    export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT
+fi
+
 [ "$(tty)" = "/dev/tty1" ] && exec sway --unsupported-gpu
