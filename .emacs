@@ -1167,6 +1167,28 @@
 (swb/key "SPC w b" 'swb/writable-begin)
 (swb/key "SPC w c" 'swb/writable-cancel)
 
+(defun swb/surround (begin end) (save-mark-and-excursion
+                                  (swb/go-to-beginning-of-region)
+                                  (insert-char begin)
+                                  (swb/go-to-end-of-region)
+                                  (insert-char end)))
+
+(defun swb/surround-char (char) (interactive "cCharacter:") (swb/surround char char))
+
+(swb/key "SPC a c" (swb/prompt-once-run-for-all-cursors swb/surround-char))
+(swb/key "SPC a {" (swb/cmd (swb/surround ?{ ?})))
+(swb/key "SPC a [" (swb/cmd (swb/surround ?[ ?])))
+(swb/key "SPC a (" (swb/cmd (swb/surround ?( ?))))
+(swb/key "SPC a <" (swb/cmd (swb/surround ?< ?>)))
+(swb/key "SPC a \"" (swb/cmd (swb/surround ?\" ?\")))
+(swb/key "SPC a RET" (swb/cmd (swb/surround ?\n ?\n)))
+(swb/key "SPC a DEL" (swb/cmd (save-mark-and-excursion
+                                (let ((delete-active-region nil))
+                                  (swb/go-to-beginning-of-region)
+                                  (delete-char 1)
+                                  (swb/go-to-end-of-region)
+                                  (delete-char -1)))))
+
 ;; window commands
 
 (swb/key "\\ h" 'windmove-left)
