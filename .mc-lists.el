@@ -152,10 +152,8 @@
         swb/delete-current-cursor-back
         swb/mark-around-text-object
         swb/mark-in-text-object
-        swb/mark-inner-text-objects-in-region-back
-        swb/mark-outer-text-objects-in-region
-        swb/mark-outer-text-objects-in-region-back
         swb/mark-text-objects-in-region
+        swb/mark-text-objects-in-region-back
         swb/meow-find-mc
         swb/meow-search-mc-mark
         swb/meow-search-mc-skip
@@ -179,28 +177,19 @@
         swb/multiple-cursors-hydra/swb/delete-current-cursor
         swb/multiple-cursors-hydra/swb/delete-current-cursor-backwards
         swb/prompt-once-run-for-all-cursors/swb/find
-        swb/prompt-once-run-for-all-cursors/swb/go-to-text-object-inner-end
         swb/prompt-once-run-for-all-cursors/swb/mark-around-text-object
         swb/prompt-once-run-for-all-cursors/swb/mark-in-text-object
         swb/prompt-once-run-for-all-cursors/swb/mark-text-objects-in-region
-        swb/prompt-once-run-for-all-cursors/swb/select-next-text-object-inner
-        swb/prompt-once-run-for-all-cursors/swb/select-next-text-object-outer
-        swb/prompt-once-run-for-all-cursors/swb/select-prev-text-object-inner
-        swb/prompt-once-run-for-all-cursors/swb/select-prev-text-object-outer
+        swb/prompt-once-run-for-all-cursors/swb/select-text-object
         swb/prompt-once-run-for-all-cursors/swb/till
         swb/prompt-once-run-for-all-cursors/swb/transpose-text-objects
-        swb/prompt-once-run-for-all-cursors/swb/transpose-text-objects-outer
         swb/save-dwim
         swb/simple-mode
         swb/simple-mode-or-exit-minibuffer
         swb/smart-repeat
         swb/with-expand/swb/find
-        swb/with-expand/swb/go-to-text-object-inner-beg
-        swb/with-expand/swb/go-to-text-object-inner-end
         swb/with-expand/swb/till
         swb/without-expand/swb/find
-        swb/without-expand/swb/go-to-text-object-inner-beg
-        swb/without-expand/swb/go-to-text-object-inner-end
         swb/without-expand/swb/till
         swb/writable-begin
         switch-to-buffer

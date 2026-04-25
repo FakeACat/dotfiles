@@ -404,11 +404,6 @@
 (defun swb/start-marking () (interactive) (unless mark-active (set-mark (point))))
 (defun swb/stop-marking () (interactive) (when mark-active (deactivate-mark)))
 
-(defun swb/backward-line ()
-  (let ((point (point)))
-    (beginning-of-line)
-    (when (= point (point)) (forward-line -1))))
-
 (defun swb/forward-line-text ()
   (let ((point (point)))
     (end-of-line)
@@ -518,52 +513,33 @@
 
 (defvar swb/text-objects)
 
-(defun swb/add-text-object (char
-                            inner-beg
-                            inner-end
-                            &optional
-                            outer-beg
-                            outer-end)
-  (push (list char . (inner-beg
-                      inner-end
-                      (or outer-beg inner-beg)
-                      (or outer-end inner-end)))
-        swb/text-objects))
+(defun swb/add-text-object (char beg end)
+  (push (list char . (beg end)) swb/text-objects))
 
 (defun swb/execute-text-object-fn (char element)
   (let ((object (assoc char swb/text-objects)))
     (unless object (user-error (format "Invalid object \"%c\"" char)))
     (funcall (nth element (cdr object)))))
 
-(defun swb/select-text-object-generic (n char forward-index backward-index)
-  (when (< n 0)
-    (setq n (- n))
-    (cl-rotatef forward-index backward-index))
-  (when swb/anchored (swb/start-marking))
-  (swb/execute-text-object-fn char forward-index)
-  (unless swb/anchored
-    (set-mark (point))
-    (swb/execute-text-object-fn char backward-index)
-    (exchange-point-and-mark))
-  (dotimes (i (- n 1)) (swb/execute-text-object-fn char forward-index)))
-
-(defun swb/select-prev-text-object-inner (n char)
+(defun swb/select-text-object (n char)
   (interactive "p\ncObject:")
-  (swb/select-text-object-generic n char 0 1))
+  (let ((forward-index 1) (backward-index 0))
+    (when (< n 0)
+      (setq n (- n))
+      (cl-rotatef forward-index backward-index))
+    (when swb/anchored (swb/start-marking))
+    (swb/execute-text-object-fn char forward-index)
+    (unless swb/anchored
+      (set-mark (point))
+      (swb/execute-text-object-fn char backward-index)
+      (exchange-point-and-mark))
+    (dotimes (i (- n 1)) (swb/execute-text-object-fn char forward-index))))
 
-(defun swb/select-next-text-object-inner (n char)
+(defun swb/select-text-object-back (n char)
   (interactive "p\ncObject:")
-  (swb/select-text-object-generic n char 1 0))
+  (swb/select-text-object (- n) char))
 
-(defun swb/select-prev-text-object-outer (n char)
-  (interactive "p\ncObject:")
-  (swb/select-text-object-generic n char 2 3))
-
-(defun swb/select-next-text-object-outer (n char)
-  (interactive "p\ncObject:")
-  (swb/select-text-object-generic n char 3 2))
-
-(defun swb/mark-text-objects-in-region (char &optional outer back)
+(defun swb/mark-text-objects-in-region (char)
   (interactive "cObject:")
   (when (not mark-active) (user-error "mark must be active"))
   (let ((new-cursors nil))
@@ -578,9 +554,7 @@
           (while (and (< (point) mark) (< prev-point (point)))
             (setq prev-point (point))
             (ignore-errors
-              (if outer
-                  (swb/select-next-text-object-outer 1 char)
-                (swb/select-next-text-object-inner 1 char)))
+              (swb/select-text-object 1 char))
             (when (< (mark) mark)
               (push (list (point) (mark))
                     new-cursors)))))))
@@ -589,108 +563,41 @@
       (swb/go-to-point-and-mark pt-and-mark)
       (mc/create-fake-cursor-at-point))
     (mc/pop-state-from-overlay (car (mc/all-fake-cursors))))
-  (mc/maybe-multiple-cursors-mode)
-  (when back
-    (mc/execute-command-for-all-cursors
-     (swb/cmd (exchange-point-and-mark)))))
+  (mc/maybe-multiple-cursors-mode))
 
-(defun swb/mark-inner-text-objects-in-region-back (char)
+(defun swb/mark-text-objects-in-region-back (char)
   (interactive "cObject:")
-  (swb/mark-text-objects-in-region char nil t))
+  (swb/mark-text-objects-in-region char)
+  (mc/execute-command-for-all-cursors (cmd/swb (exchange-point-and-mark))))
 
-(defun swb/mark-outer-text-objects-in-region (char)
-  (interactive "cObject:")
-  (swb/mark-text-objects-in-region char t))
-
-(defun swb/mark-outer-text-objects-in-region-back (char)
-  (interactive "cObject:")
-  (swb/mark-text-objects-in-region char t t))
-
-(defun swb/transpose-text-objects (n char &optional outer back)
+(defun swb/transpose-text-objects (n char)
   (interactive "p\ncObject:")
   (deactivate-mark)
-  (when back (setq n (- n)))
   (transpose-subr (lambda (n2)
                     (interactive "p")
-                    (if outer
-                        (swb/select-next-text-object-outer n2 char)
-                      (swb/select-next-text-object-inner n2 char)))
+                    (swb/select-text-object n2 char))
                   n)
   (setq deactivate-mark nil)
-  (if outer
-      (swb/select-prev-text-object-outer 1 char)
-    (swb/select-prev-text-object-inner 1 char))
+  (swb/select-text-object -1 char)
   (exchange-point-and-mark))
 
-(defun swb/transpose-text-objects-inner-back (n char)
+(defun swb/transpose-text-objects-back (n char)
   (interactive "p\ncObject:")
-  (swb/transpose-text-objects n char nil t))
-
-(defun swb/transpose-text-objects-outer (n char)
-  (interactive "p\ncObject:")
-  (swb/transpose-text-objects n char t nil))
-
-(defun swb/transpose-text-objects-outer-back (n char)
-  (interactive "p\ncObject:")
-  (swb/transpose-text-objects n char t t))
+  (swb/transpose-text-objects (- n) char))
 
 (setq swb/text-objects nil) ;; just makes it easier to re-eval all this
-
-(swb/add-text-object ?p
-                     'start-of-paragraph-text
-                     'end-of-paragraph-text
-                     'backward-paragraph
-                     'forward-paragraph)
-
-(swb/add-text-object ?l
-                     'swb/backward-line-text
-                     'swb/forward-line-text
-                     'swb/backward-line
-                     'forward-line)
-
-(swb/add-text-object ?b
-                     'beginning-of-buffer
-                     'end-of-buffer)
-
-(swb/add-text-object ?x
-                     'backward-sexp
-                     'forward-sexp)
-
-(swb/add-text-object ?f
-                     'beginning-of-defun
-                     'end-of-defun)
-
-(swb/add-text-object ?w
-                     'backward-word
-                     'forward-word)
-
-(swb/add-text-object ?s
-                     (lambda () (forward-symbol -1))
-                     (lambda () (forward-symbol 1)))
-
-(swb/add-text-object ?j
-                     'swb/backward-line-join
-                     'swb/forward-line-join)
-
-(swb/add-text-object ?a
-                     'swb/backward-argument
-                     'swb/forward-argument)
-
-(swb/add-text-object (string-to-char " ")
-                     'swb/backward-whitespace
-                     'swb/forward-whitespace)
-
-(swb/add-text-object ?v
-                     'swb/backward-vim-word
-                     'swb/forward-vim-word)
-
-(swb/add-text-object ?V
-                     'swb/backward-contiguous
-                     'swb/forward-contiguous
-                     (swb/cmd (swb/backward-contiguous)
-                              (swb/backward-whitespace))
-                     (swb/cmd (swb/forward-contiguous)
-                              (swb/forward-whitespace)))
+(swb/add-text-object ?p 'start-of-paragraph-text 'end-of-paragraph-text)
+(swb/add-text-object ?l 'swb/backward-line-text 'swb/forward-line-text)
+(swb/add-text-object ?b 'beginning-of-buffer 'end-of-buffer)
+(swb/add-text-object ?x 'backward-sexp 'forward-sexp)
+(swb/add-text-object ?f 'beginning-of-defun 'end-of-defun)
+(swb/add-text-object ?w 'backward-word 'forward-word)
+(swb/add-text-object ?s (lambda () (forward-symbol -1)) (lambda () (forward-symbol 1)))
+(swb/add-text-object ?j 'swb/backward-line-join 'swb/forward-line-join)
+(swb/add-text-object ?a 'swb/backward-argument 'swb/forward-argument)
+(swb/add-text-object (string-to-char " ") 'swb/backward-whitespace 'swb/forward-whitespace)
+(swb/add-text-object ?v 'swb/backward-vim-word 'swb/forward-vim-word)
+(swb/add-text-object ?V 'swb/backward-contiguous 'swb/forward-contiguous)
 
 (defun swb/go-to-beginning-of-region ()
   (interactive)
@@ -760,19 +667,19 @@
 
 (defun swb/select-next-vim-word (arg)
   (interactive "p")
-  (swb/select-next-text-object-inner arg ?v))
+  (swb/select-text-object arg ?v))
 
 (defun swb/select-prev-vim-word (arg)
   (interactive "p")
-  (swb/select-prev-text-object-inner arg ?v))
+  (swb/select-text-object (- arg) ?v))
 
 (defun swb/select-next-vim-WORD (arg)
   (interactive "p")
-  (swb/select-next-text-object-inner arg ?V))
+  (swb/select-text-object arg ?V))
 
 (defun swb/select-prev-vim-WORD (arg)
   (interactive "p")
-  (swb/select-prev-text-object-inner arg ?V))
+  (swb/select-text-object (- arg) ?V))
 
 (defun swb/expand-to-lines (arg)
   (interactive "p")
@@ -1050,20 +957,14 @@
 (swb/key "t" (swb/prompt-once-run-for-all-cursors swb/till))
 (swb/key "f" (swb/prompt-once-run-for-all-cursors swb/find))
 
-(swb/key "n" (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-inner))
-(swb/key "m" (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-inner))
-(swb/key "," (swb/prompt-once-run-for-all-cursors swb/select-prev-text-object-outer))
-(swb/key "." (swb/prompt-once-run-for-all-cursors swb/select-next-text-object-outer))
+(swb/key "," (swb/prompt-once-run-for-all-cursors swb/select-text-object-back))
+(swb/key "." (swb/prompt-once-run-for-all-cursors swb/select-text-object))
 
-(swb/key "M-n" 'swb/mark-inner-text-objects-in-region-back)
-(swb/key "M-m" 'swb/mark-text-objects-in-region)
-(swb/key "M-," 'swb/mark-outer-text-objects-in-region-back)
-(swb/key "M-." 'swb/mark-outer-text-objects-in-region)
+(swb/key "M-," 'swb/mark-text-objects-in-region-back)
+(swb/key "M-." 'swb/mark-text-objects-in-region)
 
-(swb/key "C-n" (swb/prompt-once-run-for-all-cursors swb/transpose-text-objects-inner-back))
-(swb/key "C-m" (swb/prompt-once-run-for-all-cursors swb/transpose-text-objects))
-(swb/key "C-," (swb/prompt-once-run-for-all-cursors swb/transpose-text-objects-outer-back))
-(swb/key "C-." (swb/prompt-once-run-for-all-cursors swb/transpose-text-objects-outer))
+(swb/key "C-," (swb/prompt-once-run-for-all-cursors swb/transpose-text-objects-back))
+(swb/key "C-." (swb/prompt-once-run-for-all-cursors swb/transpose-text-objects))
 
 (swb/key "'" 'swb/expand)
 (swb/key "M-'" 'swb/shrink)
