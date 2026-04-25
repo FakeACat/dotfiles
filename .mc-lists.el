@@ -181,6 +181,7 @@
         swb/prompt-once-run-for-all-cursors/swb/mark-in-text-object
         swb/prompt-once-run-for-all-cursors/swb/mark-text-objects-in-region
         swb/prompt-once-run-for-all-cursors/swb/select-text-object
+        swb/prompt-once-run-for-all-cursors/swb/select-text-object-back
         swb/prompt-once-run-for-all-cursors/swb/till
         swb/prompt-once-run-for-all-cursors/swb/transpose-text-objects
         swb/save-dwim

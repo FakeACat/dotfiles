@@ -26,8 +26,7 @@
   :config (add-to-list 'package-archives
                        '("melpa" . "https://melpa.org/packages/") t))
 
-(use-package use-package-core
-  :custom (use-package-always-defer 1))
+(use-package use-package-core :custom (use-package-always-defer 1))
 
 (use-package emacs
   :custom
@@ -68,29 +67,14 @@
           (swb/simple-mode (propertize "NORMAL" 'face 'bold))
           (t               (propertize "INSERT" 'face 'warning)))))
 
-(use-package novice
-  :custom (disabled-command-function nil))
-
-(use-package savehist
-  :config (savehist-mode 1))
-
-(use-package autorevert
-  :config (global-auto-revert-mode 1))
-
-(use-package saveplace
-  :config (save-place-mode 1))
-
-(use-package scroll-bar
-  :config (scroll-bar-mode 0))
-
-(use-package subword
-  :config (global-subword-mode 1))
-
-(use-package hideshow
-  :hook (prog-mode-hook . hs-minor-mode))
-
-(use-package org
-  :custom (org-hide-emphasis-markers t))
+(use-package novice :custom (disabled-command-function nil))
+(use-package savehist :config (savehist-mode 1))
+(use-package autorevert :config (global-auto-revert-mode 1))
+(use-package saveplace :config (save-place-mode 1))
+(use-package scroll-bar :config (scroll-bar-mode 0))
+(use-package subword :config (global-subword-mode 1))
+(use-package hideshow :hook (prog-mode-hook . hs-minor-mode))
+(use-package org :custom (org-hide-emphasis-markers t))
 
 (use-package cc-styles
   :hook
@@ -108,38 +92,23 @@
   (grep-command "rg --no-heading ''")
   (grep-command-position (length grep-command)))
 
-(use-package which-key
-  :config (which-key-mode))
-
-(use-package show-paren
-  :custom (show-paren-delay 0))
-
-(use-package flymake
-  :custom
-  (flymake-indicator-type 'fringes))
-
-(use-package frame
-  :config
-  (blink-cursor-mode -1))
-
-(use-package winner
-  :config
-  (winner-mode))
+(use-package which-key :config (which-key-mode))
+(use-package show-paren :custom (show-paren-delay 0))
+(use-package flymake :custom (flymake-indicator-type 'fringes))
+(use-package frame :config (blink-cursor-mode -1))
+(use-package winner :config (winner-mode))
 
 (use-package display-fill-column-indicator
   :custom (fill-column 80)
   :config (global-display-fill-column-indicator-mode))
 
-(use-package custom
-  :config
-  (load-theme 'modus-vivendi))
+(use-package custom :config (load-theme 'modus-vivendi))
 
 (use-package display-line-numbers
   :custom (display-line-numbers-type 'relative)
   :config (global-display-line-numbers-mode))
 
-(use-package hl-line
-  :config (global-hl-line-mode 1))
+(use-package hl-line :config (global-hl-line-mode 1))
 
 (use-package whitespace
   :custom (whitespace-style '(face
@@ -237,9 +206,7 @@
     (interactive)
     (isearch-del-char most-positive-fixnum)))
 
-(use-package elec-pair
-  :config
-  (electric-pair-mode 1))
+(use-package elec-pair :config (electric-pair-mode 1))
 
 (use-package cape
   :ensure
@@ -247,9 +214,7 @@
   (add-hook 'completion-at-point-functions
             (cape-capf-super #'cape-dabbrev #'cape-keyword)))
 
-(use-package magit
-  :ensure
-  :custom (magit-save-repository-buffers nil))
+(use-package magit :ensure :custom (magit-save-repository-buffers nil))
 
 (use-package orderless
   :ensure
@@ -300,33 +265,14 @@
   (add-hook 'odin-mode-hook (swb/cmd (indent-tabs-mode 1)
                                      (setq tab-width 4))))
 
-(use-package zig-mode
-  :ensure)
-
-(use-package glsl-mode
-  :ensure
-  :mode "\\.vs\\'" "\\.fs\\'")
-
-(use-package odin-mode
-  :vc (:url "https://github.com/mattt-b/odin-mode")
-  :config (push '("Odin" odin-mode) language-id--definitions))
-
-(use-package markdown-mode
-  :ensure)
-
-(use-package cmake-mode
-  :ensure)
-
-(use-package rust-mode
-  :ensure)
-
-(use-package json-mode
-  :ensure)
-
-(use-package ess
-  :ensure
-  :custom
-  (ess-indent-with-fancy-comments nil))
+(use-package zig-mode :ensure)
+(use-package glsl-mode :ensure :mode "\\.vs\\'" "\\.fs\\'")
+(use-package odin-mode :vc (:url "https://github.com/mattt-b/odin-mode") :config (push '("Odin" odin-mode) language-id--definitions))
+(use-package markdown-mode :ensure)
+(use-package cmake-mode :ensure)
+(use-package rust-mode :ensure)
+(use-package json-mode :ensure)
+(use-package ess :ensure :custom (ess-indent-with-fancy-comments nil))
 
 (use-package format-all
   :ensure
@@ -346,11 +292,8 @@
                   ("Rust" (rustfmt))
                   ("Odin" (odinfmt)))))
 
-(use-package visual-regexp
-  :ensure)
-
-(use-package visual-regexp-steroids
-  :ensure)
+(use-package visual-regexp :ensure)
+(use-package visual-regexp-steroids :ensure)
 
 (use-package multiple-cursors
   :ensure
@@ -372,8 +315,7 @@
   (when (eq system-type 'gnu/linux)
     (setq-default cursor-type '(bar . 2))))
 
-(use-package wgrep
-  :ensure)
+(use-package wgrep :ensure)
 
 ;; custom modal editing
 
